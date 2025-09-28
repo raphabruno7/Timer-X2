@@ -1,47 +1,91 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="text-center space-y-8 p-8">
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-            Timer X2
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Ambiente UI/UX moderno configurado com Tailwind CSS + ShadCN + Animações
-          </p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button size="lg" className="animate-pulse">
-            Botão Primário
-          </Button>
-          <Button variant="secondary" size="lg">
-            Botão Secundário
-          </Button>
-          <Button variant="outline" size="lg">
-            Botão Outline
-          </Button>
-        </div>
-        
-        <div className="mt-12 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-            Teste de Componentes
-          </h2>
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-2 justify-center">
-              <Button size="sm">Small</Button>
-              <Button size="default">Default</Button>
-              <Button size="lg">Large</Button>
+    <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4">
+      {/* Phone Frame */}
+      <div className="w-full max-w-sm mx-auto">
+        <Card className="bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl">
+          {/* Header */}
+          <div className="p-6 text-center border-b border-[#2ECC71]/10">
+            <h1 className="text-2xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
+              <Leaf className="w-6 h-6 text-[#2ECC71]" />
+              Timer X2
+            </h1>
+          </div>
+
+          {/* Main Content */}
+          <div className="p-6 space-y-8">
+            {/* Timer Circle Placeholder */}
+            <div className="flex justify-center">
+              <div className="w-48 h-48 rounded-full border-4 border-[#2ECC71]/30 bg-gradient-to-br from-[#2ECC71]/10 to-[#FFD700]/10 flex items-center justify-center shadow-lg">
+                <div className="text-center">
+                  <div className="text-3xl font-mono font-bold text-[#F9F9F9] mb-2">
+                    00:00
+                  </div>
+                  <div className="text-sm text-[#F9F9F9]/70">
+                    Ready to begin
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2 justify-center">
-              <Button variant="destructive">Destructive</Button>
-              <Button variant="ghost">Ghost</Button>
-              <Button variant="link">Link</Button>
+
+            {/* Control Buttons */}
+            <div className="flex justify-center gap-4">
+              <Button
+                size="lg"
+                className="w-14 h-14 rounded-full bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                <Play className="w-6 h-6 ml-1" />
+              </Button>
+              
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-14 h-14 rounded-full border-[#FFD700]/50 text-[#FFD700] hover:bg-[#FFD700]/10 hover:border-[#FFD700] transition-all duration-200 hover:scale-105"
+              >
+                <Pause className="w-6 h-6" />
+              </Button>
+              
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-14 h-14 rounded-full border-[#F9F9F9]/30 text-[#F9F9F9] hover:bg-[#F9F9F9]/10 hover:border-[#F9F9F9]/50 transition-all duration-200 hover:scale-105"
+              >
+                <RotateCcw className="w-6 h-6" />
+              </Button>
             </div>
           </div>
-        </div>
+
+          {/* Bottom Navigation */}
+          <div className="bg-[#2ECC71]/5 border-t border-[#2ECC71]/10 p-4">
+            <div className="flex justify-around">
+              <button className="flex flex-col items-center gap-1 p-2 text-[#2ECC71] hover:text-[#2ECC71]/80 transition-all duration-200 rounded-lg hover:bg-[#2ECC71]/10">
+                <Leaf className="w-5 h-5" />
+                <span className="text-xs font-medium">Presets</span>
+              </button>
+              
+              <button className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-200 rounded-lg hover:bg-[#F9F9F9]/10">
+                <Clock className="w-5 h-5" />
+                <span className="text-xs font-medium">Relógio</span>
+              </button>
+              
+              <button className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-200 rounded-lg hover:bg-[#F9F9F9]/10">
+                <Sparkles className="w-5 h-5" />
+                <span className="text-xs font-medium">AI</span>
+              </button>
+              
+              <button className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-200 rounded-lg hover:bg-[#F9F9F9]/10">
+                <Settings className="w-5 h-5" />
+                <span className="text-xs font-medium">Config</span>
+              </button>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
