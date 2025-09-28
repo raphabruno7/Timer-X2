@@ -1,10 +1,60 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf } from "lucide-react";
 
 export default function Home() {
+  const [tempo, setTempo] = useState(1500); // 25 minutos em segundos
+  const [rodando, setRodando] = useState(false);
+
+  // Função para formatar tempo em mm:ss
+  const formatarTempo = (segundos: number) => {
+    const minutos = Math.floor(segundos / 60);
+    const segundosRestantes = segundos % 60;
+    return `${minutos.toString().padStart(2, '0')}:${segundosRestantes.toString().padStart(2, '0')}`;
+  };
+
+  // Função para iniciar o timer
+  const iniciar = () => {
+    setRodando(true);
+  };
+
+  // Função para pausar o timer
+  const pausar = () => {
+    setRodando(false);
+  };
+
+  // Função para resetar o timer
+  const resetar = () => {
+    setRodando(false);
+    setTempo(1500);
+  };
+
+  // useEffect para decrementar o tempo quando rodando for true
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (rodando && tempo > 0) {
+      interval = setInterval(() => {
+        setTempo((tempoAtual) => {
+          if (tempoAtual <= 1) {
+            setRodando(false);
+            return 0;
+          }
+          return tempoAtual - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [rodando, tempo]);
+
   return (
     <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4">
       {/* Phone Frame */}
@@ -20,25 +70,28 @@ export default function Home() {
 
           {/* Main Content */}
           <div className="p-6 space-y-8">
-            {/* Timer Circle Placeholder */}
+            {/* Timer Circle */}
             <div className="flex justify-center">
               <div className="w-48 h-48 rounded-full border-4 border-[#2ECC71]/30 bg-gradient-to-br from-[#2ECC71]/10 to-[#FFD700]/10 flex items-center justify-center shadow-lg">
                 <div className="text-center">
                   <div className="text-3xl font-mono font-bold text-[#F9F9F9] mb-2">
-                    00:00
+                    {formatarTempo(tempo)}
                   </div>
                   <div className="text-sm text-[#F9F9F9]/70">
-                    Ready to begin
+                    {rodando ? "Running..." : tempo === 0 ? "Time's up!" : "Ready to begin"}
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Control Buttons */}
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-4 relative z-10">
               <Button
                 size="lg"
-                className="w-14 h-14 rounded-full bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white shadow-lg transition-all duration-200 hover:scale-105"
+                onClick={iniciar}
+                disabled={rodando || tempo === 0}
+                className="w-14 h-14 rounded-full bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white shadow-lg transition-all duration-200 hover:scale-105 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ pointerEvents: 'auto' }}
               >
                 <Play className="w-6 h-6 ml-1" />
               </Button>
@@ -46,7 +99,10 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="w-14 h-14 rounded-full border-[#FFD700]/50 text-[#FFD700] hover:bg-[#FFD700]/10 hover:border-[#FFD700] transition-all duration-200 hover:scale-105"
+                onClick={pausar}
+                disabled={!rodando}
+                className="w-14 h-14 rounded-full border-[#FFD700]/50 text-[#FFD700] hover:bg-[#FFD700]/10 hover:border-[#FFD700] transition-all duration-200 hover:scale-105 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ pointerEvents: 'auto' }}
               >
                 <Pause className="w-6 h-6" />
               </Button>
@@ -54,7 +110,9 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="w-14 h-14 rounded-full border-[#F9F9F9]/30 text-[#F9F9F9] hover:bg-[#F9F9F9]/10 hover:border-[#F9F9F9]/50 transition-all duration-200 hover:scale-105"
+                onClick={resetar}
+                className="w-14 h-14 rounded-full border-[#F9F9F9]/30 text-[#F9F9F9] hover:bg-[#F9F9F9]/10 hover:border-[#F9F9F9]/50 transition-all duration-200 hover:scale-105 relative z-10"
+                style={{ pointerEvents: 'auto' }}
               >
                 <RotateCcw className="w-6 h-6" />
               </Button>

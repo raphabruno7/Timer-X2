@@ -1,6 +1,4 @@
 @import "tailwindcss";
-@import "@tailwindcss/forms";
-@import "@tailwindcss/typography";
 @import "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
@@ -120,5 +118,21 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  button {
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  button:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  [data-slot="button"] {
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  [data-slot="button"]:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }
