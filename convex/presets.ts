@@ -1,16 +1,16 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-// Query para listar todos os presets
-export const list = query({
+// Query para listar todos os presets ordenados por createdAt desc
+export const listar = query({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("presets").order("desc").collect();
   },
 });
 
-// Mutation para criar um novo preset
-export const create = mutation({
+// Mutation para adicionar um novo preset
+export const adicionar = mutation({
   args: {
     nome: v.string(),
     minutos: v.number(),
@@ -25,26 +25,13 @@ export const create = mutation({
   },
 });
 
-// Mutation para deletar um preset
-export const remove = mutation({
+// Mutation para remover um preset
+export const remover = mutation({
   args: {
     id: v.id("presets"),
   },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
-  },
-});
-
-// Mutation para atualizar um preset
-export const update = mutation({
-  args: {
-    id: v.id("presets"),
-    nome: v.optional(v.string()),
-    minutos: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    const { id, ...updates } = args;
-    await ctx.db.patch(id, updates);
   },
 });
 
