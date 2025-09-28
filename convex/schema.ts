@@ -7,4 +7,9 @@ export default defineSchema({
     minutos: v.number(),
     createdAt: v.number(), // timestamp
   }),
+  historico: defineTable({
+    presetId: v.id("presets"),
+    usadoEm: v.number(), // timestamp em ms
+    duracao: v.number(), // em segundos usados
+  }).index("by_preset", ["presetId"]),
 });

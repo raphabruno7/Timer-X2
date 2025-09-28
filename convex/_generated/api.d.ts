@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as historico from "../historico.js";
 import type * as presets from "../presets.js";
 
 /**
@@ -24,6 +25,7 @@ import type * as presets from "../presets.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  historico: typeof historico;
   presets: typeof presets;
 }>;
 export declare const api: FilterApi<

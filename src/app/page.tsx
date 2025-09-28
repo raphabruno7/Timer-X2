@@ -17,11 +17,15 @@ export default function Home() {
   const [inputManual, setInputManual] = useState("");
   const [erroInput, setErroInput] = useState("");
   const [presetAtivo, setPresetAtivo] = useState<string | null>(null); // ID do preset ativo
+  const [abaAtiva, setAbaAtiva] = useState<"presets" | "historico">("presets"); // Controle de abas
+  const [tempoInicio, setTempoInicio] = useState<number | null>(null); // Para calcular duração
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
   const adicionarPreset = useMutation(api.presets.adicionar);
   const removerPreset = useMutation(api.presets.remover);
+  const registrarUso = useMutation(api.historico.registrarUso);
+  const historico = useQuery(api.historico.listarHistorico) || [];
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -37,14 +41,41 @@ export default function Home() {
     return `${minutos.toString().padStart(2, '0')}:${segundosRestantes.toString().padStart(2, '0')}`;
   };
 
+  // Função para formatar data e hora
+  const formatarDataHora = (timestamp: number) => {
+    const data = new Date(timestamp);
+    return data.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   // Função para iniciar o timer
   const iniciar = () => {
     setRodando(true);
+    setTempoInicio(Date.now());
   };
 
   // Função para pausar o timer
-  const pausar = () => {
+  const pausar = async () => {
     setRodando(false);
+    
+    // Registrar uso se houver preset ativo e tempo de início
+    if (presetAtivo && tempoInicio) {
+      const duracao = Math.floor((Date.now() - tempoInicio) / 1000);
+      if (duracao > 0) {
+        try {
+          await registrarUso({ presetId: presetAtivo, duracao });
+        } catch (error) {
+          console.error("Erro ao registrar uso:", error);
+        }
+      }
+    }
+    
+    setTempoInicio(null);
   };
 
   // Função para resetar o timer
@@ -179,6 +210,17 @@ export default function Home() {
     };
   }, [rodando, tempoRestante]);
 
+  // useEffect para registrar uso quando timer terminar
+  useEffect(() => {
+    if (!rodando && presetAtivo && tempoInicio && tempoRestante === 0) {
+      const duracao = Math.floor((Date.now() - tempoInicio) / 1000);
+      if (duracao > 0) {
+        registrarUso({ presetId: presetAtivo, duracao }).catch(console.error);
+      }
+      setTempoInicio(null);
+    }
+  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso]);
+
   // Sincronizar tempo com tempoRestante
   useEffect(() => {
     setTempo(tempoRestante);
@@ -216,70 +258,111 @@ export default function Home() {
               </Select>
             </div>
 
-            {/* Lista de Presets do Convex */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-[#F9F9F9]/70">Presets Salvos</h3>
-                <Button
-                  onClick={handleAdicionarPreset}
-                  size="sm"
-                  className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Adicionar
-                </Button>
-              </div>
-              
-              <div className="space-y-2 max-h-32 overflow-y-auto">
-                {presets.length === 0 ? (
-                  <p className="text-xs text-[#F9F9F9]/50 text-center py-2">
-                    Nenhum preset salvo
-                  </p>
-                ) : (
-                  presets.map((preset) => {
-                    const isAtivo = presetAtivo === preset._id;
-                    return (
-                      <div
-                        key={preset._id}
-                        onClick={() => aplicarPreset(preset)}
-                        className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-                          isAtivo
-                            ? "bg-[#2ECC71]/20 border-[#2ECC71] shadow-lg shadow-[#2ECC71]/20"
-                            : "bg-[#2ECC71]/5 border-[#2ECC71]/20 hover:bg-[#2ECC71]/10 hover:border-[#2ECC71]/40"
-                        }`}
-                      >
-                        <div className="flex-1">
-                          <div className={`text-sm font-medium ${
-                            isAtivo ? "text-[#2ECC71]" : "text-[#F9F9F9]"
-                          }`}>
-                            {preset.nome}
-                            {isAtivo && " ✓"}
+            {/* Conteúdo das Abas */}
+            {abaAtiva === "presets" ? (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-[#F9F9F9]/70">Presets Salvos</h3>
+                  <Button
+                    onClick={handleAdicionarPreset}
+                    size="sm"
+                    className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Adicionar
+                  </Button>
+                </div>
+                
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {presets.length === 0 ? (
+                    <p className="text-xs text-[#F9F9F9]/50 text-center py-2">
+                      Nenhum preset salvo
+                    </p>
+                  ) : (
+                    presets.map((preset) => {
+                      const isAtivo = presetAtivo === preset._id;
+                      return (
+                        <div
+                          key={preset._id}
+                          onClick={() => aplicarPreset(preset)}
+                          className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+                            isAtivo
+                              ? "bg-[#2ECC71]/20 border-[#2ECC71] shadow-lg shadow-[#2ECC71]/20"
+                              : "bg-[#2ECC71]/5 border-[#2ECC71]/20 hover:bg-[#2ECC71]/10 hover:border-[#2ECC71]/40"
+                          }`}
+                        >
+                          <div className="flex-1">
+                            <div className={`text-sm font-medium ${
+                              isAtivo ? "text-[#2ECC71]" : "text-[#F9F9F9]"
+                            }`}>
+                              {preset.nome}
+                              {isAtivo && " ✓"}
+                            </div>
+                            <div className={`text-xs ${
+                              isAtivo ? "text-[#2ECC71]/80" : "text-[#F9F9F9]/70"
+                            }`}>
+                              {preset.minutos} min
+                            </div>
                           </div>
-                          <div className={`text-xs ${
-                            isAtivo ? "text-[#2ECC71]/80" : "text-[#F9F9F9]/70"
-                          }`}>
-                            {preset.minutos} min
+                          <div className="flex gap-1">
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoverPreset(preset._id);
+                              }}
+                              size="sm"
+                              variant="outline"
+                              className="h-6 px-2 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex gap-1">
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoverPreset(preset._id);
-                            }}
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-[#F9F9F9]/70">Histórico de Uso</h3>
+                  <span className="text-xs text-[#F9F9F9]/50">
+                    {historico.length} registros
+                  </span>
+                </div>
+                
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {historico.length === 0 ? (
+                    <p className="text-xs text-[#F9F9F9]/50 text-center py-2">
+                      Nenhum uso registrado
+                    </p>
+                  ) : (
+                    historico.map((item) => {
+                      const preset = presets.find(p => p._id === item.presetId);
+                      return (
+                        <div
+                          key={item._id}
+                          className="flex items-center justify-between p-2 bg-[#2ECC71]/5 rounded-lg border border-[#2ECC71]/20"
+                        >
+                          <div className="flex-1">
+                            <div className="text-sm font-medium text-[#F9F9F9]">
+                              {preset?.nome || "Preset removido"}
+                            </div>
+                            <div className="text-xs text-[#F9F9F9]/70">
+                              {formatarDataHora(item.usadoEm)} • {formatarTempo(item.duracao)}
+                            </div>
+                          </div>
+                          <div className="text-xs text-[#2ECC71]/80">
+                            {preset?.minutos}min
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Input Manual */}
             <div className="flex flex-col items-center gap-2">
@@ -365,14 +448,28 @@ export default function Home() {
           {/* Bottom Navigation */}
           <div className="bg-[#2ECC71]/5 border-t border-[#2ECC71]/10 p-4">
             <div className="flex justify-around">
-              <button className="flex flex-col items-center gap-1 p-2 text-[#2ECC71] hover:text-[#2ECC71]/80 transition-all duration-200 rounded-lg hover:bg-[#2ECC71]/10">
+              <button 
+                onClick={() => setAbaAtiva("presets")}
+                className={`flex flex-col items-center gap-1 p-2 transition-all duration-200 rounded-lg hover:bg-[#2ECC71]/10 ${
+                  abaAtiva === "presets" 
+                    ? "text-[#2ECC71]" 
+                    : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
+                }`}
+              >
                 <Leaf className="w-5 h-5" />
                 <span className="text-xs font-medium">Presets</span>
               </button>
               
-              <button className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-200 rounded-lg hover:bg-[#F9F9F9]/10">
+              <button 
+                onClick={() => setAbaAtiva("historico")}
+                className={`flex flex-col items-center gap-1 p-2 transition-all duration-200 rounded-lg hover:bg-[#2ECC71]/10 ${
+                  abaAtiva === "historico" 
+                    ? "text-[#2ECC71]" 
+                    : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
+                }`}
+              >
                 <Clock className="w-5 h-5" />
-                <span className="text-xs font-medium">Relógio</span>
+                <span className="text-xs font-medium">Histórico</span>
               </button>
               
               <button className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-200 rounded-lg hover:bg-[#F9F9F9]/10">
