@@ -3,11 +3,20 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf } from "lucide-react";
 
 export default function Home() {
-  const [tempo, setTempo] = useState(1500); // 25 minutos em segundos
+  const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
+  const [tempo, setTempo] = useState(tempoInicial);
   const [rodando, setRodando] = useState(false);
+
+  // Presets de tempo
+  const presets = [
+    { label: "25 min", value: 1500 },
+    { label: "45 min", value: 2700 },
+    { label: "60 min", value: 3600 },
+  ];
 
   // Função para formatar tempo em mm:ss
   const formatarTempo = (segundos: number) => {
@@ -29,7 +38,15 @@ export default function Home() {
   // Função para resetar o timer
   const resetar = () => {
     setRodando(false);
-    setTempo(1500);
+    setTempo(tempoInicial);
+  };
+
+  // Função para lidar com mudança de preset
+  const handlePresetChange = (value: string) => {
+    const novoValor = parseInt(value);
+    setTempoInicial(novoValor);
+    setTempo(novoValor);
+    setRodando(false);
   };
 
   // useEffect para decrementar o tempo quando rodando for true
@@ -62,10 +79,30 @@ export default function Home() {
         <Card className="bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl">
           {/* Header */}
           <div className="p-6 text-center border-b border-[#2ECC71]/10">
-            <h1 className="text-2xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
+            <h1 className="text-2xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2 mb-4">
               <Leaf className="w-6 h-6 text-[#2ECC71]" />
               Timer X2
             </h1>
+            
+            {/* Preset Selector */}
+            <div className="flex justify-center">
+              <Select value={tempoInicial.toString()} onValueChange={handlePresetChange}>
+                <SelectTrigger className="w-32 bg-[#2ECC71]/10 border-[#2ECC71]/30 text-[#F9F9F9] focus:ring-[#2ECC71]/50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1C1C1C] border-[#2ECC71]/30">
+                  {presets.map((preset) => (
+                    <SelectItem 
+                      key={preset.value} 
+                      value={preset.value.toString()}
+                      className="text-[#F9F9F9] focus:bg-[#2ECC71]/20 focus:text-[#F9F9F9]"
+                    >
+                      {preset.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Main Content */}
