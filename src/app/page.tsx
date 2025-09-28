@@ -3,13 +3,16 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf } from "lucide-react";
+import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check } from "lucide-react";
 
 export default function Home() {
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
   const [tempo, setTempo] = useState(tempoInicial);
   const [rodando, setRodando] = useState(false);
+  const [inputManual, setInputManual] = useState("");
+  const [erroInput, setErroInput] = useState("");
 
   // Presets de tempo
   const presets = [
@@ -47,6 +50,45 @@ export default function Home() {
     setTempoInicial(novoValor);
     setTempo(novoValor);
     setRodando(false);
+    setInputManual("");
+    setErroInput("");
+  };
+
+  // Função para validar entrada manual
+  const validarInput = (valor: string) => {
+    const minutos = parseInt(valor);
+    if (isNaN(minutos) || minutos < 1) {
+      return "Mínimo 1 minuto";
+    }
+    if (minutos > 180) {
+      return "Máximo 180 minutos";
+    }
+    return "";
+  };
+
+  // Função para aplicar tempo manual
+  const aplicarTempoManual = () => {
+    const erro = validarInput(inputManual);
+    if (erro) {
+      setErroInput(erro);
+      return;
+    }
+    
+    const minutos = parseInt(inputManual);
+    const segundos = minutos * 60;
+    
+    setTempoInicial(segundos);
+    setTempo(segundos);
+    setRodando(false);
+    setInputManual("");
+    setErroInput("");
+  };
+
+  // Função para lidar com Enter no input
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      aplicarTempoManual();
+    }
   };
 
   // useEffect para decrementar o tempo quando rodando for true
@@ -85,7 +127,7 @@ export default function Home() {
             </h1>
             
             {/* Preset Selector */}
-            <div className="flex justify-center">
+            <div className="flex justify-center mb-4">
               <Select value={tempoInicial.toString()} onValueChange={handlePresetChange}>
                 <SelectTrigger className="w-32 bg-[#2ECC71]/10 border-[#2ECC71]/30 text-[#F9F9F9] focus:ring-[#2ECC71]/50">
                   <SelectValue />
@@ -102,6 +144,35 @@ export default function Home() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Input Manual */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex gap-2 items-center">
+                <Input
+                  type="number"
+                  placeholder="Minutos"
+                  value={inputManual}
+                  onChange={(e) => {
+                    setInputManual(e.target.value);
+                    setErroInput("");
+                  }}
+                  onKeyPress={handleKeyPress}
+                  className="w-24 h-8 text-center bg-[#2ECC71]/10 border-[#2ECC71]/30 text-[#F9F9F9] placeholder:text-[#F9F9F9]/50 focus:ring-[#2ECC71]/50"
+                  min="1"
+                  max="180"
+                />
+                <Button
+                  onClick={aplicarTempoManual}
+                  size="sm"
+                  className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
+                >
+                  <Check className="w-4 h-4" />
+                </Button>
+              </div>
+              {erroInput && (
+                <p className="text-xs text-red-400">{erroInput}</p>
+              )}
             </div>
           </div>
 
