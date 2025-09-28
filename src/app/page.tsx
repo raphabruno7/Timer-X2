@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check } from "lucide-react";
+import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2 } from "lucide-react";
 
 export default function Home() {
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
@@ -14,8 +16,13 @@ export default function Home() {
   const [inputManual, setInputManual] = useState("");
   const [erroInput, setErroInput] = useState("");
 
-  // Presets de tempo
-  const presets = [
+  // Convex hooks
+  const presets = useQuery(api.presets.listar) || [];
+  const adicionarPreset = useMutation(api.presets.adicionar);
+  const removerPreset = useMutation(api.presets.remover);
+
+  // Presets estáticos como fallback
+  const presetsEstaticos = [
     { label: "25 min", value: 1500 },
     { label: "45 min", value: 2700 },
     { label: "60 min", value: 3600 },
@@ -91,6 +98,40 @@ export default function Home() {
     }
   };
 
+  // Função para adicionar preset
+  const handleAdicionarPreset = async () => {
+    const nome = window.prompt("Nome do preset:");
+    if (!nome) return;
+
+    const minutosStr = window.prompt("Minutos:");
+    if (!minutosStr) return;
+
+    const minutos = parseInt(minutosStr);
+    if (isNaN(minutos) || minutos < 1 || minutos > 180) {
+      alert("Minutos deve ser entre 1 e 180");
+      return;
+    }
+
+    try {
+      await adicionarPreset({ nome, minutos });
+    } catch (error) {
+      console.error("Erro ao adicionar preset:", error);
+      alert("Erro ao adicionar preset");
+    }
+  };
+
+  // Função para remover preset
+  const handleRemoverPreset = async (id: string) => {
+    if (window.confirm("Tem certeza que deseja remover este preset?")) {
+      try {
+        await removerPreset({ id });
+      } catch (error) {
+        console.error("Erro ao remover preset:", error);
+        alert("Erro ao remover preset");
+      }
+    }
+  };
+
   // useEffect para decrementar o tempo quando rodando for true
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -133,7 +174,7 @@ export default function Home() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1C1C1C] border-[#2ECC71]/30">
-                  {presets.map((preset) => (
+                  {presetsEstaticos.map((preset) => (
                     <SelectItem 
                       key={preset.value} 
                       value={preset.value.toString()}
@@ -144,6 +185,68 @@ export default function Home() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Lista de Presets do Convex */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-[#F9F9F9]/70">Presets Salvos</h3>
+                <Button
+                  onClick={handleAdicionarPreset}
+                  size="sm"
+                  className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Adicionar
+                </Button>
+              </div>
+              
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {presets.length === 0 ? (
+                  <p className="text-xs text-[#F9F9F9]/50 text-center py-2">
+                    Nenhum preset salvo
+                  </p>
+                ) : (
+                  presets.map((preset) => (
+                    <div
+                      key={preset._id}
+                      className="flex items-center justify-between p-2 bg-[#2ECC71]/5 rounded-lg border border-[#2ECC71]/20"
+                    >
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-[#F9F9F9]">
+                          {preset.nome}
+                        </div>
+                        <div className="text-xs text-[#F9F9F9]/70">
+                          {preset.minutos} min
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          onClick={() => {
+                            const segundos = preset.minutos * 60;
+                            setTempoInicial(segundos);
+                            setTempo(segundos);
+                            setRodando(false);
+                          }}
+                          size="sm"
+                          variant="outline"
+                          className="h-6 px-2 text-xs border-[#2ECC71]/30 text-[#2ECC71] hover:bg-[#2ECC71]/10"
+                        >
+                          Usar
+                        </Button>
+                        <Button
+                          onClick={() => handleRemoverPreset(preset._id)}
+                          size="sm"
+                          variant="outline"
+                          className="h-6 px-2 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
             {/* Input Manual */}
