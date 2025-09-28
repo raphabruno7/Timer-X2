@@ -12,9 +12,11 @@ import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, T
 export default function Home() {
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
   const [tempo, setTempo] = useState(tempoInicial);
+  const [tempoRestante, setTempoRestante] = useState(tempoInicial); // Estado global do tempo restante
   const [rodando, setRodando] = useState(false);
   const [inputManual, setInputManual] = useState("");
   const [erroInput, setErroInput] = useState("");
+  const [presetAtivo, setPresetAtivo] = useState<string | null>(null); // ID do preset ativo
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -49,6 +51,8 @@ export default function Home() {
   const resetar = () => {
     setRodando(false);
     setTempo(tempoInicial);
+    setTempoRestante(tempoInicial);
+    setPresetAtivo(null);
   };
 
   // Função para lidar com mudança de preset
@@ -56,9 +60,11 @@ export default function Home() {
     const novoValor = parseInt(value);
     setTempoInicial(novoValor);
     setTempo(novoValor);
+    setTempoRestante(novoValor);
     setRodando(false);
     setInputManual("");
     setErroInput("");
+    setPresetAtivo(null); // Reset preset ativo para presets estáticos
   };
 
   // Função para validar entrada manual
@@ -86,9 +92,11 @@ export default function Home() {
     
     setTempoInicial(segundos);
     setTempo(segundos);
+    setTempoRestante(segundos);
     setRodando(false);
     setInputManual("");
     setErroInput("");
+    setPresetAtivo(null); // Reset preset ativo para entrada manual
   };
 
   // Função para lidar com Enter no input
@@ -125,6 +133,10 @@ export default function Home() {
     if (window.confirm("Tem certeza que deseja remover este preset?")) {
       try {
         await removerPreset({ id });
+        // Se o preset removido era o ativo, resetar
+        if (presetAtivo === id) {
+          setPresetAtivo(null);
+        }
       } catch (error) {
         console.error("Erro ao remover preset:", error);
         alert("Erro ao remover preset");
@@ -132,13 +144,25 @@ export default function Home() {
     }
   };
 
+  // Função para aplicar preset do Convex
+  const aplicarPreset = (preset: any) => {
+    const segundos = preset.minutos * 60;
+    setTempoInicial(segundos);
+    setTempo(segundos);
+    setTempoRestante(segundos);
+    setRodando(false);
+    setPresetAtivo(preset._id);
+    setInputManual("");
+    setErroInput("");
+  };
+
   // useEffect para decrementar o tempo quando rodando for true
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (rodando && tempo > 0) {
+    if (rodando && tempoRestante > 0) {
       interval = setInterval(() => {
-        setTempo((tempoAtual) => {
+        setTempoRestante((tempoAtual) => {
           if (tempoAtual <= 1) {
             setRodando(false);
             return 0;
@@ -153,7 +177,12 @@ export default function Home() {
         clearInterval(interval);
       }
     };
-  }, [rodando, tempo]);
+  }, [rodando, tempoRestante]);
+
+  // Sincronizar tempo com tempoRestante
+  useEffect(() => {
+    setTempo(tempoRestante);
+  }, [tempoRestante]);
 
   return (
     <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4">
@@ -207,44 +236,47 @@ export default function Home() {
                     Nenhum preset salvo
                   </p>
                 ) : (
-                  presets.map((preset) => (
-                    <div
-                      key={preset._id}
-                      className="flex items-center justify-between p-2 bg-[#2ECC71]/5 rounded-lg border border-[#2ECC71]/20"
-                    >
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-[#F9F9F9]">
-                          {preset.nome}
+                  presets.map((preset) => {
+                    const isAtivo = presetAtivo === preset._id;
+                    return (
+                      <div
+                        key={preset._id}
+                        onClick={() => aplicarPreset(preset)}
+                        className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+                          isAtivo
+                            ? "bg-[#2ECC71]/20 border-[#2ECC71] shadow-lg shadow-[#2ECC71]/20"
+                            : "bg-[#2ECC71]/5 border-[#2ECC71]/20 hover:bg-[#2ECC71]/10 hover:border-[#2ECC71]/40"
+                        }`}
+                      >
+                        <div className="flex-1">
+                          <div className={`text-sm font-medium ${
+                            isAtivo ? "text-[#2ECC71]" : "text-[#F9F9F9]"
+                          }`}>
+                            {preset.nome}
+                            {isAtivo && " ✓"}
+                          </div>
+                          <div className={`text-xs ${
+                            isAtivo ? "text-[#2ECC71]/80" : "text-[#F9F9F9]/70"
+                          }`}>
+                            {preset.minutos} min
+                          </div>
                         </div>
-                        <div className="text-xs text-[#F9F9F9]/70">
-                          {preset.minutos} min
+                        <div className="flex gap-1">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoverPreset(preset._id);
+                            }}
+                            size="sm"
+                            variant="outline"
+                            className="h-6 px-2 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          onClick={() => {
-                            const segundos = preset.minutos * 60;
-                            setTempoInicial(segundos);
-                            setTempo(segundos);
-                            setRodando(false);
-                          }}
-                          size="sm"
-                          variant="outline"
-                          className="h-6 px-2 text-xs border-[#2ECC71]/30 text-[#2ECC71] hover:bg-[#2ECC71]/10"
-                        >
-                          Usar
-                        </Button>
-                        <Button
-                          onClick={() => handleRemoverPreset(preset._id)}
-                          size="sm"
-                          variant="outline"
-                          className="h-6 px-2 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
