@@ -12,15 +12,13 @@ export const list = query({
 // Mutation para criar um novo preset
 export const create = mutation({
   args: {
-    name: v.string(),
-    duration: v.number(),
-    isDefault: v.optional(v.boolean()),
+    nome: v.string(),
+    minutos: v.number(),
   },
   handler: async (ctx, args) => {
     const presetId = await ctx.db.insert("presets", {
-      name: args.name,
-      duration: args.duration,
-      isDefault: args.isDefault || false,
+      nome: args.nome,
+      minutos: args.minutos,
       createdAt: Date.now(),
     });
     return presetId;
@@ -41,9 +39,8 @@ export const remove = mutation({
 export const update = mutation({
   args: {
     id: v.id("presets"),
-    name: v.optional(v.string()),
-    duration: v.optional(v.number()),
-    isDefault: v.optional(v.boolean()),
+    nome: v.optional(v.string()),
+    minutos: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const { id, ...updates } = args;
@@ -51,13 +48,3 @@ export const update = mutation({
   },
 });
 
-// Query para buscar presets padrão
-export const getDefaults = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db
-      .query("presets")
-      .filter((q) => q.eq(q.field("isDefault"), true))
-      .collect();
-  },
-});

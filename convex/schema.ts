@@ -3,9 +3,8 @@ import { v } from "convex/values";
 
 export default defineSchema({
   presets: defineTable({
-    name: v.string(),
-    duration: v.number(), // em segundos
-    isDefault: v.optional(v.boolean()),
-    createdAt: v.number(),
-  }).index("by_created_at", ["createdAt"]),
+    nome: v.string(),
+    minutos: v.number(),
+    createdAt: v.number(), // timestamp
+  }),
 });
