@@ -37,6 +37,7 @@ export function useReward() {
   return {
     triggerReward,
     RewardComponent,
+    isRewardActive: showReward,
   };
 }
 

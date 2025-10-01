@@ -14,9 +14,10 @@ import { Separator } from "@/components/ui/separator";
 import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History, Trophy, LineChart as LineChartIcon } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useReward } from "@/hooks/useReward";
+import { motion } from "framer-motion";
 
 export default function Home() {
-  const { triggerReward, RewardComponent } = useReward();
+  const { triggerReward, RewardComponent, isRewardActive } = useReward();
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
   const [tempo, setTempo] = useState(tempoInicial);
   const [tempoRestante, setTempoRestante] = useState(tempoInicial); // Estado global do tempo restante
@@ -27,6 +28,7 @@ export default function Home() {
   const [abaAtiva, setAbaAtiva] = useState<"presets" | "historico">("presets"); // Controle de abas
   const [tempoInicio, setTempoInicio] = useState<number | null>(null); // Para calcular duração
   const [periodoSelecionado, setPeriodoSelecionado] = useState<"hoje" | "semana" | "mes">("hoje");
+  const [rewardTriggered, setRewardTriggered] = useState(false); // Evitar múltiplos triggers
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -121,6 +123,7 @@ export default function Home() {
     setTempo(tempoInicial);
     setTempoRestante(tempoInicial);
     setPresetAtivo(null);
+    setRewardTriggered(false); // Reset flag de recompensa
   };
 
   // Função para lidar com mudança de preset
@@ -249,7 +252,7 @@ export default function Home() {
 
   // useEffect para registrar uso quando timer terminar
   useEffect(() => {
-    if (!rodando && presetAtivo && tempoInicio && tempoRestante === 0) {
+    if (!rodando && presetAtivo && tempoInicio && tempoRestante === 0 && !rewardTriggered) {
       const duracao = Math.floor((Date.now() - tempoInicio) / 1000);
       if (duracao > 0) {
         registrarUso({ presetId: presetAtivo, duracao }).catch(console.error);
@@ -258,12 +261,13 @@ export default function Home() {
         const minutos = Math.floor(duracao / 60);
         const intensity = minutos >= 45 ? 'high' : 'low';
         
-        // Mostrar mandala de recompensa
+        // Mostrar mandala de recompensa (apenas uma vez)
         triggerReward({ intensity });
+        setRewardTriggered(true);
       }
       setTempoInicio(null);
     }
-  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, triggerReward]);
+  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, triggerReward, rewardTriggered]);
 
   // Sincronizar tempo com tempoRestante
   useEffect(() => {
@@ -594,7 +598,11 @@ export default function Home() {
       )}
 
       {/* Phone Frame */}
-      <div className="w-full max-w-sm mx-auto">
+      <motion.div 
+        className="w-full max-w-sm mx-auto"
+        animate={{ opacity: isRewardActive ? 0.3 : 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <Card className="bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl">
           {/* Header */}
           <div className="p-6 text-center border-b border-[#2ECC71]/10">
@@ -849,7 +857,7 @@ export default function Home() {
             </div>
           </div>
         </Card>
-      </div>
+      </motion.div>
     </div>
     </>
   );
