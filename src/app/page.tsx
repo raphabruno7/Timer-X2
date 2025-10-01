@@ -124,6 +124,7 @@ export default function Home() {
     setTempoRestante(tempoInicial);
     setPresetAtivo(null);
     setRewardTriggered(false); // Reset flag de recompensa
+    setMandalaActive(false); // Fechar mandala se estiver aberta
   };
 
   // Função para lidar com mudança de preset

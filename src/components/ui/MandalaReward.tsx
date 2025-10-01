@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 interface MandalaRewardProps {
   active: boolean;
@@ -8,6 +9,16 @@ interface MandalaRewardProps {
 }
 
 export function MandalaReward({ active, onClose }: MandalaRewardProps) {
+  useEffect(() => {
+    if (active && onClose) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000); // Auto-fechar após 5 segundos
+
+      return () => clearTimeout(timer);
+    }
+  }, [active, onClose]);
+
   if (!active) return null;
 
   return (
