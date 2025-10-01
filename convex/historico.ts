@@ -254,3 +254,44 @@ export const estatisticasSemanais = query({
     return resultado;
   },
 });
+
+// Query para histórico detalhado (últimas 20 sessões)
+export const historicoDetalhado = query({
+  args: {},
+  handler: async (ctx) => {
+    // Buscar últimas 20 sessões
+    const historicos = await ctx.db
+      .query("historico")
+      .order("desc")
+      .take(20);
+    
+    // Enriquecer com dados do preset
+    const resultado = [];
+    for (const historico of historicos) {
+      let nomePreset = "Manual";
+      
+      try {
+        const preset = await ctx.db.get(historico.presetId);
+        if (preset && 'nome' in preset) {
+          nomePreset = preset.nome;
+        }
+      } catch {
+        nomePreset = "Preset removido";
+      }
+      
+      // Formatar data
+      const data = new Date(historico.usadoEm);
+      const dataFormatada = data.toISOString().slice(0, 16).replace('T', ' ');
+      
+      resultado.push({
+        id: historico._id,
+        data: dataFormatada,
+        nomePreset,
+        minutosFocados: Math.round(historico.duracao / 60),
+        timestamp: historico.usadoEm,
+      });
+    }
+    
+    return resultado;
+  },
+});

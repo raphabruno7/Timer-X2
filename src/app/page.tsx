@@ -9,7 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function Home() {
@@ -32,6 +33,7 @@ export default function Home() {
   const historico = useQuery(api.historico.listarHistorico, {}) || [];
   const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
+  const historicoDetalhado = useQuery(api.historico.historicoDetalhado);
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -353,6 +355,54 @@ export default function Home() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </Card>
+      )}
+
+      {/* Detailed History Card */}
+      {historicoDetalhado && (
+        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
+              <History className="w-5 h-5 text-[#FFD700]" />
+              Histórico
+            </h2>
+          </div>
+
+          <ScrollArea className="h-80 w-full pr-4">
+            <div className="space-y-3">
+              {historicoDetalhado.length === 0 ? (
+                <p className="text-center text-[#F9F9F9]/50 text-sm py-8">
+                  Nenhuma sessão registrada ainda
+                </p>
+              ) : (
+                historicoDetalhado.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-[#2ECC71]/5 border border-[#2ECC71]/20 rounded-lg p-3 transition-all duration-200 hover:bg-[#2ECC71]/10"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="text-xs text-[#F9F9F9]/50 mb-1">
+                          {item.data}
+                        </div>
+                        <div className="text-sm font-medium text-[#F9F9F9]">
+                          {item.nomePreset}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-[#2ECC71]">
+                          {item.minutosFocados}
+                        </div>
+                        <div className="text-xs text-[#F9F9F9]/50">
+                          min
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </ScrollArea>
         </Card>
       )}
 
