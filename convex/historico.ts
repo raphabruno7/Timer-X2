@@ -115,3 +115,83 @@ export const estatisticas = query({
     };
   },
 });
+
+// Query para estatísticas por período
+export const estatisticasPorPeriodo = query({
+  args: {
+    periodo: v.union(v.literal("hoje"), v.literal("semana"), v.literal("mes")),
+  },
+  handler: async (ctx, args) => {
+    // Calcular timestamp de início baseado no período
+    const agora = new Date();
+    let inicioTimestamp: number;
+
+    if (args.periodo === "hoje") {
+      // Início do dia atual (00:00:00)
+      const inicioDia = new Date(agora);
+      inicioDia.setHours(0, 0, 0, 0);
+      inicioTimestamp = inicioDia.getTime();
+    } else if (args.periodo === "semana") {
+      // Início da semana atual (segunda-feira 00:00:00)
+      const inicioSemana = new Date(agora);
+      const diaSemana = inicioSemana.getDay(); // 0 = domingo, 1 = segunda, etc
+      const diasAteSegunda = diaSemana === 0 ? -6 : 1 - diaSemana;
+      inicioSemana.setDate(inicioSemana.getDate() + diasAteSegunda);
+      inicioSemana.setHours(0, 0, 0, 0);
+      inicioTimestamp = inicioSemana.getTime();
+    } else {
+      // Início do mês atual (dia 1, 00:00:00)
+      const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+      inicioMes.setHours(0, 0, 0, 0);
+      inicioTimestamp = inicioMes.getTime();
+    }
+
+    // Buscar históricos do período
+    const todosHistoricos = await ctx.db.query("historico").collect();
+    const historicos = todosHistoricos.filter(h => h.usadoEm >= inicioTimestamp);
+    
+    // Se não houver registros, retornar valores zerados
+    if (historicos.length === 0) {
+      return {
+        totalMinutosFocados: 0,
+        presetMaisUsado: "-",
+        totalSessoes: 0,
+      };
+    }
+
+    // Calcular total de minutos focados (duracao está em segundos)
+    const totalMinutosFocados = Math.round(
+      historicos.reduce((sum, h) => sum + h.duracao, 0) / 60
+    );
+
+    // Calcular preset mais usado
+    const contagemPorPreset: Record<string, number> = {};
+    for (const historico of historicos) {
+      const presetId = historico.presetId;
+      contagemPorPreset[presetId] = (contagemPorPreset[presetId] || 0) + 1;
+    }
+
+    // Encontrar o preset com maior contagem
+    let presetMaisUsadoId = "";
+    let maxContagem = 0;
+    for (const [presetId, contagem] of Object.entries(contagemPorPreset)) {
+      if (contagem > maxContagem) {
+        maxContagem = contagem;
+        presetMaisUsadoId = presetId;
+      }
+    }
+
+    // Buscar o nome do preset mais usado
+    let nomePresetMaisUsado = "-";
+    if (presetMaisUsadoId) {
+      const preset = await ctx.db.get(presetMaisUsadoId as any);
+      nomePresetMaisUsado = preset?.nome || "Preset removido";
+    }
+
+    return {
+      totalMinutosFocados,
+      presetMaisUsado: nomePresetMaisUsado,
+      totalSessoes: historicos.length,
+    };
+  },
+});

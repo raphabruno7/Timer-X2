@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2 } from "lucide-react";
 
 export default function Home() {
@@ -19,6 +20,7 @@ export default function Home() {
   const [presetAtivo, setPresetAtivo] = useState<string | null>(null); // ID do preset ativo
   const [abaAtiva, setAbaAtiva] = useState<"presets" | "historico">("presets"); // Controle de abas
   const [tempoInicio, setTempoInicio] = useState<number | null>(null); // Para calcular duração
+  const [periodoSelecionado, setPeriodoSelecionado] = useState<"hoje" | "semana" | "mes">("hoje");
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -27,6 +29,7 @@ export default function Home() {
   const registrarUso = useMutation(api.historico.registrarUso);
   const historico = useQuery(api.historico.listarHistorico) || [];
   const estatisticas = useQuery(api.historico.estatisticas);
+  const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -229,8 +232,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
-      {/* Statistics Card */}
-      {estatisticas && (
+      {/* Statistics Card with Tabs */}
+      {estatisticasPorPeriodo && (
         <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
           <div className="text-center mb-4">
             <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
@@ -238,13 +241,37 @@ export default function Home() {
               Estatísticas
             </h2>
           </div>
+
+          {/* Tabs para períodos */}
+          <Tabs value={periodoSelecionado} onValueChange={(value) => setPeriodoSelecionado(value as "hoje" | "semana" | "mes")} className="w-full mb-4">
+            <TabsList className="grid w-full grid-cols-3 bg-[#2ECC71]/10 border border-[#2ECC71]/20">
+              <TabsTrigger 
+                value="hoje" 
+                className="text-[#F9F9F9]/70 data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white"
+              >
+                Hoje
+              </TabsTrigger>
+              <TabsTrigger 
+                value="semana" 
+                className="text-[#F9F9F9]/70 data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white"
+              >
+                Semana
+              </TabsTrigger>
+              <TabsTrigger 
+                value="mes" 
+                className="text-[#F9F9F9]/70 data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white"
+              >
+                Mês
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           
           <div className="space-y-4">
             {/* Total de minutos focados */}
             <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4">
               <div className="text-sm text-[#F9F9F9]/70 mb-1">Total de minutos focados</div>
               <div className="text-3xl font-bold text-[#2ECC71]">
-                {estatisticas.totalMinutosFocados}
+                {estatisticasPorPeriodo.totalMinutosFocados}
               </div>
               <div className="text-xs text-[#F9F9F9]/50 mt-1">minutos</div>
             </div>
@@ -253,7 +280,7 @@ export default function Home() {
             <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-xl p-4">
               <div className="text-sm text-[#F9F9F9]/70 mb-1">Preset mais usado</div>
               <div className="text-xl font-bold text-[#FFD700]">
-                {estatisticas.presetMaisUsado}
+                {estatisticasPorPeriodo.presetMaisUsado}
               </div>
             </div>
 
@@ -261,7 +288,7 @@ export default function Home() {
             <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4">
               <div className="text-sm text-[#F9F9F9]/70 mb-1">Total de sessões</div>
               <div className="text-3xl font-bold text-[#2ECC71]">
-                {estatisticas.totalSessoes}
+                {estatisticasPorPeriodo.totalSessoes}
               </div>
               <div className="text-xs text-[#F9F9F9]/50 mt-1">sessões</div>
             </div>
