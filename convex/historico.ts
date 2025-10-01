@@ -295,3 +295,45 @@ export const historicoDetalhado = query({
     return resultado;
   },
 });
+
+// Query para ranking de presets mais usados (top 3)
+export const rankingPresets = query({
+  args: {},
+  handler: async (ctx) => {
+    const historicos = await ctx.db.query("historico").collect();
+    
+    // Agrupar por presetId e contar usos
+    const contagemPorPreset: Record<string, number> = {};
+    for (const historico of historicos) {
+      const presetId = historico.presetId;
+      contagemPorPreset[presetId] = (contagemPorPreset[presetId] || 0) + 1;
+    }
+    
+    // Converter para array e ordenar por contagem (decrescente)
+    const ranking = [];
+    for (const presetId in contagemPorPreset) {
+      const contagem = contagemPorPreset[presetId];
+      
+      // Buscar nome do preset
+      let nomePreset = "Preset removido";
+      try {
+        const preset = await ctx.db.get(presetId as any);
+        if (preset && 'nome' in preset) {
+          nomePreset = preset.nome;
+        }
+      } catch {
+        nomePreset = "Preset removido";
+      }
+      
+      ranking.push({
+        presetId,
+        nomePreset,
+        totalUsos: contagem,
+      });
+    }
+    
+    // Ordenar por totalUsos (decrescente) e pegar top 3
+    ranking.sort((a, b) => b.totalUsos - a.totalUsos);
+    return ranking.slice(0, 3);
+  },
+});

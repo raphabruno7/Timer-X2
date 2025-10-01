@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History, Trophy } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function Home() {
@@ -34,6 +35,7 @@ export default function Home() {
   const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
   const historicoDetalhado = useQuery(api.historico.historicoDetalhado);
+  const rankingPresets = useQuery(api.historico.rankingPresets);
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -354,6 +356,60 @@ export default function Home() {
                 />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
+      {/* Top Presets Ranking Card */}
+      {rankingPresets && (
+        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
+              <Trophy className="w-5 h-5 text-[#FFD700]" />
+              Top Presets
+            </h2>
+          </div>
+
+          <div className="space-y-4">
+            {rankingPresets.length === 0 ? (
+              <p className="text-center text-[#F9F9F9]/50 text-sm py-8">
+                Nenhum preset usado ainda
+              </p>
+            ) : (
+              rankingPresets.map((item, index) => {
+                const medals = ['🥇', '🥈', '🥉'];
+                const colors = [
+                  { text: '#FFD700', bg: 'bg-[#FFD700]/10', border: 'border-[#FFD700]/30' }, // Ouro
+                  { text: '#C0C0C0', bg: 'bg-[#C0C0C0]/10', border: 'border-[#C0C0C0]/30' }, // Prata
+                  { text: '#CD7F32', bg: 'bg-[#CD7F32]/10', border: 'border-[#CD7F32]/30' }, // Bronze
+                ];
+                const color = colors[index];
+
+                return (
+                  <div key={item.presetId}>
+                    <div className={`${color.bg} border ${color.border} rounded-xl p-4 transition-all duration-200 hover:scale-[1.02]`}>
+                      <div className="flex items-center gap-3">
+                        <div className="text-3xl">{medals[index]}</div>
+                        <div className="flex-1">
+                          <div className="text-sm font-bold text-[#F9F9F9] mb-1">
+                            {item.nomePreset}
+                          </div>
+                          <div className="text-xs text-[#F9F9F9]/70">
+                            {item.totalUsos} {item.totalUsos === 1 ? 'uso' : 'usos'}
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold" style={{ color: color.text }}>
+                          {index + 1}º
+                        </div>
+                      </div>
+                    </div>
+                    {index < rankingPresets.length - 1 && (
+                      <Separator className="my-3 bg-[#2ECC71]/10" />
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
         </Card>
       )}
