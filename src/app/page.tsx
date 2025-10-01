@@ -35,6 +35,7 @@ export default function Home() {
   const adicionarPreset = useMutation(api.presets.adicionar);
   const removerPreset = useMutation(api.presets.remover);
   const registrarUso = useMutation(api.historico.registrarUso);
+  const registrarMandala = useMutation(api.mandalas.registrarMandala);
   const historico = useQuery(api.historico.listarHistorico, {}) || [];
   const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
@@ -266,13 +267,23 @@ export default function Home() {
       if (duracao > 0) {
         registrarUso({ presetId: presetAtivo, duracao }).catch(console.error);
         
+        // Buscar nome do preset para registrar mandala
+        const preset = presets.find(p => p._id === presetAtivo);
+        const presetName = preset?.nome || "Preset desconhecido";
+        
+        // Registrar exibição da mandala
+        registrarMandala({ 
+          presetName, 
+          duration: duracao 
+        }).catch(console.error);
+        
         // Mostrar mandala de recompensa (apenas uma vez)
         setMandalaActive(true);
         setRewardTriggered(true);
       }
       setTempoInicio(null);
     }
-  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, rewardTriggered]);
+  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, registrarMandala, presets, rewardTriggered]);
 
   // Sincronizar tempo com tempoRestante
   useEffect(() => {
@@ -654,14 +665,14 @@ export default function Home() {
                     >
                       ✨
                     </Button>
-                    <Button
-                      onClick={handleAdicionarPreset}
-                      size="sm"
-                      className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Adicionar
-                    </Button>
+                  <Button
+                    onClick={handleAdicionarPreset}
+                    size="sm"
+                    className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Adicionar
+                  </Button>
                   </div>
                 </div>
                 

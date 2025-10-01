@@ -12,4 +12,9 @@ export default defineSchema({
     usadoEm: v.number(), // timestamp em ms
     duracao: v.number(), // em segundos usados
   }).index("by_preset", ["presetId"]),
+  mandalas: defineTable({
+    presetName: v.string(),
+    finishedAt: v.number(), // timestamp em ms
+    duration: v.number(), // em segundos
+  }),
 });
