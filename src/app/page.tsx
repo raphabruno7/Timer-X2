@@ -13,8 +13,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History, Trophy, LineChart as LineChartIcon } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { useReward } from "@/hooks/useReward";
 
 export default function Home() {
+  const { triggerReward, RewardComponent } = useReward();
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
   const [tempo, setTempo] = useState(tempoInicial);
   const [tempoRestante, setTempoRestante] = useState(tempoInicial); // Estado global do tempo restante
@@ -251,10 +253,12 @@ export default function Home() {
       const duracao = Math.floor((Date.now() - tempoInicio) / 1000);
       if (duracao > 0) {
         registrarUso({ presetId: presetAtivo, duracao }).catch(console.error);
+        // Mostrar mandala de recompensa
+        triggerReward();
       }
       setTempoInicio(null);
     }
-  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso]);
+  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, triggerReward]);
 
   // Sincronizar tempo com tempoRestante
   useEffect(() => {
@@ -262,7 +266,11 @@ export default function Home() {
   }, [tempoRestante]);
 
   return (
-    <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
+    <>
+      {/* Mandala de Recompensa */}
+      <RewardComponent />
+      
+      <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
       {/* General Statistics Panel */}
       {estatisticasGerais && (
         <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
@@ -838,5 +846,6 @@ export default function Home() {
         </Card>
       </div>
     </div>
+    </>
   );
 }
