@@ -1,15 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Card } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { ArrowLeft, TrendingUp, Trophy } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
+import { ArrowLeft, TrendingUp, Trophy, BarChart3, LineChart as LineChartIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export default function StatsPage() {
   const router = useRouter();
+  const [chartType, setChartType] = useState<"bar" | "line">("bar");
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
   const estatisticas = useQuery(api.historico.estatisticas);
 
@@ -50,67 +53,134 @@ export default function StatsPage() {
 
           {/* Content */}
           <div className="p-6 space-y-6">
-            {/* Gráfico de Barras - Últimos 7 dias */}
+            {/* Gráfico - Últimos 7 dias */}
             {estatisticasSemanais && (
               <div>
-                <h2 className="text-lg font-semibold text-[#F9F9F9] mb-4 text-center">
-                  Últimos 7 dias
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-[#F9F9F9]">
+                    Últimos 7 dias
+                  </h2>
+                  
+                  {/* Toggle entre Barras e Linha */}
+                  <Tabs value={chartType} onValueChange={(value) => setChartType(value as "bar" | "line")}>
+                    <TabsList className="bg-[#2ECC71]/10 border border-[#2ECC71]/20">
+                      <TabsTrigger 
+                        value="bar" 
+                        className="data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white text-[#F9F9F9]/70"
+                      >
+                        <BarChart3 className="w-4 h-4 mr-1" />
+                        Barras
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="line" 
+                        className="data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white text-[#F9F9F9]/70"
+                      >
+                        <LineChartIcon className="w-4 h-4 mr-1" />
+                        Linha
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+
                 <div className="w-full h-64 bg-[#2ECC71]/5 rounded-xl p-4 border border-[#2ECC71]/20">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={estatisticasSemanais.map(item => ({
-                        ...item,
-                        diaSemana: formatarDiaSemana(item.dia),
-                      }))}
-                      margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
-                    >
-                      <XAxis 
-                        dataKey="diaSemana" 
-                        stroke="#F9F9F9"
-                        opacity={0.7}
-                        fontSize={12}
-                      />
-                      <YAxis 
-                        stroke="#F9F9F9"
-                        opacity={0.7}
-                        fontSize={12}
-                        label={{ 
-                          value: 'Minutos', 
-                          angle: -90, 
-                          position: 'insideLeft',
-                          style: { fill: '#F9F9F9', opacity: 0.7, fontSize: 11 }
-                        }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#1C1C1C',
-                          border: '1px solid #2ECC71',
-                          borderRadius: '8px',
-                          color: '#F9F9F9',
-                        }}
-                        labelStyle={{ color: '#2ECC71' }}
-                        formatter={(value: number) => [`${value} min`, 'Focado']}
-                      />
-                      <Bar 
-                        dataKey="totalMinutosFocados" 
-                        radius={[8, 8, 0, 0]}
+                    {chartType === "bar" ? (
+                      <BarChart
+                        data={estatisticasSemanais.map(item => ({
+                          ...item,
+                          diaSemana: formatarDiaSemana(item.dia),
+                        }))}
+                        margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
                       >
-                        {estatisticasSemanais.map((entry, index) => (
-                          <Cell 
-                            key={`cell-${index}`}
-                            fill={entry.totalMinutosFocados === maxMinutos && maxMinutos > 0 
-                              ? '#2ECC71' 
-                              : '#2ECC71'
-                            }
-                            opacity={entry.totalMinutosFocados === maxMinutos && maxMinutos > 0 
-                              ? 1 
-                              : 0.5
-                            }
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
+                        <XAxis 
+                          dataKey="diaSemana" 
+                          stroke="#F9F9F9"
+                          opacity={0.7}
+                          fontSize={12}
+                        />
+                        <YAxis 
+                          stroke="#F9F9F9"
+                          opacity={0.7}
+                          fontSize={12}
+                          label={{ 
+                            value: 'Minutos', 
+                            angle: -90, 
+                            position: 'insideLeft',
+                            style: { fill: '#F9F9F9', opacity: 0.7, fontSize: 11 }
+                          }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#1C1C1C',
+                            border: '1px solid #2ECC71',
+                            borderRadius: '8px',
+                            color: '#F9F9F9',
+                          }}
+                          labelStyle={{ color: '#2ECC71' }}
+                          formatter={(value: number) => [`${value} min`, 'Focado']}
+                        />
+                        <Bar 
+                          dataKey="totalMinutosFocados" 
+                          radius={[8, 8, 0, 0]}
+                        >
+                          {estatisticasSemanais.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`}
+                              fill="#2ECC71"
+                              opacity={entry.totalMinutosFocados === maxMinutos && maxMinutos > 0 
+                                ? 1 
+                                : 0.5
+                              }
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    ) : (
+                      <LineChart
+                        data={estatisticasSemanais.map(item => ({
+                          ...item,
+                          diaSemana: formatarDiaSemana(item.dia),
+                        }))}
+                        margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#2ECC71" opacity={0.1} />
+                        <XAxis 
+                          dataKey="diaSemana" 
+                          stroke="#F9F9F9"
+                          opacity={0.7}
+                          fontSize={12}
+                        />
+                        <YAxis 
+                          stroke="#F9F9F9"
+                          opacity={0.7}
+                          fontSize={12}
+                          label={{ 
+                            value: 'Minutos', 
+                            angle: -90, 
+                            position: 'insideLeft',
+                            style: { fill: '#F9F9F9', opacity: 0.7, fontSize: 11 }
+                          }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#1C1C1C',
+                            border: '1px solid #2ECC71',
+                            borderRadius: '8px',
+                            color: '#F9F9F9',
+                          }}
+                          labelStyle={{ color: '#2ECC71' }}
+                          formatter={(value: number) => [`${value} min`, 'Focado']}
+                        />
+                        <Line 
+                          type="monotone"
+                          dataKey="totalMinutosFocados" 
+                          stroke="#2ECC71"
+                          strokeWidth={3}
+                          dot={{ fill: '#2ECC71', r: 5 }}
+                          activeDot={{ r: 7, fill: '#FFD700' }}
+                        />
+                      </LineChart>
+                    )}
                   </ResponsiveContainer>
                 </div>
               </div>
