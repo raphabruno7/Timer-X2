@@ -63,3 +63,55 @@ export const obterEstatisticas = query({
     };
   },
 });
+
+// Query para estatísticas gerais
+export const estatisticas = query({
+  args: {},
+  handler: async (ctx) => {
+    const historicos = await ctx.db.query("historico").collect();
+    
+    // Se não houver registros, retornar valores zerados
+    if (historicos.length === 0) {
+      return {
+        totalMinutosFocados: 0,
+        presetMaisUsado: "-",
+        totalSessoes: 0,
+      };
+    }
+
+    // Calcular total de minutos focados (duracao está em segundos)
+    const totalMinutosFocados = Math.round(
+      historicos.reduce((sum, h) => sum + h.duracao, 0) / 60
+    );
+
+    // Calcular preset mais usado
+    const contagemPorPreset: Record<string, number> = {};
+    for (const historico of historicos) {
+      const presetId = historico.presetId;
+      contagemPorPreset[presetId] = (contagemPorPreset[presetId] || 0) + 1;
+    }
+
+    // Encontrar o preset com maior contagem
+    let presetMaisUsadoId = "";
+    let maxContagem = 0;
+    for (const [presetId, contagem] of Object.entries(contagemPorPreset)) {
+      if (contagem > maxContagem) {
+        maxContagem = contagem;
+        presetMaisUsadoId = presetId;
+      }
+    }
+
+    // Buscar o nome do preset mais usado
+    let nomePresetMaisUsado = "-";
+    if (presetMaisUsadoId) {
+      const preset = await ctx.db.get(presetMaisUsadoId as any);
+      nomePresetMaisUsado = preset?.nome || "Preset removido";
+    }
+
+    return {
+      totalMinutosFocados,
+      presetMaisUsado: nomePresetMaisUsado,
+      totalSessoes: historicos.length,
+    };
+  },
+});

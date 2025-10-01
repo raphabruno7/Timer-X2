@@ -26,6 +26,7 @@ export default function Home() {
   const removerPreset = useMutation(api.presets.remover);
   const registrarUso = useMutation(api.historico.registrarUso);
   const historico = useQuery(api.historico.listarHistorico) || [];
+  const estatisticas = useQuery(api.historico.estatisticas);
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -227,7 +228,47 @@ export default function Home() {
   }, [tempoRestante]);
 
   return (
-    <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
+      {/* Statistics Card */}
+      {estatisticas && (
+        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#FFD700]" />
+              Estatísticas
+            </h2>
+          </div>
+          
+          <div className="space-y-4">
+            {/* Total de minutos focados */}
+            <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4">
+              <div className="text-sm text-[#F9F9F9]/70 mb-1">Total de minutos focados</div>
+              <div className="text-3xl font-bold text-[#2ECC71]">
+                {estatisticas.totalMinutosFocados}
+              </div>
+              <div className="text-xs text-[#F9F9F9]/50 mt-1">minutos</div>
+            </div>
+
+            {/* Preset mais usado */}
+            <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-xl p-4">
+              <div className="text-sm text-[#F9F9F9]/70 mb-1">Preset mais usado</div>
+              <div className="text-xl font-bold text-[#FFD700]">
+                {estatisticas.presetMaisUsado}
+              </div>
+            </div>
+
+            {/* Total de sessões */}
+            <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4">
+              <div className="text-sm text-[#F9F9F9]/70 mb-1">Total de sessões</div>
+              <div className="text-3xl font-bold text-[#2ECC71]">
+                {estatisticas.totalSessoes}
+              </div>
+              <div className="text-xs text-[#F9F9F9]/50 mt-1">sessões</div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Phone Frame */}
       <div className="w-full max-w-sm mx-auto">
         <Card className="bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl">
