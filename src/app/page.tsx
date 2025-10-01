@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { Id } from "../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2 } from "lucide-react";
 
 export default function Home() {
@@ -17,7 +18,7 @@ export default function Home() {
   const [rodando, setRodando] = useState(false);
   const [inputManual, setInputManual] = useState("");
   const [erroInput, setErroInput] = useState("");
-  const [presetAtivo, setPresetAtivo] = useState<string | null>(null); // ID do preset ativo
+  const [presetAtivo, setPresetAtivo] = useState<Id<"presets"> | null>(null); // ID do preset ativo
   const [abaAtiva, setAbaAtiva] = useState<"presets" | "historico">("presets"); // Controle de abas
   const [tempoInicio, setTempoInicio] = useState<number | null>(null); // Para calcular duração
   const [periodoSelecionado, setPeriodoSelecionado] = useState<"hoje" | "semana" | "mes">("hoje");
@@ -27,8 +28,7 @@ export default function Home() {
   const adicionarPreset = useMutation(api.presets.adicionar);
   const removerPreset = useMutation(api.presets.remover);
   const registrarUso = useMutation(api.historico.registrarUso);
-  const historico = useQuery(api.historico.listarHistorico) || [];
-  const estatisticas = useQuery(api.historico.estatisticas);
+  const historico = useQuery(api.historico.listarHistorico, {}) || [];
   const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
 
   // Presets estáticos como fallback
@@ -164,7 +164,7 @@ export default function Home() {
   };
 
   // Função para remover preset
-  const handleRemoverPreset = async (id: string) => {
+  const handleRemoverPreset = async (id: Id<"presets">) => {
     if (window.confirm("Tem certeza que deseja remover este preset?")) {
       try {
         await removerPreset({ id });
@@ -180,7 +180,7 @@ export default function Home() {
   };
 
   // Função para aplicar preset do Convex
-  const aplicarPreset = (preset: any) => {
+  const aplicarPreset = (preset: { _id: Id<"presets">; nome: string; minutos: number; createdAt: number }) => {
     const segundos = preset.minutos * 60;
     setTempoInicial(segundos);
     setTempo(segundos);

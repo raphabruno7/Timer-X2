@@ -85,16 +85,16 @@ export const estatisticas = query({
     );
 
     // Calcular preset mais usado
-    const contagemPorPreset: Record<string, number> = {};
+    const contagemPorPreset = new Map();
     for (const historico of historicos) {
       const presetId = historico.presetId;
-      contagemPorPreset[presetId] = (contagemPorPreset[presetId] || 0) + 1;
+      contagemPorPreset.set(presetId, (contagemPorPreset.get(presetId) || 0) + 1);
     }
 
     // Encontrar o preset com maior contagem
-    let presetMaisUsadoId = "";
+    let presetMaisUsadoId = null;
     let maxContagem = 0;
-    for (const [presetId, contagem] of Object.entries(contagemPorPreset)) {
+    for (const [presetId, contagem] of contagemPorPreset.entries()) {
       if (contagem > maxContagem) {
         maxContagem = contagem;
         presetMaisUsadoId = presetId;
@@ -104,8 +104,16 @@ export const estatisticas = query({
     // Buscar o nome do preset mais usado
     let nomePresetMaisUsado = "-";
     if (presetMaisUsadoId) {
-      const preset = await ctx.db.get(presetMaisUsadoId as any);
-      nomePresetMaisUsado = preset?.nome || "Preset removido";
+      try {
+        const preset = await ctx.db.get(presetMaisUsadoId);
+        if (preset && 'nome' in preset) {
+          nomePresetMaisUsado = preset.nome;
+        } else {
+          nomePresetMaisUsado = "Preset removido";
+        }
+      } catch {
+        nomePresetMaisUsado = "Preset removido";
+      }
     }
 
     return {
@@ -165,16 +173,16 @@ export const estatisticasPorPeriodo = query({
     );
 
     // Calcular preset mais usado
-    const contagemPorPreset: Record<string, number> = {};
+    const contagemPorPreset = new Map();
     for (const historico of historicos) {
       const presetId = historico.presetId;
-      contagemPorPreset[presetId] = (contagemPorPreset[presetId] || 0) + 1;
+      contagemPorPreset.set(presetId, (contagemPorPreset.get(presetId) || 0) + 1);
     }
 
     // Encontrar o preset com maior contagem
-    let presetMaisUsadoId = "";
+    let presetMaisUsadoId = null;
     let maxContagem = 0;
-    for (const [presetId, contagem] of Object.entries(contagemPorPreset)) {
+    for (const [presetId, contagem] of contagemPorPreset.entries()) {
       if (contagem > maxContagem) {
         maxContagem = contagem;
         presetMaisUsadoId = presetId;
@@ -184,8 +192,16 @@ export const estatisticasPorPeriodo = query({
     // Buscar o nome do preset mais usado
     let nomePresetMaisUsado = "-";
     if (presetMaisUsadoId) {
-      const preset = await ctx.db.get(presetMaisUsadoId as any);
-      nomePresetMaisUsado = preset?.nome || "Preset removido";
+      try {
+        const preset = await ctx.db.get(presetMaisUsadoId);
+        if (preset && 'nome' in preset) {
+          nomePresetMaisUsado = preset.nome;
+        } else {
+          nomePresetMaisUsado = "Preset removido";
+        }
+      } catch {
+        nomePresetMaisUsado = "Preset removido";
+      }
     }
 
     return {
