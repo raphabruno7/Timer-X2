@@ -369,3 +369,35 @@ export const estatisticasGerais = query({
     };
   },
 });
+
+// Query para estatísticas por dia (evolução diária)
+export const estatisticasPorDia = query({
+  args: {},
+  handler: async (ctx) => {
+    const historicos = await ctx.db.query("historico").collect();
+    
+    // Agrupar por data
+    const minutosPorDia: Record<string, number> = {};
+    
+    for (const historico of historicos) {
+      const data = new Date(historico.usadoEm);
+      const dataStr = data.toISOString().split('T')[0]; // YYYY-MM-DD
+      const minutos = Math.round(historico.duracao / 60);
+      minutosPorDia[dataStr] = (minutosPorDia[dataStr] || 0) + minutos;
+    }
+    
+    // Converter para array e ordenar por data
+    const resultado = [];
+    for (const data in minutosPorDia) {
+      resultado.push({
+        data,
+        minutos: minutosPorDia[data],
+      });
+    }
+    
+    // Ordenar por data (crescente)
+    resultado.sort((a, b) => a.data.localeCompare(b.data));
+    
+    return resultado;
+  },
+});

@@ -11,8 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History, Trophy } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History, Trophy, LineChart as LineChartIcon } from "lucide-react";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 export default function Home() {
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
@@ -37,6 +37,7 @@ export default function Home() {
   const historicoDetalhado = useQuery(api.historico.historicoDetalhado);
   const rankingPresets = useQuery(api.historico.rankingPresets);
   const estatisticasGerais = useQuery(api.historico.estatisticasGerais);
+  const estatisticasPorDia = useQuery(api.historico.estatisticasPorDia);
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -79,6 +80,12 @@ export default function Home() {
       return `${minutosRestantes}min`;
     }
     return `${horas}h ${minutosRestantes}min`;
+  };
+
+  // Função para formatar data curta (DD/MM)
+  const formatarDataCurta = (dataStr: string) => {
+    const [ano, mes, dia] = dataStr.split('-');
+    return `${dia}/${mes}`;
   };
 
   // Função para iniciar o timer
@@ -357,6 +364,65 @@ export default function Home() {
               </div>
               <div className="text-xs text-[#F9F9F9]/50 mt-1">sessões</div>
             </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Daily Evolution Chart Card */}
+      {estatisticasPorDia && estatisticasPorDia.length > 0 && (
+        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
+              <LineChartIcon className="w-5 h-5 text-[#2ECC71]" />
+              Evolução Diária
+            </h2>
+          </div>
+
+          <div className="w-full h-64 overflow-x-auto">
+            <ResponsiveContainer width="100%" height="100%" minWidth={estatisticasPorDia.length * 50}>
+              <LineChart
+                data={estatisticasPorDia.map(item => ({
+                  ...item,
+                  dataFormatada: formatarDataCurta(item.data),
+                }))}
+                margin={{ top: 20, right: 10, left: -20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#2ECC71" opacity={0.1} />
+                <XAxis 
+                  dataKey="dataFormatada" 
+                  stroke="#F9F9F9"
+                  opacity={0.7}
+                  fontSize={11}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis 
+                  stroke="#F9F9F9"
+                  opacity={0.7}
+                  fontSize={12}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1C1C1C',
+                    border: '1px solid #2ECC71',
+                    borderRadius: '8px',
+                    color: '#F9F9F9',
+                  }}
+                  labelStyle={{ color: '#2ECC71' }}
+                  formatter={(value: number) => [`${value} min`, 'Minutos']}
+                  labelFormatter={(label) => `Dia: ${label}`}
+                />
+                <Line 
+                  type="monotone"
+                  dataKey="minutos" 
+                  stroke="#2ECC71"
+                  strokeWidth={3}
+                  dot={{ fill: '#2ECC71', r: 4 }}
+                  activeDot={{ r: 6, fill: '#FFD700' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </Card>
       )}
