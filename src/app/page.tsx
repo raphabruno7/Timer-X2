@@ -96,6 +96,8 @@ export default function Home() {
   const iniciar = () => {
     setRodando(true);
     setTempoInicio(Date.now());
+    setMandalaActive(false); // Fechar mandala ao iniciar novo ciclo
+    setRewardTriggered(false); // Permitir nova mandala ao fim do ciclo
   };
 
   // Função para pausar o timer
@@ -137,6 +139,8 @@ export default function Home() {
     setInputManual("");
     setErroInput("");
     setPresetAtivo(null); // Reset preset ativo para presets estáticos
+    setMandalaActive(false); // Fechar mandala ao mudar preset
+    setRewardTriggered(false); // Permitir nova mandala
   };
 
   // Função para validar entrada manual
@@ -169,6 +173,8 @@ export default function Home() {
     setInputManual("");
     setErroInput("");
     setPresetAtivo(null); // Reset preset ativo para entrada manual
+    setMandalaActive(false); // Fechar mandala ao aplicar tempo manual
+    setRewardTriggered(false); // Permitir nova mandala
   };
 
   // Função para lidar com Enter no input
@@ -226,6 +232,8 @@ export default function Home() {
     setPresetAtivo(preset._id);
     setInputManual("");
     setErroInput("");
+    setMandalaActive(false); // Fechar mandala ao aplicar preset
+    setRewardTriggered(false); // Permitir nova mandala
   };
 
   // useEffect para decrementar o tempo quando rodando for true

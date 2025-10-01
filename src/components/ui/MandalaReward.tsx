@@ -12,6 +12,7 @@ export function MandalaReward({ active, onClose }: MandalaRewardProps) {
   useEffect(() => {
     if (active && onClose) {
       const timer = setTimeout(() => {
+        console.log("Mandala concluída");
         onClose();
       }, 5000); // Auto-fechar após 5 segundos
 
