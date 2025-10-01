@@ -13,11 +13,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History, Trophy, LineChart as LineChartIcon } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { useReward } from "@/hooks/useReward";
+import { MandalaReward } from "@/components/ui/MandalaReward";
 import { motion } from "framer-motion";
 
 export default function Home() {
-  const { triggerReward, RewardComponent, isRewardActive } = useReward();
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
   const [tempo, setTempo] = useState(tempoInicial);
   const [tempoRestante, setTempoRestante] = useState(tempoInicial); // Estado global do tempo restante
@@ -29,6 +28,7 @@ export default function Home() {
   const [tempoInicio, setTempoInicio] = useState<number | null>(null); // Para calcular duração
   const [periodoSelecionado, setPeriodoSelecionado] = useState<"hoje" | "semana" | "mes">("hoje");
   const [rewardTriggered, setRewardTriggered] = useState(false); // Evitar múltiplos triggers
+  const [mandalaActive, setMandalaActive] = useState(false); // Estado da mandala
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -257,17 +257,13 @@ export default function Home() {
       if (duracao > 0) {
         registrarUso({ presetId: presetAtivo, duracao }).catch(console.error);
         
-        // Determinar intensidade baseado na duração
-        const minutos = Math.floor(duracao / 60);
-        const intensity = minutos >= 45 ? 'high' : 'low';
-        
         // Mostrar mandala de recompensa (apenas uma vez)
-        triggerReward({ intensity });
+        setMandalaActive(true);
         setRewardTriggered(true);
       }
       setTempoInicio(null);
     }
-  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, triggerReward, rewardTriggered]);
+  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, rewardTriggered]);
 
   // Sincronizar tempo com tempoRestante
   useEffect(() => {
@@ -277,7 +273,10 @@ export default function Home() {
   return (
     <>
       {/* Mandala de Recompensa */}
-      <RewardComponent />
+      <MandalaReward 
+        active={mandalaActive} 
+        onClose={() => setMandalaActive(false)} 
+      />
       
       <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
       {/* General Statistics Panel */}
@@ -600,7 +599,7 @@ export default function Home() {
       {/* Phone Frame */}
       <motion.div 
         className="w-full max-w-sm mx-auto"
-        animate={{ opacity: isRewardActive ? 0.3 : 1 }}
+        animate={{ opacity: mandalaActive ? 0.3 : 1 }}
         transition={{ duration: 0.5 }}
       >
         <Card className="bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl">
@@ -636,14 +635,25 @@ export default function Home() {
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-medium text-[#F9F9F9]/70">Presets Salvos</h3>
-                  <Button
-                    onClick={handleAdicionarPreset}
-                    size="sm"
-                    className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Adicionar
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setMandalaActive(true)}
+                      size="sm"
+                      variant="outline"
+                      className="h-8 px-2 border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/10"
+                      title="Testar Mandala"
+                    >
+                      ✨
+                    </Button>
+                    <Button
+                      onClick={handleAdicionarPreset}
+                      size="sm"
+                      className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Adicionar
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="space-y-2 max-h-32 overflow-y-auto">
