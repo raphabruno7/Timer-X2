@@ -253,8 +253,13 @@ export default function Home() {
       const duracao = Math.floor((Date.now() - tempoInicio) / 1000);
       if (duracao > 0) {
         registrarUso({ presetId: presetAtivo, duracao }).catch(console.error);
+        
+        // Determinar intensidade baseado na duração
+        const minutos = Math.floor(duracao / 60);
+        const intensity = minutos >= 45 ? 'high' : 'low';
+        
         // Mostrar mandala de recompensa
-        triggerReward();
+        triggerReward({ intensity });
       }
       setTempoInicio(null);
     }
