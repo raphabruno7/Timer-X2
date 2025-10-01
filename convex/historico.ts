@@ -337,3 +337,35 @@ export const rankingPresets = query({
     return ranking.slice(0, 3);
   },
 });
+
+// Query para estatísticas gerais
+export const estatisticasGerais = query({
+  args: {},
+  handler: async (ctx) => {
+    const historicos = await ctx.db.query("historico").collect();
+    
+    if (historicos.length === 0) {
+      return {
+        tempoTotalFocado: 0, // em minutos
+        sessoesCompletas: 0,
+        mediaPorSessao: 0, // em minutos
+      };
+    }
+    
+    // Calcular tempo total (duracao está em segundos)
+    const totalSegundos = historicos.reduce((sum, h) => sum + h.duracao, 0);
+    const tempoTotalFocado = Math.round(totalSegundos / 60); // converter para minutos
+    
+    // Contar sessões
+    const sessoesCompletas = historicos.length;
+    
+    // Calcular média
+    const mediaPorSessao = Math.round(tempoTotalFocado / sessoesCompletas);
+    
+    return {
+      tempoTotalFocado,
+      sessoesCompletas,
+      mediaPorSessao,
+    };
+  },
+});

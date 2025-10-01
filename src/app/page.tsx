@@ -36,6 +36,7 @@ export default function Home() {
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
   const historicoDetalhado = useQuery(api.historico.historicoDetalhado);
   const rankingPresets = useQuery(api.historico.rankingPresets);
+  const estatisticasGerais = useQuery(api.historico.estatisticasGerais);
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -68,6 +69,16 @@ export default function Home() {
     const data = new Date(dataStr + 'T00:00:00');
     const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     return dias[data.getDay()];
+  };
+
+  // Função para formatar tempo em horas e minutos
+  const formatarTempoTotal = (minutos: number) => {
+    const horas = Math.floor(minutos / 60);
+    const minutosRestantes = minutos % 60;
+    if (horas === 0) {
+      return `${minutosRestantes}min`;
+    }
+    return `${horas}h ${minutosRestantes}min`;
   };
 
   // Função para iniciar o timer
@@ -245,6 +256,47 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
+      {/* General Statistics Panel */}
+      {estatisticasGerais && (
+        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#2ECC71]" />
+              Estatísticas
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Tempo Total Focado */}
+            <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4 text-center">
+              <div className="text-2xl mb-2">⏱️</div>
+              <div className="text-xs text-[#F9F9F9]/70 mb-2">Tempo total focado</div>
+              <div className="text-xl font-bold text-[#2ECC71]">
+                {formatarTempoTotal(estatisticasGerais.tempoTotalFocado)}
+              </div>
+            </div>
+
+            {/* Sessões Concluídas */}
+            <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-xl p-4 text-center">
+              <div className="text-2xl mb-2">🧘</div>
+              <div className="text-xs text-[#F9F9F9]/70 mb-2">Sessões concluídas</div>
+              <div className="text-xl font-bold text-[#FFD700]">
+                {estatisticasGerais.sessoesCompletas}
+              </div>
+            </div>
+
+            {/* Média por Sessão */}
+            <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4 text-center">
+              <div className="text-2xl mb-2">📊</div>
+              <div className="text-xs text-[#F9F9F9]/70 mb-2">Média por sessão</div>
+              <div className="text-xl font-bold text-[#2ECC71]">
+                {estatisticasGerais.mediaPorSessao} min
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Statistics Card with Tabs */}
       {estatisticasPorPeriodo && (
         <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
