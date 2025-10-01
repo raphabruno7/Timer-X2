@@ -213,3 +213,44 @@ export const estatisticasPorPeriodo = query({
     };
   },
 });
+
+// Query para estatísticas semanais (últimos 7 dias)
+export const estatisticasSemanais = query({
+  args: {},
+  handler: async (ctx) => {
+    // Calcular os últimos 7 dias
+    const hoje = new Date();
+    const seteDiasAtras = new Date(hoje);
+    seteDiasAtras.setDate(seteDiasAtras.getDate() - 6); // Incluir hoje = 7 dias
+    seteDiasAtras.setHours(0, 0, 0, 0);
+    
+    const todosHistoricos = await ctx.db.query("historico").collect();
+    const historicos = todosHistoricos.filter(h => h.usadoEm >= seteDiasAtras.getTime());
+    
+    // Agrupar por dia
+    const minutosPorDia: Record<string, number> = {};
+    
+    for (const historico of historicos) {
+      const data = new Date(historico.usadoEm);
+      const dataStr = data.toISOString().split('T')[0]; // YYYY-MM-DD
+      const minutos = Math.round(historico.duracao / 60);
+      minutosPorDia[dataStr] = (minutosPorDia[dataStr] || 0) + minutos;
+    }
+    
+    // Criar array com todos os 7 dias (mesmo que sejam 0)
+    const resultado = [];
+    for (let i = 6; i >= 0; i--) {
+      const data = new Date(hoje);
+      data.setDate(data.getDate() - i);
+      data.setHours(0, 0, 0, 0);
+      const dataStr = data.toISOString().split('T')[0];
+      
+      resultado.push({
+        dia: dataStr,
+        totalMinutosFocados: minutosPorDia[dataStr] || 0,
+      });
+    }
+    
+    return resultado;
+  },
+});

@@ -9,7 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2 } from "lucide-react";
+import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function Home() {
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
@@ -30,6 +31,7 @@ export default function Home() {
   const registrarUso = useMutation(api.historico.registrarUso);
   const historico = useQuery(api.historico.listarHistorico, {}) || [];
   const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
+  const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -55,6 +57,13 @@ export default function Home() {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  // Função para formatar dia da semana abreviado
+  const formatarDiaSemana = (dataStr: string) => {
+    const data = new Date(dataStr + 'T00:00:00');
+    const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    return dias[data.getDay()];
   };
 
   // Função para iniciar o timer
@@ -292,6 +301,57 @@ export default function Home() {
               </div>
               <div className="text-xs text-[#F9F9F9]/50 mt-1">sessões</div>
             </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Weekly Chart Card */}
+      {estatisticasSemanais && (
+        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
+              <TrendingUp className="w-5 h-5 text-[#2ECC71]" />
+              Evolução Semanal
+            </h2>
+          </div>
+
+          <div className="w-full h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={estatisticasSemanais.map(item => ({
+                  ...item,
+                  diaSemana: formatarDiaSemana(item.dia),
+                }))}
+                margin={{ top: 20, right: 10, left: -20, bottom: 5 }}
+              >
+                <XAxis 
+                  dataKey="diaSemana" 
+                  stroke="#F9F9F9"
+                  opacity={0.7}
+                  fontSize={12}
+                />
+                <YAxis 
+                  stroke="#F9F9F9"
+                  opacity={0.7}
+                  fontSize={12}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1C1C1C',
+                    border: '1px solid #2ECC71',
+                    borderRadius: '8px',
+                    color: '#F9F9F9',
+                  }}
+                  labelStyle={{ color: '#2ECC71' }}
+                  formatter={(value: number) => [`${value} min`, 'Minutos focados']}
+                />
+                <Bar 
+                  dataKey="totalMinutosFocados" 
+                  fill="#2ECC71"
+                  radius={[8, 8, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </Card>
       )}
