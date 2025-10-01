@@ -6,9 +6,10 @@ import { useEffect } from "react";
 interface MandalaRewardProps {
   active: boolean;
   onClose?(): void;
+  aiMessage?: string;
 }
 
-export function MandalaReward({ active, onClose }: MandalaRewardProps) {
+export function MandalaReward({ active, onClose, aiMessage }: MandalaRewardProps) {
   useEffect(() => {
     if (active && onClose) {
       const timer = setTimeout(() => {
@@ -176,12 +177,21 @@ export function MandalaReward({ active, onClose }: MandalaRewardProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.8 }}
-          className="absolute inset-0 flex flex-col items-center justify-center"
+          className="absolute inset-0 flex flex-col items-center justify-center px-8"
         >
-          <div className="text-4xl mb-2">✨</div>
-          <p className="text-xl font-bold text-white drop-shadow-lg">
+          <div className="text-4xl mb-3">✨</div>
+          <p className="text-xl font-bold text-white drop-shadow-lg mb-2">
             Parabéns!
           </p>
+          {aiMessage ? (
+            <p className="text-sm text-white/90 drop-shadow-md text-center leading-relaxed max-w-[200px]">
+              {aiMessage}
+            </p>
+          ) : (
+            <p className="text-sm text-white/80 drop-shadow-md">
+              Ciclo completo
+            </p>
+          )}
         </motion.div>
       </div>
     </motion.div>

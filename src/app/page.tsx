@@ -29,6 +29,7 @@ export default function Home() {
   const [periodoSelecionado, setPeriodoSelecionado] = useState<"hoje" | "semana" | "mes">("hoje");
   const [rewardTriggered, setRewardTriggered] = useState(false); // Evitar múltiplos triggers
   const [mandalaActive, setMandalaActive] = useState(false); // Estado da mandala
+  const [aiMessage, setAiMessage] = useState<string>(""); // Mensagem da AI
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -270,12 +271,28 @@ export default function Home() {
         // Buscar nome do preset para registrar mandala
         const preset = presets.find(p => p._id === presetAtivo);
         const presetName = preset?.nome || "Preset desconhecido";
+        const finishedAt = Date.now();
         
         // Registrar exibição da mandala
         registrarMandala({ 
           presetName, 
           duration: duracao 
         }).catch(console.error);
+        
+        // Buscar mensagem AI
+        fetch('/api/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ presetName, duration: duracao, finishedAt })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setAiMessage(data.message);
+          })
+          .catch(err => {
+            console.error("Erro ao buscar mensagem AI:", err);
+            setAiMessage(""); // Usar mensagem padrão
+          });
         
         // Mostrar mandala de recompensa (apenas uma vez)
         setMandalaActive(true);
@@ -295,7 +312,11 @@ export default function Home() {
       {/* Mandala de Recompensa */}
       <MandalaReward 
         active={mandalaActive} 
-        onClose={() => setMandalaActive(false)} 
+        onClose={() => {
+          setMandalaActive(false);
+          setAiMessage(""); // Limpar mensagem ao fechar
+        }}
+        aiMessage={aiMessage}
       />
       
       <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
