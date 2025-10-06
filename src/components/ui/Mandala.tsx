@@ -656,12 +656,12 @@ export function Mandala({
               ease: "easeInOut",
             }}
           >
-            {faseRespiracao === 'inspirar' && '✨ Inspirar ✨'}
-            {faseRespiracao === 'expirar' && '🌿 Expirar 🌿'}
-          </motion.p>
-        </motion.div>
-      )}
-    </div>
-  );
+          {faseRespiracao === 'inspirar' && '✨ Inspirar ✨'}
+          {faseRespiracao === 'expirar' && '🌿 Expirar 🌿'}
+        </motion.p>
+      </motion.div>
+    )}
+  </motion.div>
+);
 }
 
