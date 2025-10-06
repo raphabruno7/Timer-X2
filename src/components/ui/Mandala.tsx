@@ -8,6 +8,7 @@ interface MandalaProps {
   progresso: number; // 0 a 1 (porcentagem de progresso)
   intensidade?: 'leve' | 'media' | 'forte';
   pausado?: boolean; // Timer está pausado?
+  ativo?: boolean; // Timer está ativo/rodando?
   modoRespiracao?: boolean; // Ativa guia de respiração visual
 }
 
@@ -15,11 +16,14 @@ interface MandalaProps {
  * Retorna cor baseada na intensidade energética
  */
 function energiaCor(intensidade: 'leve' | 'media' | 'forte'): string {
-  return intensidade === 'forte' 
-    ? '#FFD700'  // Dourado vibrante
-    : intensidade === 'media' 
-    ? '#2ECC71'  // Verde vida
-    : '#F9F9F9'; // Branco suave
+  switch (intensidade) {
+    case 'forte':
+      return '#FFD700'; // Dourado vibrante
+    case 'media':
+      return '#2ECC71'; // Verde vida
+    default:
+      return '#F9F9F9'; // Branco suave
+  }
 }
 
 /**
@@ -86,7 +90,7 @@ function usarRespiracao(ativo: boolean) {
   return { faseRespiracao, cicloAtual };
 }
 
-export function Mandala({ progresso, intensidade = 'media', pausado = false, modoRespiracao = false }: MandalaProps) {
+export function Mandala({ progresso, intensidade = 'media', pausado = false, ativo = true, modoRespiracao = false }: MandalaProps) {
   // Estado da fase lunar
   const [faseLunar, setFaseLunar] = useState<FaseLunar>('cheia');
   
@@ -130,13 +134,13 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
     },
   }[intensidade];
 
-  // Ajustar velocidade quando pausado
-  const velocidadeRotacao = pausado 
-    ? intensidadeConfig.rotationDuration * 3 // 3x mais lento quando pausado
+  // Ajustar velocidade quando pausado ou inativo
+  const velocidadeRotacao = (pausado || !ativo)
+    ? 0 // Parar rotação quando pausado/inativo
     : intensidadeConfig.rotationDuration * configuracaoLunar.velocidade; // Ajuste lunar
   
-  const brilhoAtual = pausado
-    ? intensidadeConfig.glowOpacity * 0.5 // 50% do brilho quando pausado
+  const brilhoAtual = (pausado || !ativo)
+    ? intensidadeConfig.glowOpacity * 0.3 // 30% do brilho quando pausado
     : intensidadeConfig.glowOpacity * configuracaoLunar.brilho; // Ajuste lunar
 
   // Cores suaves para modo respiração
@@ -220,22 +224,22 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
           fill="url(#externalGradient)"
           opacity={brilhoAtual}
           animate={{
-            scale: pausado 
-              ? [1, 1.01, 1] // Pulso mínimo quando pausado
-              : [1, pulseScaleAjustado, 1], // Pulso ajustado pela lua
-            opacity: pausado
-              ? [brilhoAtual, brilhoAtual * 0.8, brilhoAtual]
+            scale: (pausado || !ativo)
+              ? 1 // Sem pulso quando pausado/inativo
+              : [1, 1.05, 1], // Pulso evidente (1 a 1.05)
+            opacity: (pausado || !ativo)
+              ? brilhoAtual * 0.5
               : [brilhoAtual, brilhoAtual * 0.7, brilhoAtual],
           }}
           transition={{
-            duration: pausado 
-              ? intensidadeConfig.duration * 2 
+            duration: (pausado || !ativo)
+              ? 0
               : faseLunar === 'nova' 
                 ? intensidadeConfig.duration * 1.5  // Respiração lenta na lua nova
                 : faseLunar === 'cheia'
                 ? intensidadeConfig.duration * 0.8  // Respiração rápida na lua cheia
                 : intensidadeConfig.duration,
-            repeat: Infinity,
+            repeat: (pausado || !ativo) ? 0 : Infinity,
             ease: "easeInOut",
           }}
           style={{ transformOrigin: '96px 96px' }}
@@ -251,11 +255,11 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
           strokeWidth="8"
           strokeOpacity="0.2"
           animate={{
-            rotate: pausado ? 0 : 360,
+            rotate: (pausado || !ativo) ? 0 : 360,
           }}
           transition={{
-            duration: velocidadeRotacao,
-            repeat: pausado ? 0 : Infinity,
+            duration: velocidadeRotacao || 1,
+            repeat: (pausado || !ativo) ? 0 : Infinity,
             ease: "linear",
           }}
           style={{ transformOrigin: '96px 96px' }}
@@ -264,11 +268,11 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
         {/* Anel médio - progresso (cor dinâmica) com rotação */}
         <motion.g
           animate={{
-            rotate: pausado ? 0 : 360,
+            rotate: (pausado || !ativo) ? 0 : 360,
           }}
           transition={{
-            duration: velocidadeRotacao,
-            repeat: pausado ? 0 : Infinity,
+            duration: velocidadeRotacao || 1,
+            repeat: (pausado || !ativo) ? 0 : Infinity,
             ease: "linear",
           }}
           style={{ transformOrigin: '96px 96px' }}
@@ -286,7 +290,7 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
             transform="rotate(-90 96 96)"
             filter="url(#glow)"
             animate={{
-              opacity: pausado ? [0.5, 0.6, 0.5] : [0.8, 1, 0.8],
+              opacity: (pausado || !ativo) ? [0.3, 0.4, 0.3] : [0.8, 1, 0.8],
             }}
             transition={{
               duration: 2,
@@ -368,11 +372,11 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
         {/* Detalhes decorativos - pontos de energia com rotação reversa */}
         <motion.g
           animate={{
-            rotate: pausado ? 0 : -360, // Rotação reversa para contraste
+            rotate: (pausado || !ativo) ? 0 : -360, // Rotação reversa para contraste
           }}
           transition={{
-            duration: velocidadeRotacao * 1.5, // Um pouco mais lento que o anel
-            repeat: pausado ? 0 : Infinity,
+            duration: (velocidadeRotacao || 1) * 1.5, // Um pouco mais lento que o anel
+            repeat: (pausado || !ativo) ? 0 : Infinity,
             ease: "linear",
           }}
           style={{ transformOrigin: '96px 96px' }}
@@ -388,16 +392,16 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
                 cy={y}
                 r="3"
                 fill={corPrincipal}
-                opacity={pausado ? 0.3 : 0.6}
+                opacity={(pausado || !ativo) ? 0.2 : 0.6}
                 animate={{
-                  scale: pausado ? [1, 1.1, 1] : [1, 1.5, 1],
-                  opacity: pausado 
-                    ? [0.2, 0.4, 0.2] 
+                  scale: (pausado || !ativo) ? 1 : [1, 1.5, 1],
+                  opacity: (pausado || !ativo)
+                    ? 0.2
                     : [0.4, 0.8, 0.4],
                 }}
                 transition={{
-                  duration: pausado ? 3 : 2,
-                  repeat: Infinity,
+                  duration: (pausado || !ativo) ? 0 : 2,
+                  repeat: (pausado || !ativo) ? 0 : Infinity,
                   ease: "easeInOut",
                   delay: i * 0.2,
                 }}
@@ -415,18 +419,18 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
           background: `radial-gradient(circle, transparent 40%, ${corPrincipal}${Math.round(brilhoAtual * 25.5).toString(16).padStart(2, '0')} 100%)`,
         }}
         animate={{
-          opacity: pausado ? [0.2, 0.3, 0.2] : [0.5, 1, 0.5],
-          scale: pausado ? [1, 1.01, 1] : [1, pulseScaleAjustado * 0.5, 1],
+          opacity: (pausado || !ativo) ? 0.1 : [0.5, 1, 0.5],
+          scale: (pausado || !ativo) ? 1 : [1, 1.05, 1], // Pulso 1 a 1.05
         }}
         transition={{
-          duration: pausado 
-            ? intensidadeConfig.duration * 3
+          duration: (pausado || !ativo)
+            ? 0
             : faseLunar === 'nova'
             ? intensidadeConfig.duration * 1.8
             : faseLunar === 'cheia'
             ? intensidadeConfig.duration * 0.7
             : intensidadeConfig.duration,
-          repeat: Infinity,
+          repeat: (pausado || !ativo) ? 0 : Infinity,
           ease: "easeInOut",
         }}
       />

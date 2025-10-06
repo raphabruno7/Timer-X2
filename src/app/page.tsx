@@ -1488,6 +1488,7 @@ export default function Home() {
                       : 'media'
                     }
                     pausado={!rodando}
+                    ativo={rodando}
                   />
                 </div>
 
