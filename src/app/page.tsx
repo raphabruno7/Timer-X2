@@ -87,28 +87,44 @@ export default function Home() {
   );
 
 
+  // Função para aplicar ajustes adaptativos da IA
   const applyAdaptiveAdjustments = useCallback((adjustments: Record<string, unknown>) => {
     if (!adjustments) return;
 
+    console.info("[Adaptive IA] 🎨 Aplicando ajustes adaptativos...", adjustments);
+
+    // 1. Ajustar paleta de cores sutilmente
     if (adjustments.palette && typeof adjustments.palette === "object") {
-      setPaletaAdaptativa((prev) => ({
-        primary: adjustments.palette.primary || prev.primary,
-        accent: adjustments.palette.accent || adjustments.palette.secondary || prev.accent,
-      }));
+      const palette = adjustments.palette as { primary?: string; accent?: string; secondary?: string };
+      setPaletaAdaptativa((prev) => {
+        const newPalette = {
+          primary: palette.primary || prev.primary,
+          accent: palette.accent || palette.secondary || prev.accent,
+        };
+        console.info("[Adaptive IA] 🎨 Paleta atualizada:", { anterior: prev, nova: newPalette });
+        return newPalette;
+      });
     }
 
+    // 2. Ajustar tempo base em ±5%
     if (typeof adjustments.tempoModifier === "number" && !Number.isNaN(adjustments.tempoModifier)) {
       const modifier = clamp(adjustments.tempoModifier, 0.95, 1.05);
       if (rodando) {
-        setTempoRestante((prev) => clamp(Math.round(prev * modifier), 60, 7200));
+        setTempoRestante((prev) => {
+          const novoTempo = clamp(Math.round(prev * modifier), 60, 7200);
+          console.info(`[Adaptive IA] ⏱️  Tempo ajustado durante execução: ${prev}s → ${novoTempo}s (${modifier}x)`);
+          return novoTempo;
+        });
       } else {
         const novoTempo = clamp(Math.round(tempoInicial * modifier), 300, 7200);
+        console.info(`[Adaptive IA] ⏱️  Tempo base ajustado: ${tempoInicial}s → ${novoTempo}s (${modifier}x)`);
         setTempoInicial(novoTempo);
         setTempo(novoTempo);
         setTempoRestante(novoTempo);
       }
     }
 
+    // 3. Ajustar intensidade da mandala
     if (adjustments.mandalaVariance) {
       const varianceMap: Record<string, number> = {
         calm: 0.85,
@@ -119,28 +135,34 @@ export default function Home() {
       if (typeof adjustments.mandalaVariance === "number") {
         intensityValue = clamp(adjustments.mandalaVariance, 0.7, 1.3);
       } else {
-        intensityValue = varianceMap[adjustments.mandalaVariance] ?? 1;
+        intensityValue = varianceMap[adjustments.mandalaVariance as string] ?? 1;
       }
+      console.info(`[Adaptive IA] 🌸 Mandala ajustada: ${adjustments.mandalaVariance} (intensidade: ${intensityValue})`);
       setMandalaIntensityModifier(intensityValue);
     }
 
-    console.info("[Adaptive IA] Ajustes aplicados:", adjustments);
+    console.info("[Adaptive IA] ✅ Ajustes aplicados com sucesso");
   }, [rodando, tempoInicial]);
 
+  // Função para buscar insights adaptativos da IA
   const fetchAdaptiveInsights = useCallback(async () => {
     if (carregandoInsights) return;
     if (!sessoesRegistradas || sessoesRegistradas.length === 0) return;
 
     try {
       setCarregandoInsights(true);
+      console.info("[Adaptive IA] 🧠 Buscando insights... (após 3 sessões)");
+      
       const usageHistoryPayload = sessoesRegistradas
-        .slice(0, 12)
+        .slice(0, 12) // Pegar últimas 12 sessões
         .map((sessao) => ({
           preset: sessao.preset,
           duration: sessao.duracao,
           startedAt: sessao.timestamp,
         }))
-        .reverse();
+        .reverse(); // Ordem cronológica
+
+      console.info(`[Adaptive IA] 📊 Enviando ${usageHistoryPayload.length} sessões para análise`);
 
       const response = await fetch('/api/insights', {
         method: 'POST',
@@ -155,10 +177,11 @@ export default function Home() {
       const data = await response.json();
       if (data?.adjustments) {
         applyAdaptiveAdjustments(data.adjustments);
-        setContadorSessoesIA(0);
+        setContadorSessoesIA(0); // Resetar contador após aplicar ajustes
+        console.info("[Adaptive IA] 🔄 Contador resetado. Próximos ajustes em 3 sessões.");
       }
     } catch (error) {
-      console.error("[Adaptive IA] Erro ao buscar insights:", error);
+      console.error("[Adaptive IA] ❌ Erro ao buscar insights:", error);
     } finally {
       setCarregandoInsights(false);
     }
@@ -538,7 +561,13 @@ export default function Home() {
           const preset = presets.find(p => p._id === presetAtivo);
           const tempoMinutos = preset?.tempoMinutos || 25;
           detectarEmocaoSessao(tempoMinutos, numeroPausas);
-          setContadorSessoesIA((prev) => prev + 1);
+          
+          // Incrementar contador de sessões para IA adaptativa
+          setContadorSessoesIA((prev) => {
+            const novoContador = prev + 1;
+            console.info(`[Adaptive IA] 📈 Sessões completas: ${novoContador}/3`);
+            return novoContador;
+          });
         }
         
         // Mostrar mandala de recompensa (apenas uma vez)
