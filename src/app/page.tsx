@@ -72,6 +72,7 @@ export default function Home() {
   const [tempo, setTempo] = useState(tempoInicial);
   const [tempoRestante, setTempoRestante] = useState(tempoInicial); // Estado global do tempo restante
   const [rodando, setRodando] = useState(false);
+  const [emocaoMandala, setEmocaoMandala] = useState<'neutra' | 'alegria' | 'calma' | 'cansaço'>('neutra');
   const [inputManual, setInputManual] = useState("");
   const [erroInput, setErroInput] = useState("");
   const [presetAtivo, setPresetAtivo] = useState<Id<"presets"> | null>(null); // ID do preset ativo
@@ -424,9 +425,14 @@ export default function Home() {
     // Transição visual de início
     setMandalaState("starting");
     
+    // Emoção de alegria ao iniciar foco
+    setEmocaoMandala('alegria');
+    
     setTimeout(() => {
       setMandalaState("running");
       setRodando(true);
+      // Emoção neutra após iniciar
+      setTimeout(() => setEmocaoMandala('neutra'), 2000);
     }, 800); // Dar tempo para animação de expansão
     
     setTempoInicio(Date.now());
@@ -487,6 +493,9 @@ export default function Home() {
   const pausar = async () => {
     setRodando(false);
     
+    // Emoção de calma ao pausar
+    setEmocaoMandala('calma');
+    
     // Incrementar contador de pause
     setInteracoes(prev => ({ ...prev, botaoPause: prev.botaoPause + 1 }));
     setNumeroPausas(prev => prev + 1);
@@ -515,6 +524,9 @@ export default function Home() {
     setRewardTriggered(false); // Reset flag de recompensa
     setMandalaActive(false); // Fechar mandala se estiver aberta
     setMandalaState("idle"); // Voltar ao estado inicial
+    
+    // Emoção neutra ao resetar
+    setEmocaoMandala('neutra');
     
     // Incrementar contador de reset
     const novasInteracoes = { ...interacoes, botaoReset: interacoes.botaoReset + 1 };
@@ -668,6 +680,29 @@ export default function Home() {
       }
     };
   }, [rodando, tempoRestante]);
+  
+  // useEffect para ajustar emoção baseada no progresso
+  useEffect(() => {
+    if (!rodando) return;
+    
+    const progressoAtual = tempoRestante / tempoInicial;
+    
+    // Quando tempo estiver abaixo de 20% → cansaço
+    if (progressoAtual < 0.2 && progressoAtual > 0) {
+      setEmocaoMandala('cansaço');
+      console.info('[Mandala Viva] 😴 Emoção: cansaço (progresso < 20%)');
+    }
+    // Entre 20% e 100% → neutra (foco)
+    else if (progressoAtual >= 0.2 && emocaoMandala !== 'neutra' && emocaoMandala !== 'alegria') {
+      setEmocaoMandala('neutra');
+      console.info('[Mandala Viva] 🌿 Emoção: neutra (foco ativo)');
+    }
+    // Quando zerar → neutra (descanso)
+    if (tempoRestante === 0) {
+      setEmocaoMandala('neutra');
+      console.info('[Mandala Viva] 🧘 Emoção: neutra (sessão concluída)');
+    }
+  }, [rodando, tempoRestante, tempoInicial, emocaoMandala]);
 
   // Detectar emoção quando sessão finaliza
   const detectarEmocaoSessao = useCallback(async (tempoMinutos: number, pausasCount: number) => {
@@ -1483,12 +1518,15 @@ export default function Home() {
                   <Mandala 
                     progresso={tempo > 0 ? 1 - (tempo / tempoInicial) : 1}
                     intensidade={
-                      mandalaIntensityModifier >= 1.2 ? 'forte' 
-                      : mandalaIntensityModifier <= 0.8 ? 'leve' 
-                      : 'media'
+                      rodando
+                        ? (mandalaIntensityModifier >= 1.2 ? 'forte' : 'media')
+                        : (mandalaIntensityModifier <= 0.8 ? 'leve' : 'media')
                     }
                     pausado={!rodando}
                     ativo={rodando}
+                    modoRespiracao={!rodando && tempo === 0} // Respiração apenas após conclusão
+                    ciclo={8}
+                    emocao={emocaoMandala}
                   />
                 </div>
 
