@@ -17,6 +17,7 @@ import type * as historico from "../historico.js";
 import type * as mandalas from "../mandalas.js";
 import type * as presets from "../presets.js";
 import type * as sessoes from "../sessoes.js";
+import type * as usagePatterns from "../usagePatterns.js";
 import type * as userSessions from "../userSessions.js";
 
 /**
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   mandalas: typeof mandalas;
   presets: typeof presets;
   sessoes: typeof sessoes;
+  usagePatterns: typeof usagePatterns;
   userSessions: typeof userSessions;
 }>;
 export declare const api: FilterApi<
