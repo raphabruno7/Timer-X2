@@ -9,9 +9,10 @@ interface MandalaProps {
   progresso: number; // 0 a 1 (porcentagem de progresso)
   intensidade?: 'leve' | 'media' | 'forte';
   pausado?: boolean; // Timer está pausado?
-  ativo?: boolean; // Timer está ativo/rodando?
+  ativo: boolean; // Timer está ativo/rodando?
   modoRespiracao?: boolean; // Ativa guia de respiração visual
   ciclo?: number; // Duração completa de uma respiração (em segundos), padrão: 8s
+  emocao?: 'neutra' | 'alegria' | 'calma' | 'cansaço'; // Estado emocional do usuário
 }
 
 /**
@@ -57,6 +58,62 @@ function blendColors(cor1: string, cor2: string, fator: number): string {
 }
 
 /**
+ * Calcula cor adaptativa baseada em emoção, fase lunar, intensidade e progresso
+ * Retorna gradiente HSL para transições suaves
+ */
+function calcularCor(
+  fase: FaseLunar,
+  emocao: 'neutra' | 'alegria' | 'calma' | 'cansaço' = 'neutra',
+  intensidade: 'leve' | 'media' | 'forte' = 'media',
+  progresso: number = 0
+): { cor: string; brilho: number; saturacao: number; velocidade: number } {
+  // Base de cores por emoção (em HSL para transições suaves)
+  const coresEmocao = {
+    alegria: { h: 45, s: 100, l: 60 },    // Dourado/laranja (45°)
+    calma: { h: 160, s: 60, l: 50 },      // Verde-azulado (160°)
+    cansaço: { h: 220, s: 30, l: 65 },    // Azul-cinza suave (220°)
+    neutra: { h: 145, s: 70, l: 55 },     // Verde natureza (145°)
+  };
+  
+  // Base de ajustes por fase lunar
+  const ajustesFase = {
+    nova: { hShift: -10, sShift: -20, lShift: -15 },       // Mais escuro e frio
+    crescente: { hShift: 5, sShift: 10, lShift: 5 },       // Levemente mais claro
+    cheia: { hShift: -5, sShift: 20, lShift: 15 },         // Mais saturado e brilhante
+    minguante: { hShift: 10, sShift: -10, lShift: -5 },    // Tons mais frios
+  };
+  
+  // Base de ajustes por intensidade
+  const ajustesIntensidade = {
+    leve: { brilho: 0.7, saturacao: 0.8, velocidade: 1.3 },
+    media: { brilho: 1.0, saturacao: 1.0, velocidade: 1.0 },
+    forte: { brilho: 1.2, saturacao: 1.1, velocidade: 0.8 },
+  };
+  
+  // Combinar valores
+  const baseEmocao = coresEmocao[emocao];
+  const ajusteFase = ajustesFase[fase];
+  const ajusteIntensidade = ajustesIntensidade[intensidade];
+  
+  // Calcular HSL final
+  let h = baseEmocao.h + ajusteFase.hShift;
+  let s = Math.max(0, Math.min(100, baseEmocao.s + ajusteFase.sShift * ajusteIntensidade.saturacao));
+  let l = Math.max(0, Math.min(100, baseEmocao.l + ajusteFase.lShift + (progresso * 5))); // Progresso ilumina
+  
+  // Normalizar matiz (0-360)
+  h = ((h % 360) + 360) % 360;
+  
+  const cor = `hsl(${h}, ${s}%, ${l}%)`;
+  
+  return {
+    cor,
+    brilho: ajusteIntensidade.brilho,
+    saturacao: ajusteIntensidade.saturacao,
+    velocidade: ajusteIntensidade.velocidade,
+  };
+}
+
+/**
  * Hook personalizado para guia de respiração
  * Ciclo simplificado: inspirar → expirar (contínuo)
  */
@@ -92,9 +149,25 @@ function usarRespiracao(ativo: boolean, duracaoCiclo: number) {
   return { faseRespiracao, cicloAtual };
 }
 
-export function Mandala({ progresso, intensidade = 'media', pausado = false, ativo = true, modoRespiracao = false, ciclo = 8 }: MandalaProps) {
+export function Mandala({ 
+  progresso, 
+  intensidade = 'media', 
+  pausado = false, 
+  ativo, 
+  modoRespiracao = false, 
+  ciclo = 8,
+  emocao = 'neutra'
+}: MandalaProps) {
   // Estado da fase lunar
   const [faseLunar, setFaseLunar] = useState<FaseLunar>('cheia');
+  
+  // Estado da cor adaptativa (combina emoção + lua + intensidade + progresso)
+  const [corAdaptativa, setCorAdaptativa] = useState({
+    cor: 'hsl(145, 70%, 55%)',
+    brilho: 1.0,
+    saturacao: 1.0,
+    velocidade: 1.0,
+  });
   
   // Calcular fase lunar ao montar componente
   useEffect(() => {
@@ -108,6 +181,23 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
     
     return () => clearInterval(intervalo);
   }, []);
+  
+  // Calcular cor adaptativa baseada em múltiplos fatores
+  useEffect(() => {
+    if (!ativo && !modoRespiracao) return;
+    
+    const estadoCor = calcularCor(faseLunar, emocao, intensidade, progresso);
+    setCorAdaptativa(estadoCor);
+    
+    console.info('[Mandala Viva] 🎨 Cor adaptativa:', {
+      fase: faseLunar,
+      emocao,
+      intensidade,
+      progresso: `${Math.round(progresso * 100)}%`,
+      cor: estadoCor.cor,
+    });
+    
+  }, [ativo, emocao, progresso, faseLunar, intensidade, modoRespiracao]);
   
   // Guia de respiração
   const { faseRespiracao } = usarRespiracao(modoRespiracao, ciclo);
@@ -150,10 +240,10 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
     },
   }[intensidade];
 
-  // Ajustar velocidade quando pausado ou inativo
+  // Ajustar velocidade quando pausado, inativo ou por emoção
   const velocidadeRotacao = (pausado || !ativo)
     ? 0 // Parar rotação quando pausado/inativo
-    : intensidadeConfig.rotationDuration * configuracaoLunar.velocidade; // Ajuste lunar
+    : intensidadeConfig.rotationDuration * configuracaoLunar.velocidade * velocidadeEmocional; // Ajuste lunar + emocional
   
   const brilhoAtual = (pausado || !ativo)
     ? intensidadeConfig.glowOpacity * 0.3 // 30% do brilho quando pausado
@@ -161,30 +251,40 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
 
   // Cores suaves para modo respiração
   const coresRespiracao = {
-    inspirar: '#87CEEB',  // Azul-claro (céu)
+    inspirar: '#FFD700',  // Dourado (energia)
     segurar: '#F0E68C',   // Dourado difuso
-    expirar: '#F9F9F9',   // Branco suave
+    expirar: '#2ECC71',   // Verde (liberação)
   };
   
-  // Cor dinâmica baseada na energia e fase lunar (ou respiração)
-  const corEnergia = energiaCor(intensidade);
+  // Cor dinâmica baseada em múltiplos fatores
   const corPrincipal = modoRespiracao 
-    ? coresRespiracao[faseRespiracao]
-    : blendColors(corEnergia, configuracaoLunar.cor, configuracaoLunar.saturacao);
+    ? coresRespiracao[faseRespiracao]  // Modo respiração: cores fixas
+    : corAdaptativa.cor;                // Modo normal: cor adaptativa (emoção + lua + intensidade)
   
-  // Ajuste de escala de pulso baseado na lua ou respiração
+  // Ajuste de escala de pulso baseado na lua, respiração ou emoção
   const pulseScaleAjustado = modoRespiracao
     ? (faseRespiracao === 'inspirar' ? 1.15 : faseRespiracao === 'segurar' ? 1.15 : 1.0)
+    : emocao === 'alegria'
+    ? intensidadeConfig.pulseScale * 1.3  // Pulso forte e rápido (alegria)
+    : emocao === 'cansaço'
+    ? intensidadeConfig.pulseScale * 0.7  // Pulso muito suave (cansaço)
     : faseLunar === 'cheia' 
     ? intensidadeConfig.pulseScale * 1.2  // Pulso mais forte na lua cheia
     : faseLunar === 'nova'
     ? intensidadeConfig.pulseScale * 0.8  // Pulso mais suave na lua nova
     : intensidadeConfig.pulseScale;
   
-  // Ajuste de brilho para modo respiração
+  // Ajuste de brilho para modo respiração ou emoção
   const brilhoRespiracao = modoRespiracao
     ? (faseRespiracao === 'inspirar' ? 0.9 : faseRespiracao === 'segurar' ? 1.0 : 0.6)
-    : 1.0;
+    : corAdaptativa.brilho;
+  
+  // Velocidade de animação baseada em emoção
+  const velocidadeEmocional = emocao === 'alegria' 
+    ? 0.7  // Mais rápido
+    : emocao === 'cansaço'
+    ? 1.8  // Muito mais lento
+    : corAdaptativa.velocidade;
 
   // Calcular circunferência para o anel de progresso
   const radius = 80;
@@ -204,17 +304,26 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
       className="relative w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] flex items-center justify-center"
       animate={modoRespiracao ? {
         scale: scaleRespiracao,
-      } : {}}
+      } : ativo ? {
+        opacity: 1,
+        scale: 1,
+      } : {
+        opacity: 0.5,
+        scale: 0.95,
+      }}
       transition={modoRespiracao ? {
         duration: duracaoFaseRespiracao / 1000,
         ease: "easeInOut",
         repeat: 0, // Controlado pelo hook
-      } : {}}
+      } : {
+        duration: 2,
+        ease: "easeInOut",
+      }}
       style={{
         filter: modoRespiracao
           ? `brightness(${brightnessRespiracao}) saturate(0.9) ${shadowRespiracao}`
-          : `brightness(${configuracaoLunar.brilho}) saturate(${configuracaoLunar.saturacao})`,
-        transition: 'filter 0.7s ease-in-out',
+          : `brightness(${brilhoRespiracao}) saturate(${corAdaptativa.saturacao})`,
+        transition: 'filter 2s ease-in-out, opacity 2s ease-in-out',
       }}
     >
       <svg
