@@ -15,6 +15,7 @@ import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, T
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { MandalaReward } from "@/components/ui/MandalaReward";
 import { motion } from "framer-motion";
+import { analisarPadrao, calcularScoreProdutividade, detectarMelhorHorario } from "@/lib/adaptiveEngine";
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -259,6 +260,54 @@ export default function Home() {
       });
     }
   }, [analisesPadroes]);
+
+  // Aplicar ajustes adaptativos baseados em padrões de uso
+  useEffect(() => {
+    if (!padrõesUsoRecentes || padrõesUsoRecentes.length < 3) return;
+
+    // Analisar padrões e obter ajustes
+    const ajustes = analisarPadrao(padrõesUsoRecentes, tempoInicial);
+    
+    // Aplicar ajuste de tempo (apenas se não estiver rodando)
+    if (!rodando && ajustes.tempoAjustado !== tempoInicial) {
+      const diferencaSegundos = ajustes.tempoAjustado - tempoInicial;
+      const diferencaMinutos = Math.round(diferencaSegundos / 60);
+      
+      console.log(`[Adaptive Engine] ⚙️ Ajustando tempo base: ${diferencaMinutos > 0 ? '+' : ''}${diferencaMinutos} min`);
+      
+      setTempoInicial(ajustes.tempoAjustado);
+      setTempo(ajustes.tempoAjustado);
+      setTempoRestante(ajustes.tempoAjustado);
+    }
+    
+    // Aplicar ajuste de intensidade da mandala
+    const intensidadeMap = {
+      leve: 0.7,
+      normal: 1.0,
+      forte: 1.3,
+    };
+    
+    const novaIntensidade = intensidadeMap[ajustes.intensidadeMandala];
+    if (novaIntensidade !== mandalaIntensityModifier) {
+      console.log(`[Adaptive Engine] 🌸 Ajustando intensidade da mandala: ${ajustes.intensidadeMandala}`);
+      setMandalaIntensityModifier(novaIntensidade);
+    }
+
+    // Calcular e exibir score de produtividade
+    const score = calcularScoreProdutividade(padrõesUsoRecentes);
+    console.log(`[Adaptive Engine] 🎯 Score de produtividade: ${score}/100`);
+
+    // Detectar melhor horário
+    const melhorHorario = detectarMelhorHorario(padrõesUsoRecentes);
+    if (melhorHorario) {
+      console.log(`[Adaptive Engine] ⏰ Melhor horário para foco: ${melhorHorario.hora}:00 (${melhorHorario.confianca}% confiança)`);
+    }
+
+    // Exibir recomendação
+    if (ajustes.recomendacao) {
+      console.log(`[Adaptive Engine] 💡 ${ajustes.recomendacao}`);
+    }
+  }, [padrõesUsoRecentes, rodando, tempoInicial, mandalaIntensityModifier]);
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
