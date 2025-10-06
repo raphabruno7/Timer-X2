@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const userPrompt = `Histórico recente de uso:
 ${usageHistory
         ?.slice(-20)
-        ?.map((item: any, index: number) => `Sessão ${index + 1}: preset ${item.preset}, duração ${item.duration} minutos, iniciado em ${new Date(item.startedAt).toISOString()}`)
+        ?.map((item: { preset: string; duration: number; startedAt: number }, index: number) => `Sessão ${index + 1}: preset ${item.preset}, duração ${item.duration} minutos, iniciado em ${new Date(item.startedAt).toISOString()}`)
         ?.join("\n") || "Sem dados"}
 
 Analise o comportamento de uso e descreva padrões sutis de foco.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
@@ -31,7 +31,6 @@ export default function Home() {
   const [periodoSelecionado, setPeriodoSelecionado] = useState<"hoje" | "semana" | "mes">("hoje");
   const [rewardTriggered, setRewardTriggered] = useState(false); // Evitar múltiplos triggers
   const [mandalaActive, setMandalaActive] = useState(false); // Estado da mandala
-  const [aiMessage, setAiMessage] = useState<string>(""); // Mensagem da AI
   const [mandalaMood, setMandalaMood] = useState<"foco" | "criatividade" | "relaxamento" | "energia">("foco");
   const [iaSugestao, setIaSugestao] = useState<{ sugestao: string; descricao: string } | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -48,7 +47,6 @@ export default function Home() {
     cor: "#2ECC71",
     pulsacao: 0.5,
   });
-  const [ajustesIA, setAjustesIA] = useState<Record<string, any> | null>(null);
   const [contadorSessoesIA, setContadorSessoesIA] = useState(0);
   const [carregandoInsights, setCarregandoInsights] = useState(false);
   const [paletaAdaptativa, setPaletaAdaptativa] = useState({
@@ -58,7 +56,7 @@ export default function Home() {
   const [mandalaIntensityModifier, setMandalaIntensityModifier] = useState(1);
 
   // Convex hooks
-  const presets = useQuery(api.presets.listar) || [];
+  const presetsQuery = useQuery(api.presets.listar);
   const adicionarPreset = useMutation(api.presets.adicionar);
   const removerPreset = useMutation(api.presets.remover);
   const registrarUso = useMutation(api.historico.registrarUso);
@@ -66,14 +64,19 @@ export default function Home() {
   const registrarSessao = useMutation(api.sessoes.registrar);
   const iniciarSessaoConvex = useMutation(api.userSessions.iniciarSessao);
   const finalizarSessaoConvex = useMutation(api.userSessions.finalizarSessao);
-  const historico = useQuery(api.historico.listarHistorico, {}) || [];
+  const historicoQuery = useQuery(api.historico.listarHistorico, {});
   const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
   const historicoDetalhado = useQuery(api.historico.historicoDetalhado);
   const rankingPresets = useQuery(api.historico.rankingPresets);
   const estatisticasGerais = useQuery(api.historico.estatisticasGerais);
   const estatisticasPorDia = useQuery(api.historico.estatisticasPorDia);
-  const sessoesRegistradas = useQuery(api.sessoes.listar) || [];
+  const sessoesRegistradasQuery = useQuery(api.sessoes.listar);
+
+  // Memoize queries to prevent re-renders
+  const presets = useMemo(() => presetsQuery || [], [presetsQuery]);
+  const historico = useMemo(() => historicoQuery || [], [historicoQuery]);
+  const sessoesRegistradas = useMemo(() => sessoesRegistradasQuery || [], [sessoesRegistradasQuery]);
 
   const adaptivePrimary = paletaAdaptativa.primary ?? estadoEmocional.cor;
   const adaptiveAccent = paletaAdaptativa.accent ?? "#FFD700";
@@ -84,7 +87,7 @@ export default function Home() {
   );
 
 
-  const applyAdaptiveAdjustments = useCallback((adjustments: Record<string, any>) => {
+  const applyAdaptiveAdjustments = useCallback((adjustments: Record<string, unknown>) => {
     if (!adjustments) return;
 
     if (adjustments.palette && typeof adjustments.palette === "object") {
@@ -121,7 +124,6 @@ export default function Home() {
       setMandalaIntensityModifier(intensityValue);
     }
 
-    setAjustesIA(adjustments);
     console.info("[Adaptive IA] Ajustes aplicados:", adjustments);
   }, [rodando, tempoInicial]);
 
@@ -217,7 +219,7 @@ export default function Home() {
 
   // Função para formatar data curta (DD/MM)
   const formatarDataCurta = (dataStr: string) => {
-    const [ano, mes, dia] = dataStr.split('-');
+    const [, mes, dia] = dataStr.split('-');
     return `${dia}/${mes}`;
   };
 
@@ -451,7 +453,6 @@ export default function Home() {
         // Buscar nome do preset para registrar mandala
         const preset = presets.find(p => p._id === presetAtivo);
         const presetName = preset?.nome || "Preset desconhecido";
-        const finishedAt = Date.now();
         
         // Determinar mood baseado no nome do preset
         let mood: "foco" | "criatividade" | "relaxamento" | "energia" = "foco";
@@ -475,15 +476,14 @@ export default function Home() {
         fetch('/api/ai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ presetName, duration: duracao, finishedAt })
+          body: JSON.stringify({ presetName, duration: duracao })
         })
           .then(res => res.json())
-          .then(data => {
-            setAiMessage(data.message);
+          .then(() => {
+            // Mensagem AI processada (não exibida diretamente)
           })
           .catch(err => {
             console.error("Erro ao buscar mensagem AI:", err);
-            setAiMessage(""); // Usar mensagem padrão
           });
 
         // Buscar sugestão de próximo modo da IA
@@ -547,7 +547,7 @@ export default function Home() {
       }
       setTempoInicio(null);
     }
-  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, registrarMandala, registrarSessao, finalizarSessaoConvex, presets, historico, rewardTriggered, sessionId, numeroPausas, interacoes]);
+  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, registrarMandala, registrarSessao, finalizarSessaoConvex, presets, historico, rewardTriggered, sessionId, numeroPausas, interacoes, detectarEmocaoSessao]);
 
   // Sincronizar tempo com tempoRestante
   useEffect(() => {
@@ -599,7 +599,7 @@ export default function Home() {
   }, [mandalaActive, rewardTriggered]);
 
   // Detectar emoção quando sessão finaliza
-  const detectarEmocaoSessao = async (tempoMinutos: number, pausasCount: number) => {
+  const detectarEmocaoSessao = useCallback(async (tempoMinutos: number, pausasCount: number) => {
     try {
       const response = await fetch('/api/emocao', {
         method: 'POST',
@@ -617,7 +617,7 @@ export default function Home() {
     } catch (error) {
       console.error("[Detecção Emocional] Erro:", error);
     }
-  };
+  }, [sessionId]);
 
   return (
     <>

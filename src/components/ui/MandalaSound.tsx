@@ -19,7 +19,7 @@ export function MandalaSound({ mood, intensity, playing }: MandalaSoundProps) {
   useEffect(() => {
     if (playing) {
       // Criar Web Audio Context
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioContext = window.AudioContext || (window as { webkitAudioContext?: typeof window.AudioContext }).webkitAudioContext;
       const audioContext = new AudioContext();
       audioContextRef.current = audioContext;
 
@@ -90,7 +90,7 @@ export function MandalaSound({ mood, intensity, playing }: MandalaSoundProps) {
         if (oscillatorRef.current) {
           try {
             oscillatorRef.current.stop();
-          } catch (e) {
+          } catch {
             // Ignorar erro se já parou
           }
         }

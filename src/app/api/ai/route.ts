@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { presetName, duration, finishedAt } = await request.json();
+    const { presetName, duration } = await request.json();
 
     // Validar API key
     const apiKey = process.env.OPENAI_API_KEY;

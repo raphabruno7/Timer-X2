@@ -69,7 +69,7 @@ export const analisarPadroes = query({
   args: {
     userId: v.union(v.string(), v.null()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx) => {
     // Buscar sessões recentes (últimos 7 dias)
     const seteDiasAtras = Date.now() - (7 * 24 * 60 * 60 * 1000);
     const todasSessoes = await ctx.db.query("user_sessions").collect();

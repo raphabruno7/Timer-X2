@@ -106,7 +106,7 @@ export const estatisticas = query({
     let nomePresetMaisUsado = "-";
     if (presetMaisUsadoId) {
       try {
-        const preset = await ctx.db.get(presetMaisUsadoId as any);
+        const preset = await ctx.db.get(presetMaisUsadoId as Id<"presets">);
         if (preset && 'nome' in preset) {
           nomePresetMaisUsado = preset.nome;
         } else {
@@ -195,7 +195,7 @@ export const estatisticasPorPeriodo = query({
     let nomePresetMaisUsado = "-";
     if (presetMaisUsadoId) {
       try {
-        const preset = await ctx.db.get(presetMaisUsadoId as any);
+        const preset = await ctx.db.get(presetMaisUsadoId as Id<"presets">);
         if (preset && 'nome' in preset) {
           nomePresetMaisUsado = preset.nome;
         } else {
@@ -317,7 +317,7 @@ export const rankingPresets = query({
       // Buscar nome do preset
       let nomePreset = "Preset removido";
       try {
-        const preset = await ctx.db.get(presetId as any);
+        const preset = await ctx.db.get(presetId as Id<"presets">);
         if (preset && 'nome' in preset) {
           nomePreset = preset.nome;
         }
