@@ -1190,10 +1190,19 @@ export default function Home() {
                   boxShadow: `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
                 }}
                 animate={{
-                  scale: [1, 1 + (0.02 * mandalaAdaptiveIntensity), 1],
+                  scale: rodando 
+                    ? [1, 1.03, 1] 
+                    : [1, 1 + (0.02 * mandalaAdaptiveIntensity), 1],
+                  boxShadow: rodando
+                    ? [
+                        `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
+                        `0 0 ${35 * mandalaAdaptiveIntensity}px ${adaptiveAccent}80`,
+                        `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
+                      ]
+                    : `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
                 }}
                 transition={{
-                  duration: estadoEmocional.emocao === "disperso" ? 1.5 : 3,
+                  duration: rodando ? 1 : (estadoEmocional.emocao === "disperso" ? 1.5 : 3),
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
@@ -1219,77 +1228,112 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Control Buttons */}
+            {/* Control Buttons com animações suaves */}
             <div className="flex justify-center gap-4 relative z-10">
-              <Button
-                size="lg"
-                onClick={iniciar}
-                disabled={rodando || tempo === 0}
-                className="w-14 h-14 rounded-full bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white shadow-lg transition-all duration-200 hover:scale-105 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ pointerEvents: 'auto' }}
+              <motion.div
+                whileHover={{ scale: rodando || tempo === 0 ? 1 : 1.1 }}
+                whileTap={{ scale: rodando || tempo === 0 ? 1 : 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                <Play className="w-6 h-6 ml-1" />
-              </Button>
+                <Button
+                  size="lg"
+                  onClick={iniciar}
+                  disabled={rodando || tempo === 0}
+                  className="w-14 h-14 rounded-full bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  <motion.div
+                    animate={!rodando && tempo > 0 ? { scale: [1, 1.1, 1] } : {}}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Play className="w-6 h-6 ml-1" />
+                  </motion.div>
+                </Button>
+              </motion.div>
               
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={pausar}
-                disabled={!rodando}
-                className="w-14 h-14 rounded-full border-[#FFD700]/50 text-[#FFD700] hover:bg-[#FFD700]/10 hover:border-[#FFD700] transition-all duration-200 hover:scale-105 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ pointerEvents: 'auto' }}
+              <motion.div
+                whileHover={{ scale: !rodando ? 1 : 1.1 }}
+                whileTap={{ scale: !rodando ? 1 : 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                <Pause className="w-6 h-6" />
-              </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={pausar}
+                  disabled={!rodando}
+                  className="w-14 h-14 rounded-full border-[#FFD700]/50 text-[#FFD700] hover:bg-[#FFD700]/10 hover:border-[#FFD700] transition-all duration-300 ease-in-out relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  <Pause className="w-6 h-6" />
+                </Button>
+              </motion.div>
               
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={resetar}
-                className="w-14 h-14 rounded-full border-[#F9F9F9]/30 text-[#F9F9F9] hover:bg-[#F9F9F9]/10 hover:border-[#F9F9F9]/50 transition-all duration-200 hover:scale-105 relative z-10"
-                style={{ pointerEvents: 'auto' }}
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: -15 }}
+                whileTap={{ scale: 0.95, rotate: 180 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                <RotateCcw className="w-6 h-6" />
-              </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={resetar}
+                  className="w-14 h-14 rounded-full border-[#F9F9F9]/30 text-[#F9F9F9] hover:bg-[#F9F9F9]/10 hover:border-[#F9F9F9]/50 transition-all duration-300 ease-in-out relative z-10"
+                  style={{ pointerEvents: 'auto' }}
+                >
+                  <RotateCcw className="w-6 h-6" />
+                </Button>
+              </motion.div>
             </div>
           </div>
 
-          {/* Bottom Navigation */}
+          {/* Bottom Navigation com animações suaves */}
           <div className="bg-[#2ECC71]/5 border-t border-[#2ECC71]/10 p-4">
             <div className="flex justify-around">
-              <button 
+              <motion.button 
                 onClick={() => setAbaAtiva("presets")}
-                className={`flex flex-col items-center gap-1 p-2 transition-all duration-200 rounded-lg hover:bg-[#2ECC71]/10 ${
+                className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ease-in-out rounded-lg hover:bg-[#2ECC71]/10 ${
                   abaAtiva === "presets" 
                     ? "text-[#2ECC71]" 
                     : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
                 }`}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <Leaf className="w-5 h-5" />
                 <span className="text-xs font-medium">Presets</span>
-              </button>
+              </motion.button>
               
-              <button 
+              <motion.button 
                 onClick={() => setAbaAtiva("historico")}
-                className={`flex flex-col items-center gap-1 p-2 transition-all duration-200 rounded-lg hover:bg-[#2ECC71]/10 ${
+                className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ease-in-out rounded-lg hover:bg-[#2ECC71]/10 ${
                   abaAtiva === "historico" 
                     ? "text-[#2ECC71]" 
                     : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
                 }`}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <Clock className="w-5 h-5" />
                 <span className="text-xs font-medium">Histórico</span>
-              </button>
+              </motion.button>
               
-              <button className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-200 rounded-lg hover:bg-[#F9F9F9]/10">
+              <motion.button 
+                className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-300 ease-in-out rounded-lg hover:bg-[#F9F9F9]/10"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <Sparkles className="w-5 h-5" />
                 <span className="text-xs font-medium">AI</span>
-              </button>
+              </motion.button>
               
-              <button className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-200 rounded-lg hover:bg-[#F9F9F9]/10">
+              <motion.button 
+                className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-300 ease-in-out rounded-lg hover:bg-[#F9F9F9]/10"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 <Settings className="w-5 h-5" />
                 <span className="text-xs font-medium">Config</span>
-              </button>
+              </motion.button>
             </div>
           </div>
         </Card>
