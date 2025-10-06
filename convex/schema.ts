@@ -59,4 +59,12 @@ export default defineSchema({
     ultimaAtualizacao: v.number(), // timestamp em ms
   })
     .index("by_usuario", ["usuarioId"]),
+  memoria_elemental: defineTable({
+    usuarioId: v.string(),
+    elemento: v.string(), // "terra" | "agua" | "fogo" | "ar" | "eter"
+    totalCiclos: v.number(), // número de ciclos quando alcançou este elemento
+    timestamp: v.number(), // timestamp em ms
+  })
+    .index("by_usuario", ["usuarioId"])
+    .index("by_timestamp", ["timestamp"]),
 });

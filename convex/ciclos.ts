@@ -178,6 +178,48 @@ export const obterEstatisticasGerais = query({
 });
 
 /**
+ * Registra uma transição de elemento na memória
+ */
+export const registrarMemoria = mutation({
+  args: {
+    usuarioId: v.string(),
+    elemento: v.string(),
+    totalCiclos: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("memoria_elemental", {
+      usuarioId: args.usuarioId,
+      elemento: args.elemento,
+      totalCiclos: args.totalCiclos,
+      timestamp: Date.now(),
+    });
+    
+    return { sucesso: true };
+  },
+});
+
+/**
+ * Busca o histórico de memórias elementais do usuário
+ */
+export const listarMemoria = query({
+  args: {
+    usuarioId: v.string(),
+    limite: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limite = args.limite || 50;
+    
+    const memorias = await ctx.db
+      .query("memoria_elemental")
+      .withIndex("by_usuario", (q) => q.eq("usuarioId", args.usuarioId))
+      .order("desc") // Mais recentes primeiro
+      .take(limite);
+    
+    return memorias;
+  },
+});
+
+/**
  * Helper: Determina elemento baseado no número de ciclos
  * (Mesma lógica do frontend, para consistência)
  */

@@ -17,6 +17,7 @@ import { MandalaReward } from "@/components/ui/MandalaReward";
 import { Mandala } from "@/components/ui/Mandala";
 import { AlquimiaPanel } from "@/components/ui/AlquimiaPanel";
 import { CicloVital, type Elemento } from "@/components/ui/CicloVital";
+import { MemoriaElemental } from "@/components/ui/MemoriaElemental";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -81,7 +82,7 @@ export default function Home() {
   const [inputManual, setInputManual] = useState("");
   const [erroInput, setErroInput] = useState("");
   const [presetAtivo, setPresetAtivo] = useState<Id<"presets"> | null>(null); // ID do preset ativo
-  const [abaAtiva, setAbaAtiva] = useState<"presets" | "historico">("presets"); // Controle de abas
+  const [abaAtiva, setAbaAtiva] = useState<"presets" | "historico" | "memoria">("presets"); // Controle de abas
   const [tempoInicio, setTempoInicio] = useState<number | null>(null); // Para calcular duração
   const [periodoSelecionado, setPeriodoSelecionado] = useState<"hoje" | "semana" | "mes">("hoje");
   const [rewardTriggered, setRewardTriggered] = useState(false); // Evitar múltiplos triggers
@@ -142,6 +143,7 @@ export default function Home() {
   // Ciclo Vital hooks
   const incrementarCiclo = useMutation(api.ciclos.incrementarCiclo);
   const ciclosQuery = useQuery(api.ciclos.obterCiclos, { usuarioId: "guest" });
+  const registrarMemoriaElemental = useMutation(api.ciclos.registrarMemoria);
 
   // Memoize queries to prevent re-renders
   const presets = useMemo(() => presetsQuery || [], [presetsQuery]);
@@ -819,7 +821,7 @@ export default function Home() {
               .then((resultado) => {
                 console.info('[Ciclo Vital] Ciclo incrementado:', resultado);
                 
-                // Se evoluiu, mostrar toast
+                // Se evoluiu, registrar na memória elemental
                 if (resultado?.evoluiu) {
                   const elementos: Record<string, { nome: string; icone: string }> = {
                     terra: { nome: "Terra", icone: "🌍" },
@@ -831,6 +833,16 @@ export default function Home() {
                   
                   const elementoAtual = elementos[resultado.elemento as keyof typeof elementos] || { nome: resultado.elemento, icone: "✨" };
                   
+                  // Registrar na Memória Elemental
+                  registrarMemoriaElemental({
+                    usuarioId: "guest",
+                    elemento: resultado.elemento,
+                    totalCiclos: resultado.totalCiclos,
+                  }).catch(err => {
+                    console.error('[Memória Elemental] Erro ao registrar:', err);
+                  });
+                  
+                  // Mostrar toast de evolução
                   toast(`Você evoluiu para o Elemento ${elementoAtual.nome}! ${elementoAtual.icone}`, {
                     description: `${resultado.totalCiclos} ciclos completados`,
                     duration: 5000,
@@ -1402,7 +1414,7 @@ export default function Home() {
                   )}
                 </div>
               </div>
-            ) : (
+            ) : abaAtiva === "historico" ? (
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-medium text-[#F9F9F9]/70">Histórico de Uso</h3>
@@ -1441,7 +1453,17 @@ export default function Home() {
                   )}
                 </div>
               </div>
-            )}
+            ) : abaAtiva === "memoria" ? (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-[#FFD700]">🌍💧🔥🌬️✨ Memória Elemental</h3>
+                </div>
+                
+                <div className="bg-[#1C1C1C]/50 rounded-lg p-2 border border-[#FFD700]/20">
+                  <MemoriaElemental usuarioId="guest" />
+                </div>
+              </div>
+            ) : null}
 
             {/* Input Manual */}
             <div className="flex flex-col items-center gap-2">
@@ -1725,8 +1747,22 @@ export default function Home() {
                 <Clock className="w-5 h-5" />
                 <span className="text-xs font-medium">Histórico</span>
               </motion.button>
-              
+
               <motion.button 
+                onClick={() => setAbaAtiva("memoria")}
+                className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ease-in-out rounded-lg hover:bg-[#2ECC71]/10 ${
+                  abaAtiva === "memoria" 
+                    ? "text-[#FFD700]" 
+                    : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
+                }`}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Sparkles className="w-5 h-5" />
+                <span className="text-xs font-medium">Memória</span>
+              </motion.button>
+
+              <motion.button
                 className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-300 ease-in-out rounded-lg hover:bg-[#F9F9F9]/10"
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
