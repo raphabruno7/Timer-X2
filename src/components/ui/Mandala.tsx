@@ -5,27 +5,54 @@ import { motion } from "framer-motion";
 interface MandalaProps {
   progresso: number; // 0 a 1 (porcentagem de progresso)
   intensidade?: 'leve' | 'media' | 'forte';
+  pausado?: boolean; // Timer está pausado?
 }
 
-export function Mandala({ progresso, intensidade = 'media' }: MandalaProps) {
+/**
+ * Retorna cor baseada na intensidade energética
+ */
+function energiaCor(intensidade: 'leve' | 'media' | 'forte'): string {
+  return intensidade === 'forte' 
+    ? '#FFD700'  // Dourado vibrante
+    : intensidade === 'media' 
+    ? '#2ECC71'  // Verde vida
+    : '#F9F9F9'; // Branco suave
+}
+
+export function Mandala({ progresso, intensidade = 'media', pausado = false }: MandalaProps) {
   // Configurações de intensidade
   const intensidadeConfig = {
     leve: {
       pulseScale: 1.02,
       glowOpacity: 0.3,
       duration: 3,
+      rotationDuration: 60, // Rotação muito lenta
     },
     media: {
       pulseScale: 1.05,
       glowOpacity: 0.5,
       duration: 2,
+      rotationDuration: 40, // Rotação moderada
     },
     forte: {
       pulseScale: 1.08,
       glowOpacity: 0.7,
       duration: 1.5,
+      rotationDuration: 25, // Rotação mais rápida
     },
   }[intensidade];
+
+  // Ajustar velocidade quando pausado
+  const velocidadeRotacao = pausado 
+    ? intensidadeConfig.rotationDuration * 3 // 3x mais lento quando pausado
+    : intensidadeConfig.rotationDuration;
+  
+  const brilhoAtual = pausado
+    ? intensidadeConfig.glowOpacity * 0.5 // 50% do brilho quando pausado
+    : intensidadeConfig.glowOpacity;
+
+  // Cor dinâmica baseada na energia
+  const corPrincipal = energiaCor(intensidade);
 
   // Calcular circunferência para o anel de progresso
   const radius = 80;
@@ -66,58 +93,83 @@ export function Mandala({ progresso, intensidade = 'media' }: MandalaProps) {
           </filter>
         </defs>
 
-        {/* Anel externo (pulso energético) */}
+        {/* Anel externo (pulso energético rítmico) */}
         <motion.circle
           cx="96"
           cy="96"
           r="90"
           fill="url(#externalGradient)"
-          opacity={intensidadeConfig.glowOpacity}
+          opacity={brilhoAtual}
           animate={{
-            scale: [1, intensidadeConfig.pulseScale, 1],
-            opacity: [intensidadeConfig.glowOpacity, intensidadeConfig.glowOpacity * 0.7, intensidadeConfig.glowOpacity],
+            scale: pausado 
+              ? [1, 1.01, 1] // Pulso mínimo quando pausado
+              : [1, intensidadeConfig.pulseScale, 1],
+            opacity: pausado
+              ? [brilhoAtual, brilhoAtual * 0.8, brilhoAtual] // Variação reduzida quando pausado
+              : [brilhoAtual, brilhoAtual * 0.7, brilhoAtual],
           }}
           transition={{
-            duration: intensidadeConfig.duration,
+            duration: pausado ? intensidadeConfig.duration * 2 : intensidadeConfig.duration,
             repeat: Infinity,
             ease: "easeInOut",
           }}
           style={{ transformOrigin: '96px 96px' }}
         />
 
-        {/* Anel médio - fundo (cinza) */}
-        <circle
-          cx="96"
-          cy="96"
-          r={radius}
-          fill="none"
-          stroke="#2ECC71"
-          strokeWidth="8"
-          strokeOpacity="0.2"
-        />
-
-        {/* Anel médio - progresso (verde vida) */}
+        {/* Anel médio - fundo (cinza) com rotação lenta */}
         <motion.circle
           cx="96"
           cy="96"
           r={radius}
           fill="none"
-          stroke="#2ECC71"
+          stroke={corPrincipal}
           strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          transform="rotate(-90 96 96)"
-          filter="url(#glow)"
+          strokeOpacity="0.2"
           animate={{
-            opacity: [0.8, 1, 0.8],
+            rotate: pausado ? 0 : 360,
           }}
           transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
+            duration: velocidadeRotacao,
+            repeat: pausado ? 0 : Infinity,
+            ease: "linear",
           }}
+          style={{ transformOrigin: '96px 96px' }}
         />
+
+        {/* Anel médio - progresso (cor dinâmica) com rotação */}
+        <motion.g
+          animate={{
+            rotate: pausado ? 0 : 360,
+          }}
+          transition={{
+            duration: velocidadeRotacao,
+            repeat: pausado ? 0 : Infinity,
+            ease: "linear",
+          }}
+          style={{ transformOrigin: '96px 96px' }}
+        >
+          <motion.circle
+            cx="96"
+            cy="96"
+            r={radius}
+            fill="none"
+            stroke={corPrincipal}
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            transform="rotate(-90 96 96)"
+            filter="url(#glow)"
+            animate={{
+              opacity: pausado ? [0.5, 0.6, 0.5] : [0.8, 1, 0.8],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </motion.g>
 
         {/* Círculo interno (centro da energia) */}
         <motion.circle
@@ -127,10 +179,12 @@ export function Mandala({ progresso, intensidade = 'media' }: MandalaProps) {
           fill="url(#centerGradient)"
           filter="url(#glow)"
           animate={{
-            scale: [1, 1.03, 1],
+            scale: pausado ? [1, 1.01, 1] : [1, 1.03, 1],
           }}
           transition={{
-            duration: intensidadeConfig.duration * 1.5,
+            duration: pausado 
+              ? intensidadeConfig.duration * 3 
+              : intensidadeConfig.duration * 1.5,
             repeat: Infinity,
             ease: "easeInOut",
           }}
@@ -148,46 +202,63 @@ export function Mandala({ progresso, intensidade = 'media' }: MandalaProps) {
           strokeOpacity="0.6"
         />
 
-        {/* Detalhes decorativos - pontos de energia */}
-        {[0, 60, 120, 180, 240, 300].map((angle, i) => {
-          const x = 96 + 70 * Math.cos((angle * Math.PI) / 180);
-          const y = 96 + 70 * Math.sin((angle * Math.PI) / 180);
-          
-          return (
-            <motion.circle
-              key={i}
-              cx={x}
-              cy={y}
-              r="3"
-              fill="#2ECC71"
-              opacity="0.6"
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.4, 0.8, 0.4],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.2,
-              }}
-              style={{ transformOrigin: `${x}px ${y}px` }}
-            />
-          );
-        })}
+        {/* Detalhes decorativos - pontos de energia com rotação reversa */}
+        <motion.g
+          animate={{
+            rotate: pausado ? 0 : -360, // Rotação reversa para contraste
+          }}
+          transition={{
+            duration: velocidadeRotacao * 1.5, // Um pouco mais lento que o anel
+            repeat: pausado ? 0 : Infinity,
+            ease: "linear",
+          }}
+          style={{ transformOrigin: '96px 96px' }}
+        >
+          {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+            const x = 96 + 70 * Math.cos((angle * Math.PI) / 180);
+            const y = 96 + 70 * Math.sin((angle * Math.PI) / 180);
+            
+            return (
+              <motion.circle
+                key={i}
+                cx={x}
+                cy={y}
+                r="3"
+                fill={corPrincipal}
+                opacity={pausado ? 0.3 : 0.6}
+                animate={{
+                  scale: pausado ? [1, 1.1, 1] : [1, 1.5, 1],
+                  opacity: pausado 
+                    ? [0.2, 0.4, 0.2] 
+                    : [0.4, 0.8, 0.4],
+                }}
+                transition={{
+                  duration: pausado ? 3 : 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: i * 0.2,
+                }}
+                style={{ transformOrigin: `${x}px ${y}px` }}
+              />
+            );
+          })}
+        </motion.g>
       </svg>
 
-      {/* Indicador de intensidade (invisível, apenas para efeito) */}
+      {/* Indicador de intensidade (halo externo adaptativo) */}
       <motion.div
         className="absolute inset-0 rounded-full pointer-events-none"
         style={{
-          background: `radial-gradient(circle, transparent 40%, rgba(255, 215, 0, ${intensidadeConfig.glowOpacity * 0.1}) 100%)`,
+          background: `radial-gradient(circle, transparent 40%, ${corPrincipal}${Math.round(brilhoAtual * 25.5).toString(16).padStart(2, '0')} 100%)`,
         }}
         animate={{
-          opacity: [0.5, 1, 0.5],
+          opacity: pausado ? [0.2, 0.3, 0.2] : [0.5, 1, 0.5],
+          scale: pausado ? [1, 1.01, 1] : [1, 1.05, 1],
         }}
         transition={{
-          duration: intensidadeConfig.duration,
+          duration: pausado 
+            ? intensidadeConfig.duration * 3
+            : intensidadeConfig.duration,
           repeat: Infinity,
           ease: "easeInOut",
         }}

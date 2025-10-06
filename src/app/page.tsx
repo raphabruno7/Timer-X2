@@ -1481,12 +1481,13 @@ export default function Home() {
                 {/* Mandala viva de fundo */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Mandala 
-                    progresso={1 - (tempoRestante / tempoInicial)}
+                    progresso={tempo > 0 ? 1 - (tempo / tempoInicial) : 1}
                     intensidade={
                       mandalaIntensityModifier >= 1.2 ? 'forte' 
                       : mandalaIntensityModifier <= 0.8 ? 'leve' 
                       : 'media'
                     }
+                    pausado={!rodando}
                   />
                 </div>
 
