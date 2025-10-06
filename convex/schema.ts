@@ -42,4 +42,14 @@ export default defineSchema({
     idioma: v.string(),
     device: v.string(),
   }),
+  usagePatterns: defineTable({
+    userId: v.string(),
+    preset: v.string(),
+    startTime: v.number(), // timestamp em ms
+    duration: v.number(), // duração em minutos
+    mood: v.optional(v.string()), // ex: "foco", "criatividade", "relaxamento"
+    createdAt: v.number(), // timestamp em ms
+  })
+    .index("by_user", ["userId"])
+    .index("by_created_at", ["createdAt"]),
 });

@@ -111,6 +111,9 @@ export default function Home() {
   const registrarSessao = useMutation(api.sessoes.registrar);
   const iniciarSessaoConvex = useMutation(api.userSessions.iniciarSessao);
   const finalizarSessaoConvex = useMutation(api.userSessions.finalizarSessao);
+  const registrarPadraoUso = useMutation(api.usagePatterns.registrar);
+  const padrõesUsoRecentes = useQuery(api.usagePatterns.listarRecentes, { userId: "guest", limit: 10 });
+  const analisesPadroes = useQuery(api.usagePatterns.analisarPadroes, { userId: "guest", limit: 10 });
   const historicoQuery = useQuery(api.historico.listarHistorico, {});
   const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
@@ -244,6 +247,19 @@ export default function Home() {
     }
   }, [sessoesRegistradas, contadorSessoesIA, fetchAdaptiveInsights]);
 
+  // Exibir análise de padrões de uso quando disponível
+  useEffect(() => {
+    if (analisesPadroes && analisesPadroes.totalSessoes > 0) {
+      console.log("[Usage Patterns] 📊 Análise de padrões:", {
+        totalSessoes: analisesPadroes.totalSessoes,
+        mediaDuracao: `${analisesPadroes.mediaDuracao} min`,
+        horarioMaisFrequente: analisesPadroes.horarioMaisFrequente,
+        presetMaisUsado: analisesPadroes.presetMaisUsado,
+        moodDominante: analisesPadroes.moodDominante,
+      });
+    }
+  }, [analisesPadroes]);
+
   // Presets estáticos como fallback
   const presetsEstaticos = [
     { label: "25 min", value: 1500 },
@@ -319,10 +335,11 @@ export default function Home() {
     try {
       const preset = presets.find(p => p._id === presetAtivo);
       const presetNome = preset?.nome || "Manual";
+      const duracaoMinutos = Math.floor(tempoInicial / 60);
       
       const newSessionId = await iniciarSessaoConvex({
         presetAtivo: presetNome,
-        duracaoMinutos: Math.floor(tempoInicial / 60),
+        duracaoMinutos,
         idioma,
         device,
         userId: null,
@@ -330,6 +347,27 @@ export default function Home() {
       
       setSessionId(newSessionId);
       console.log("[Tracking] Sessão iniciada:", newSessionId);
+      
+      // Registrar padrão de uso
+      const mood = presetNome.toLowerCase().includes("foco") 
+        ? "foco"
+        : presetNome.toLowerCase().includes("criat")
+        ? "criatividade"
+        : presetNome.toLowerCase().includes("relax")
+        ? "relaxamento"
+        : presetNome.toLowerCase().includes("energia")
+        ? "energia"
+        : undefined;
+      
+      await registrarPadraoUso({
+        userId: "guest", // Futuramente pode usar ID real do usuário
+        preset: presetNome,
+        startTime: Date.now(),
+        duration: duracaoMinutos,
+        mood,
+      });
+      
+      console.log("[Usage Patterns] Padrão de uso registrado");
     } catch (error) {
       console.error("[Tracking] Erro ao iniciar sessão:", error);
     }
