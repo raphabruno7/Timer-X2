@@ -18,6 +18,7 @@ import { Mandala } from "@/components/ui/Mandala";
 import { AlquimiaPanel } from "@/components/ui/AlquimiaPanel";
 import { CicloVital, type Elemento } from "@/components/ui/CicloVital";
 import { MemoriaElemental } from "@/components/ui/MemoriaElemental";
+import { MandalaElemental } from "@/components/ui/MandalaElemental";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -82,7 +83,7 @@ export default function Home() {
   const [inputManual, setInputManual] = useState("");
   const [erroInput, setErroInput] = useState("");
   const [presetAtivo, setPresetAtivo] = useState<Id<"presets"> | null>(null); // ID do preset ativo
-  const [abaAtiva, setAbaAtiva] = useState<"presets" | "historico" | "memoria">("presets"); // Controle de abas
+  const [abaAtiva, setAbaAtiva] = useState<"presets" | "historico" | "memoria" | "mandala">("presets"); // Controle de abas
   const [tempoInicio, setTempoInicio] = useState<number | null>(null); // Para calcular duração
   const [periodoSelecionado, setPeriodoSelecionado] = useState<"hoje" | "semana" | "mes">("hoje");
   const [rewardTriggered, setRewardTriggered] = useState(false); // Evitar múltiplos triggers
@@ -1463,6 +1464,18 @@ export default function Home() {
                   <MemoriaElemental usuarioId="guest" />
                 </div>
               </div>
+            ) : abaAtiva === "mandala" ? (
+              <div className="mb-4">
+                <div className="flex items-center justify-center mb-2">
+                  <h3 className="text-sm font-medium text-center bg-gradient-to-r from-[#8B5E3C] via-[#00C2FF] via-[#FF4500] via-[#C0E6E9] to-[#FFD700] bg-clip-text text-transparent">
+                    Mandala Elemental
+                  </h3>
+                </div>
+                
+                <div className="bg-[#111111]/80 rounded-lg p-4 border border-[#FFD700]/10 flex items-center justify-center min-h-[450px]">
+                  <MandalaElemental usuarioId="guest" tamanho={380} />
+                </div>
+              </div>
             ) : null}
 
             {/* Input Manual */}
@@ -1758,17 +1771,22 @@ export default function Home() {
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Sparkles className="w-5 h-5" />
+                <History className="w-5 h-5" />
                 <span className="text-xs font-medium">Memória</span>
               </motion.button>
 
               <motion.button
-                className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-300 ease-in-out rounded-lg hover:bg-[#F9F9F9]/10"
+                onClick={() => setAbaAtiva("mandala")}
+                className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ease-in-out rounded-lg hover:bg-[#2ECC71]/10 ${
+                  abaAtiva === "mandala" 
+                    ? "text-[#FFD700]" 
+                    : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
+                }`}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
               >
                 <Sparkles className="w-5 h-5" />
-                <span className="text-xs font-medium">AI</span>
+                <span className="text-xs font-medium">Mandala</span>
               </motion.button>
               
               <motion.button 
