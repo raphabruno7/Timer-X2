@@ -18,39 +18,15 @@ export type FaseLunar = 'nova' | 'crescente' | 'cheia' | 'minguante';
  * @returns Fase lunar: 'nova' | 'crescente' | 'cheia' | 'minguante'
  */
 export function faseDaLua(date: Date = new Date()): FaseLunar {
-  // Data de referência: Lua Nova em 1 de janeiro de 2000 às 18:14 UTC
-  const luaNovaReferencia = new Date('2000-01-06T18:14:00Z');
+  const ciclo = 29.53; // duração média do ciclo lunar
+  const ref = new Date('2000-01-06T18:14:00'); // referência da lua nova
+  const diff = (date.getTime() - ref.getTime()) / (1000 * 60 * 60 * 24);
+  const fase = (diff % ciclo) / ciclo;
   
-  // Ciclo sinódico lunar (período entre duas luas novas)
-  const cicloLunar = 29.53058867; // dias
-  
-  // Calcular diferença em milissegundos
-  const diferencaMs = date.getTime() - luaNovaReferencia.getTime();
-  
-  // Converter para dias
-  const diferencaDias = diferencaMs / (1000 * 60 * 60 * 24);
-  
-  // Calcular posição no ciclo atual (0 a 29.53)
-  const posicaoCiclo = diferencaDias % cicloLunar;
-  
-  // Normalizar para 0-1 (porcentagem do ciclo)
-  const porcentagemCiclo = posicaoCiclo / cicloLunar;
-  
-  // Mapear para as 4 fases principais
-  // 0-0.25: Nova → Crescente
-  // 0.25-0.5: Crescente → Cheia
-  // 0.5-0.75: Cheia → Minguante
-  // 0.75-1.0: Minguante → Nova
-  
-  if (porcentagemCiclo < 0.125 || porcentagemCiclo >= 0.875) {
-    return 'nova'; // Lua Nova
-  } else if (porcentagemCiclo >= 0.125 && porcentagemCiclo < 0.375) {
-    return 'crescente'; // Quarto Crescente
-  } else if (porcentagemCiclo >= 0.375 && porcentagemCiclo < 0.625) {
-    return 'cheia'; // Lua Cheia
-  } else {
-    return 'minguante'; // Quarto Minguante
-  }
+  if (fase < 0.25) return 'nova';
+  if (fase < 0.5) return 'crescente';
+  if (fase < 0.75) return 'cheia';
+  return 'minguante';
 }
 
 /**
@@ -105,32 +81,32 @@ export function descricaoLunar(fase: FaseLunar): string {
 export function estiloLunar(fase: FaseLunar) {
   const estilos = {
     nova: {
-      brilho: 0.3,      // Brilho mínimo
-      saturacao: 0.5,   // Cores dessaturadas
-      velocidade: 1.5,  // Mais lento
-      cor: '#E8E8F0',   // Prata escura
-      descricao: 'Escuridão contemplativa',
+      brilho: 0.3,      // Brilho baixo
+      saturacao: 0.5,   // Tons frios dessaturados
+      velocidade: 1.5,  // Pulsar lento
+      cor: '#4A4A4A',   // Cinza escuro (#1C1C1C + cinza)
+      descricao: 'Noite silenciosa',
     },
     crescente: {
-      brilho: 0.6,      // Brilho médio-baixo
-      saturacao: 0.75,  // Cores suaves
-      velocidade: 1.2,  // Levemente lento
-      cor: '#B8C5D6',   // Azul-prata
-      descricao: 'Luz emergindo',
+      brilho: 0.7,      // Luz suave
+      saturacao: 0.8,   // Gradiente suave
+      velocidade: 1.1,  // Moderado
+      cor: '#A8C66C',   // Verde-amarelado (transição)
+      descricao: 'Luz crescente',
     },
     cheia: {
       brilho: 1.0,      // Brilho máximo
-      saturacao: 1.0,   // Cores vibrantes
-      velocidade: 0.8,  // Mais rápido
-      cor: '#F0E68C',   // Amarelo lunar brilhante
-      descricao: 'Plenitude radiante',
+      saturacao: 1.0,   // Cor dourada vibrante
+      velocidade: 0.7,  // Pulsar forte e rápido
+      cor: '#FFD700',   // Dourado (#FFD700)
+      descricao: 'Plenitude lunar',
     },
     minguante: {
-      brilho: 0.5,      // Brilho médio
-      saturacao: 0.6,   // Cores frias
-      velocidade: 1.3,  // Lento
-      cor: '#C8D5E8',   // Azul-prata frio
-      descricao: 'Quietude introspectiva',
+      brilho: 0.5,      // Tons moderados
+      saturacao: 0.6,   // Tons azulados
+      velocidade: 1.4,  // Pulsar lento
+      cor: '#6B8CAE',   // Azul suave
+      descricao: 'Reflexão azulada',
     },
   };
   
