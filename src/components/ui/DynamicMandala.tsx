@@ -276,30 +276,6 @@ export function DynamicMandala({ mood, intensity }: DynamicMandalaProps) {
         />
       </motion.div>
 
-      {/* Texto central */}
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 1 }}
-      >
-        <div className="text-center">
-          <motion.div
-            className="text-4xl mb-2"
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          >
-            ✨
-          </motion.div>
-          <p className="text-xl font-bold text-white drop-shadow-lg">
-            Parabéns!
-          </p>
-        </div>
-      </motion.div>
     </div>
   );
 }
