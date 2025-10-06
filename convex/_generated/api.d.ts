@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as ciclos from "../ciclos.js";
 import type * as historico from "../historico.js";
 import type * as mandalas from "../mandalas.js";
 import type * as presets from "../presets.js";
@@ -29,6 +30,7 @@ import type * as userSessions from "../userSessions.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  ciclos: typeof ciclos;
   historico: typeof historico;
   mandalas: typeof mandalas;
   presets: typeof presets;
