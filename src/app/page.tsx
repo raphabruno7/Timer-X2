@@ -18,7 +18,53 @@ import { motion } from "framer-motion";
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
+// Hook para detectar modo escuro baseado em horário e preferência do sistema
+function useAutoDarkMode() {
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      const hour = new Date().getHours();
+      const isNightTime = hour >= 19 || hour <= 6;
+      
+      // Verificar preferência do sistema
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      // Modo escuro se: horário noturno OU preferência do sistema
+      setIsDarkMode(isNightTime || prefersDark);
+    };
+
+    updateTheme();
+    
+    // Atualizar a cada hora
+    const interval = setInterval(updateTheme, 60 * 60 * 1000);
+    
+    // Listener para mudanças na preferência do sistema
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => updateTheme();
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => {
+      clearInterval(interval);
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
+
+  return isDarkMode;
+}
+
 export default function Home() {
+  // Hook de tema automático
+  const isDarkMode = useAutoDarkMode();
+  
+  // Cores do tema baseadas no modo
+  const themeColors = useMemo(() => ({
+    background: isDarkMode ? '#121212' : '#1C1C1C',
+    text: '#F9F9F9',
+    textSecondary: isDarkMode ? '#E0E0E0' : '#F9F9F9',
+    border: isDarkMode ? 'rgba(46, 204, 113, 0.15)' : 'rgba(46, 204, 113, 0.2)',
+  }), [isDarkMode]);
+
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
   const [tempo, setTempo] = useState(tempoInicial);
   const [tempoRestante, setTempoRestante] = useState(tempoInicial); // Estado global do tempo restante
@@ -661,7 +707,12 @@ export default function Home() {
   }, [mandalaActive, rewardTriggered]);
 
   return (
-    <>
+    <main 
+      className="min-h-screen flex items-center justify-center p-4 gap-4 transition-colors duration-1000"
+      style={{ backgroundColor: themeColors.background }}
+      role="application"
+      aria-label="Timer X2 - Aplicativo de foco e produtividade"
+    >
       {/* Mandala de Recompensa com feedback emocional */}
       <MandalaReward 
         visible={mandalaActive}
@@ -679,7 +730,7 @@ export default function Home() {
         }}
       />
       
-      <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
+      <div className="flex items-center justify-center gap-4 w-full">
       {/* General Statistics Panel */}
       {estatisticasGerais && (
         <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
@@ -997,7 +1048,7 @@ export default function Home() {
         </Card>
       )}
 
-      {/* Phone Frame com ajustes adaptativos e emocionais */}
+      {/* Phone Frame com ajustes adaptativos, emocionais e tema automático */}
       <motion.div 
         className="w-full max-w-sm mx-auto"
         animate={{ 
@@ -1007,8 +1058,9 @@ export default function Home() {
         transition={{ duration: 0.5 }}
       >
         <Card 
-          className="bg-[#1C1C1C] rounded-3xl overflow-hidden shadow-2xl"
+          className="rounded-3xl overflow-hidden shadow-2xl"
           style={{
+            backgroundColor: themeColors.background,
             borderWidth: '2px',
             borderColor: `${adaptivePrimary}33`,
             transition: 'all 1s ease-in-out',
@@ -1296,8 +1348,8 @@ export default function Home() {
               </motion.div>
             </div>
 
-            {/* Control Buttons com animações suaves */}
-            <div className="flex justify-center gap-4 relative z-10">
+            {/* Control Buttons com animações suaves e acessibilidade */}
+            <div className="flex justify-center gap-4 relative z-10" role="group" aria-label="Controles do timer">
               <motion.div
                 whileHover={{ scale: rodando || tempo === 0 ? 1 : 1.1 }}
                 whileTap={{ scale: rodando || tempo === 0 ? 1 : 0.95 }}
@@ -1309,12 +1361,15 @@ export default function Home() {
                   disabled={rodando || tempo === 0}
                   className="w-14 h-14 rounded-full bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ pointerEvents: 'auto' }}
+                  aria-label="Iniciar timer"
+                  aria-disabled={rodando || tempo === 0}
+                  title="Iniciar sessão de foco"
                 >
                   <motion.div
                     animate={!rodando && tempo > 0 ? { scale: [1, 1.1, 1] } : {}}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <Play className="w-6 h-6 ml-1" />
+                    <Play className="w-6 h-6 ml-1" aria-hidden="true" />
                   </motion.div>
                 </Button>
               </motion.div>
@@ -1331,8 +1386,11 @@ export default function Home() {
                   disabled={!rodando}
                   className="w-14 h-14 rounded-full border-[#FFD700]/50 text-[#FFD700] hover:bg-[#FFD700]/10 hover:border-[#FFD700] transition-all duration-300 ease-in-out relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ pointerEvents: 'auto' }}
+                  aria-label="Pausar timer"
+                  aria-disabled={!rodando}
+                  title="Pausar sessão de foco"
                 >
-                  <Pause className="w-6 h-6" />
+                  <Pause className="w-6 h-6" aria-hidden="true" />
                 </Button>
               </motion.div>
               
@@ -1347,8 +1405,10 @@ export default function Home() {
                   onClick={resetar}
                   className="w-14 h-14 rounded-full border-[#F9F9F9]/30 text-[#F9F9F9] hover:bg-[#F9F9F9]/10 hover:border-[#F9F9F9]/50 transition-all duration-300 ease-in-out relative z-10"
                   style={{ pointerEvents: 'auto' }}
+                  aria-label="Resetar timer"
+                  title="Resetar timer e limpar sessão"
                 >
-                  <RotateCcw className="w-6 h-6" />
+                  <RotateCcw className="w-6 h-6" aria-hidden="true" />
                 </Button>
               </motion.div>
             </div>
@@ -1407,6 +1467,6 @@ export default function Home() {
         </Card>
       </motion.div>
       </div>
-    </>
+    </main>
   );
 }
