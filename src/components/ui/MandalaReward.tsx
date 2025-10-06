@@ -8,9 +8,17 @@ interface MandalaRewardProps {
   visible: boolean;
   mood?: "foco" | "criatividade" | "relaxamento" | "energia";
   intensity?: number;
+  iaSugestao?: { sugestao: string; descricao: string } | null;
+  onIniciarSugestao?: () => void;
 }
 
-export function MandalaReward({ visible, mood = "foco", intensity = 0.5 }: MandalaRewardProps) {
+export function MandalaReward({ 
+  visible, 
+  mood = "foco", 
+  intensity = 0.5,
+  iaSugestao,
+  onIniciarSugestao
+}: MandalaRewardProps) {
   return (
     <AnimatePresence>
       {visible && (
@@ -45,8 +53,32 @@ export function MandalaReward({ visible, mood = "foco", intensity = 0.5 }: Manda
               ✨ Ciclo concluído. Respire e receba. ✨
             </motion.p>
 
-            {/* TODO: Integrar resposta da IA baseada no preset concluído. */}
-            {/* Exemplo: "Você concluiu um ciclo de foco. Quer iniciar um momento de criatividade ou pausa guiada?" */}
+            {/* Sugestão da IA */}
+            {iaSugestao && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.5, duration: 1 }}
+                className="mt-6 bg-neutral-900/80 p-5 rounded-xl border border-yellow-400/50 text-center max-w-sm backdrop-blur-sm"
+              >
+                <p className="text-green-400 text-lg font-semibold mb-2">
+                  🌿 {iaSugestao.sugestao}
+                </p>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  {iaSugestao.descricao}
+                </p>
+                {onIniciarSugestao && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onIniciarSugestao}
+                    className="mt-4 px-6 py-2 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white rounded-lg font-medium transition-colors"
+                  >
+                    Iniciar {iaSugestao.sugestao}
+                  </motion.button>
+                )}
+              </motion.div>
+            )}
           </motion.div>
         </>
       )}

@@ -17,4 +17,13 @@ export default defineSchema({
     finishedAt: v.number(), // timestamp em ms
     duration: v.number(), // em segundos
   }),
+  sessions: defineTable({
+    preset: v.string(),
+    duracao: v.number(),
+    timestamp: v.number(),
+    resultadoIA: v.optional(v.string()), // sugestão retornada
+    humor: v.optional(v.string()), // ex: "foco", "calmo", "energizado"
+    energiaAntes: v.optional(v.string()), // ex: "baixa", "média", "alta"
+    energiaDepois: v.optional(v.string()), // IA pode prever ou usuário informar
+  }),
 });

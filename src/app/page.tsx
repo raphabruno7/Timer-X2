@@ -31,6 +31,7 @@ export default function Home() {
   const [mandalaActive, setMandalaActive] = useState(false); // Estado da mandala
   const [aiMessage, setAiMessage] = useState<string>(""); // Mensagem da AI
   const [mandalaMood, setMandalaMood] = useState<"foco" | "criatividade" | "relaxamento" | "energia">("foco");
+  const [iaSugestao, setIaSugestao] = useState<{ sugestao: string; descricao: string } | null>(null);
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -38,6 +39,7 @@ export default function Home() {
   const removerPreset = useMutation(api.presets.remover);
   const registrarUso = useMutation(api.historico.registrarUso);
   const registrarMandala = useMutation(api.mandalas.registrarMandala);
+  const registrarSessao = useMutation(api.sessoes.registrar);
   const historico = useQuery(api.historico.listarHistorico, {}) || [];
   const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
@@ -306,6 +308,44 @@ export default function Home() {
             console.error("Erro ao buscar mensagem AI:", err);
             setAiMessage(""); // Usar mensagem padrão
           });
+
+        // Buscar sugestão de próximo modo da IA
+        const ciclosHoje = historico.filter(h => {
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0);
+          return h.usadoEm >= hoje.getTime();
+        }).length;
+
+        fetch('/api/ia-next-mode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            preset: presetName,
+            duracao: Math.floor(duracao / 60),
+            contexto: {
+              ciclosConcluidos: ciclosHoje + 1,
+              ultimoMood: mood,
+              energiaAtual: duracao >= 2700 ? 'média' : 'alta',
+            }
+          })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setIaSugestao(data);
+            
+            // Registrar sessão completa no Convex
+            registrarSessao({
+              preset: presetName,
+              duracao: Math.floor(duracao / 60),
+              resultadoIA: data.sugestao,
+              humor: mood,
+              energiaAntes: duracao >= 2700 ? 'média' : 'alta',
+              energiaDepois: 'calma',
+            }).catch(console.error);
+          })
+          .catch(err => {
+            console.error("Erro ao buscar sugestão IA:", err);
+          });
         
         // Mostrar mandala de recompensa (apenas uma vez)
         setMandalaActive(true);
@@ -313,7 +353,7 @@ export default function Home() {
       }
       setTempoInicio(null);
     }
-  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, registrarMandala, presets, rewardTriggered]);
+  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, registrarMandala, registrarSessao, presets, historico, rewardTriggered]);
 
   // Sincronizar tempo com tempoRestante
   useEffect(() => {
@@ -327,6 +367,15 @@ export default function Home() {
         visible={mandalaActive}
         mood={mandalaMood}
         intensity={0.7}
+        iaSugestao={iaSugestao}
+        onIniciarSugestao={() => {
+          // Fechar mandala e resetar timer
+          setMandalaActive(false);
+          setIaSugestao(null);
+          resetar();
+          // TODO: Criar preset automaticamente com nome sugerido pela IA
+          console.log("Iniciar modo sugerido:", iaSugestao?.sugestao);
+        }}
       />
       
       <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
