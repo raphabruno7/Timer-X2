@@ -35,6 +35,12 @@ export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [interacoes, setInteracoes] = useState({ botaoPlay: 0, botaoPause: 0, botaoReset: 0 });
   const [numeroPausas, setNumeroPausas] = useState(0);
+  const [ajustesAdaptativos, setAjustesAdaptativos] = useState({
+    tendencia: "media" as "alta" | "media" | "baixa",
+    estilo: "leve" as "intenso" | "leve" | "ritualistico",
+    sugestaoCor: "#2ECC71",
+    ritmo: 25,
+  });
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -430,6 +436,50 @@ export default function Home() {
     setTempo(tempoRestante);
   }, [tempoRestante]);
 
+  // Buscar ajustes adaptativos ao carregar o app
+  useEffect(() => {
+    const buscarAjustes = async () => {
+      try {
+        const response = await fetch('/api/adaptar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: null }),
+        });
+        
+        const resultado = await response.json();
+        setAjustesAdaptativos(resultado);
+        console.info("[Ajuste IA]", resultado);
+      } catch (error) {
+        console.error("[Ajuste IA] Erro ao buscar:", error);
+      }
+    };
+    
+    buscarAjustes();
+  }, []);
+
+  // Atualizar ajustes após sessão concluída
+  useEffect(() => {
+    if (!mandalaActive && rewardTriggered) {
+      const buscarAjustes = async () => {
+        try {
+          const response = await fetch('/api/adaptar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: null }),
+          });
+          
+          const resultado = await response.json();
+          setAjustesAdaptativos(resultado);
+          console.info("[Ajuste IA] Atualizado após sessão:", resultado);
+        } catch (error) {
+          console.error("[Ajuste IA] Erro:", error);
+        }
+      };
+      
+      buscarAjustes();
+    }
+  }, [mandalaActive, rewardTriggered]);
+
   return (
     <>
       {/* Mandala de Recompensa */}
@@ -766,13 +816,23 @@ export default function Home() {
         </Card>
       )}
 
-      {/* Phone Frame */}
+      {/* Phone Frame com ajustes adaptativos */}
       <motion.div 
         className="w-full max-w-sm mx-auto"
-        animate={{ opacity: mandalaActive ? 0.3 : 1 }}
+        animate={{ 
+          opacity: mandalaActive ? 0.3 : 1,
+          scale: ajustesAdaptativos.tendencia === "baixa" ? 0.98 : 1,
+        }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl">
+        <Card 
+          className="bg-[#1C1C1C] rounded-3xl overflow-hidden shadow-2xl"
+          style={{
+            borderWidth: '2px',
+            borderColor: `${ajustesAdaptativos.sugestaoCor}33`, // 20% opacity
+            transition: 'border-color 2s ease-in-out',
+          }}
+        >
           {/* Header */}
           <div className="p-6 text-center border-b border-[#2ECC71]/10">
             <h1 className="text-2xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2 mb-4">
@@ -949,9 +1009,24 @@ export default function Home() {
 
           {/* Main Content */}
           <div className="p-6 space-y-8">
-            {/* Timer Circle */}
+            {/* Timer Circle com ajustes adaptativos */}
             <div className="flex justify-center">
-              <div className="w-48 h-48 rounded-full border-4 border-[#2ECC71]/30 bg-gradient-to-br from-[#2ECC71]/10 to-[#FFD700]/10 flex items-center justify-center shadow-lg">
+              <motion.div 
+                className="w-48 h-48 rounded-full border-4 flex items-center justify-center shadow-lg"
+                style={{
+                  borderColor: `${ajustesAdaptativos.sugestaoCor}33`,
+                  background: `linear-gradient(135deg, ${ajustesAdaptativos.sugestaoCor}1A, #FFD70010)`,
+                  transition: 'all 2s ease-in-out',
+                }}
+                animate={{
+                  scale: ajustesAdaptativos.estilo === "intenso" ? [1, 1.02, 1] : [1, 1.01, 1],
+                }}
+                transition={{
+                  duration: ajustesAdaptativos.estilo === "intenso" ? 2 : 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
                 <div className="text-center">
                   <div className="text-3xl font-mono font-bold text-[#F9F9F9] mb-2">
                     {formatarTempo(tempo)}
@@ -960,7 +1035,7 @@ export default function Home() {
                     {rodando ? "Running..." : tempo === 0 ? "Time's up!" : "Ready to begin"}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Control Buttons */}

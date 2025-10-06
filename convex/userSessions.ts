@@ -64,41 +64,70 @@ export const listar = query({
   },
 });
 
-// Query para análise de padrões
+// Query para análise de padrões e adaptação da IA
 export const analisarPadroes = query({
-  args: {},
-  handler: async (ctx) => {
-    const sessoes = await ctx.db.query("user_sessions").collect();
+  args: {
+    userId: v.union(v.string(), v.null()),
+  },
+  handler: async (ctx, args) => {
+    // Buscar sessões recentes (últimos 7 dias)
+    const seteDiasAtras = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const todasSessoes = await ctx.db.query("user_sessions").collect();
+    const sessoes = todasSessoes.filter(s => s.iniciadoEm >= seteDiasAtras);
     
     if (sessoes.length === 0) {
       return {
-        totalSessoes: 0,
-        tempoTotalMinutos: 0,
-        taxaConclusao: 0,
-        mediaInteracoes: 0,
+        tendencia: "media" as const,
+        estilo: "leve" as const,
+        sugestaoCor: "#2ECC71",
+        ritmo: 25, // minutos padrão
       };
     }
 
+    // Calcular métricas
     const sessoesFinalizadas = sessoes.filter(s => s.finalizadoEm);
-    const totalSessoes = sessoes.length;
-    const tempoTotalMinutos = sessoes.reduce((sum, s) => sum + s.duracaoMinutos, 0);
-    const taxaConclusao = (sessoesFinalizadas.length / totalSessoes) * 100;
+    const taxaConclusao = sessoesFinalizadas.length / sessoes.length;
+    const mediaDuracao = sessoes.reduce((sum, s) => sum + s.duracaoMinutos, 0) / sessoes.length;
+    const mediaPausas = sessoes.reduce((sum, s) => sum + s.pausas, 0) / sessoes.length;
+    const frequenciaUso = sessoes.length / 7; // sessões por dia
     
-    const totalInteracoes = sessoes.reduce((sum, s) => 
-      sum + s.interacoes.botaoPlay + s.interacoes.botaoPause + s.interacoes.botaoReset, 0
-    );
-    const mediaInteracoes = totalInteracoes / totalSessoes;
-
+    // Determinar tendência de foco
+    let tendencia: "alta" | "media" | "baixa";
+    if (taxaConclusao >= 0.8 && mediaDuracao >= 40) {
+      tendencia = "alta";
+    } else if (taxaConclusao >= 0.5 && mediaDuracao >= 25) {
+      tendencia = "media";
+    } else {
+      tendencia = "baixa";
+    }
+    
+    // Determinar estilo de uso
+    let estilo: "intenso" | "leve" | "ritualistico";
+    if (frequenciaUso >= 3 && mediaDuracao >= 45) {
+      estilo = "intenso";
+    } else if (frequenciaUso < 1.5) {
+      estilo = "leve";
+    } else {
+      estilo = "ritualistico";
+    }
+    
+    // Sugerir cor baseada em tendência
+    const sugestaoCor = tendencia === "alta" 
+      ? "#FFD700"  // Dourado para alta performance
+      : tendencia === "media" 
+        ? "#2ECC71"  // Verde para equilíbrio
+        : "#9B59B6"; // Roxo para relaxamento
+    
+    // Calcular ritmo ideal (intervalo de micro-pausas)
+    const ritmo = mediaPausas > 2 
+      ? Math.max(15, mediaDuracao - 10)  // Mais pausas = ciclos mais curtos
+      : Math.min(60, mediaDuracao + 5);   // Poucas pausas = pode estender
+    
     return {
-      totalSessoes,
-      tempoTotalMinutos,
-      taxaConclusao: Math.round(taxaConclusao),
-      mediaInteracoes: Math.round(mediaInteracoes * 10) / 10,
-      presetsPopulares: sessoes
-        .reduce((acc: Record<string, number>, s) => {
-          acc[s.presetAtivo] = (acc[s.presetAtivo] || 0) + 1;
-          return acc;
-        }, {}),
+      tendencia,
+      estilo,
+      sugestaoCor,
+      ritmo: Math.round(ritmo),
     };
   },
 });
