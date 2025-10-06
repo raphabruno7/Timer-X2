@@ -30,6 +30,7 @@ export default function Home() {
   const [rewardTriggered, setRewardTriggered] = useState(false); // Evitar múltiplos triggers
   const [mandalaActive, setMandalaActive] = useState(false); // Estado da mandala
   const [aiMessage, setAiMessage] = useState<string>(""); // Mensagem da AI
+  const [mandalaMood, setMandalaMood] = useState<"foco" | "criatividade" | "relaxamento" | "energia">("foco");
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -273,6 +274,18 @@ export default function Home() {
         const presetName = preset?.nome || "Preset desconhecido";
         const finishedAt = Date.now();
         
+        // Determinar mood baseado no nome do preset
+        let mood: "foco" | "criatividade" | "relaxamento" | "energia" = "foco";
+        const nameLower = presetName.toLowerCase();
+        if (nameLower.includes("criat") || nameLower.includes("inova")) {
+          mood = "criatividade";
+        } else if (nameLower.includes("relax") || nameLower.includes("medita")) {
+          mood = "relaxamento";
+        } else if (nameLower.includes("energia") || nameLower.includes("exerc")) {
+          mood = "energia";
+        }
+        setMandalaMood(mood);
+        
         // Registrar exibição da mandala
         registrarMandala({ 
           presetName, 
@@ -311,12 +324,9 @@ export default function Home() {
     <>
       {/* Mandala de Recompensa */}
       <MandalaReward 
-        active={mandalaActive} 
-        onClose={() => {
-          setMandalaActive(false);
-          setAiMessage(""); // Limpar mensagem ao fechar
-        }}
-        aiMessage={aiMessage}
+        visible={mandalaActive}
+        mood={mandalaMood}
+        intensity={0.7}
       />
       
       <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4 gap-4">
