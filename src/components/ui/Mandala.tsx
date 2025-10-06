@@ -173,7 +173,7 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
 
   return (
     <div 
-      className="relative w-48 h-48 flex items-center justify-center transition-all duration-700 ease-in-out"
+      className="relative w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] flex items-center justify-center transition-all duration-700 ease-in-out"
       style={{
         filter: modoRespiracao
           ? `brightness(${brilhoRespiracao}) saturate(0.8) blur(0.5px)`
@@ -184,7 +184,7 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, mod
         width="192"
         height="192"
         viewBox="0 0 192 192"
-        className="absolute inset-0 transition-all duration-700 ease-in-out"
+        className="absolute inset-0 transition-all duration-700 ease-in-out rounded-full drop-shadow-md"
         style={{ filter: 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.3))' }}
       >
         <defs>
