@@ -8,6 +8,7 @@ interface MandalaProps {
   progresso: number; // 0 a 1 (porcentagem de progresso)
   intensidade?: 'leve' | 'media' | 'forte';
   pausado?: boolean; // Timer está pausado?
+  modoRespiracao?: boolean; // Ativa guia de respiração visual
 }
 
 /**
@@ -49,7 +50,43 @@ function blendColors(cor1: string, cor2: string, fator: number): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-export function Mandala({ progresso, intensidade = 'media', pausado = false }: MandalaProps) {
+/**
+ * Hook personalizado para guia de respiração
+ * Ciclo: 4s inspirar → 4s segurar → 4s expirar
+ */
+function usarRespiracao(ativo: boolean) {
+  const [faseRespiracao, setFaseRespiracao] = useState<'inspirar' | 'segurar' | 'expirar'>('inspirar');
+  const [cicloAtual, setCicloAtual] = useState(0);
+  
+  useEffect(() => {
+    if (!ativo) {
+      setFaseRespiracao('inspirar');
+      setCicloAtual(0);
+      return;
+    }
+    
+    const duracaoFase = 4000; // 4 segundos por fase
+    
+    const intervalo = setInterval(() => {
+      setCicloAtual((prev) => {
+        const proximoCiclo = prev + 1;
+        const fase = proximoCiclo % 3;
+        
+        if (fase === 0) setFaseRespiracao('inspirar');
+        else if (fase === 1) setFaseRespiracao('segurar');
+        else setFaseRespiracao('expirar');
+        
+        return proximoCiclo;
+      });
+    }, duracaoFase);
+    
+    return () => clearInterval(intervalo);
+  }, [ativo]);
+  
+  return { faseRespiracao, cicloAtual };
+}
+
+export function Mandala({ progresso, intensidade = 'media', pausado = false, modoRespiracao = false }: MandalaProps) {
   // Estado da fase lunar
   const [faseLunar, setFaseLunar] = useState<FaseLunar>('cheia');
   
@@ -65,6 +102,9 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
     
     return () => clearInterval(intervalo);
   }, []);
+  
+  // Guia de respiração
+  const { faseRespiracao } = usarRespiracao(modoRespiracao);
   
   // Obter configurações lunares
   const configuracaoLunar = estiloLunar(faseLunar);
@@ -99,16 +139,32 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
     ? intensidadeConfig.glowOpacity * 0.5 // 50% do brilho quando pausado
     : intensidadeConfig.glowOpacity * configuracaoLunar.brilho; // Ajuste lunar
 
-  // Cor dinâmica baseada na energia e fase lunar
-  const corEnergia = energiaCor(intensidade);
-  const corPrincipal = blendColors(corEnergia, configuracaoLunar.cor, configuracaoLunar.saturacao);
+  // Cores suaves para modo respiração
+  const coresRespiracao = {
+    inspirar: '#87CEEB',  // Azul-claro (céu)
+    segurar: '#F0E68C',   // Dourado difuso
+    expirar: '#F9F9F9',   // Branco suave
+  };
   
-  // Ajuste de escala de pulso baseado na lua
-  const pulseScaleAjustado = faseLunar === 'cheia' 
+  // Cor dinâmica baseada na energia e fase lunar (ou respiração)
+  const corEnergia = energiaCor(intensidade);
+  const corPrincipal = modoRespiracao 
+    ? coresRespiracao[faseRespiracao]
+    : blendColors(corEnergia, configuracaoLunar.cor, configuracaoLunar.saturacao);
+  
+  // Ajuste de escala de pulso baseado na lua ou respiração
+  const pulseScaleAjustado = modoRespiracao
+    ? (faseRespiracao === 'inspirar' ? 1.15 : faseRespiracao === 'segurar' ? 1.15 : 1.0)
+    : faseLunar === 'cheia' 
     ? intensidadeConfig.pulseScale * 1.2  // Pulso mais forte na lua cheia
     : faseLunar === 'nova'
     ? intensidadeConfig.pulseScale * 0.8  // Pulso mais suave na lua nova
     : intensidadeConfig.pulseScale;
+  
+  // Ajuste de brilho para modo respiração
+  const brilhoRespiracao = modoRespiracao
+    ? (faseRespiracao === 'inspirar' ? 0.9 : faseRespiracao === 'segurar' ? 1.0 : 0.6)
+    : 1.0;
 
   // Calcular circunferência para o anel de progresso
   const radius = 80;
@@ -119,7 +175,9 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
     <div 
       className="relative w-48 h-48 flex items-center justify-center transition-all duration-700 ease-in-out"
       style={{
-        filter: `brightness(${configuracaoLunar.brilho}) saturate(${configuracaoLunar.saturacao})`,
+        filter: modoRespiracao
+          ? `brightness(${brilhoRespiracao}) saturate(0.8) blur(0.5px)`
+          : `brightness(${configuracaoLunar.brilho}) saturate(${configuracaoLunar.saturacao})`,
       }}
     >
       <svg
@@ -238,36 +296,61 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
           />
         </motion.g>
 
-        {/* Círculo interno (centro da energia) */}
+        {/* Círculo interno (centro da energia ou guia de respiração) */}
         <motion.circle
           cx="96"
           cy="96"
           r="45"
           fill="url(#centerGradient)"
           filter="url(#glow)"
-          animate={{
-            scale: pausado 
-              ? [1, 1.01, 1] 
-              : faseLunar === 'cheia'
-              ? [1, 1.05, 1]  // Pulso mais forte na lua cheia
-              : faseLunar === 'nova'
-              ? [1, 1.015, 1] // Pulso muito sutil na lua nova
-              : [1, 1.03, 1], // Pulso padrão
-            opacity: faseLunar === 'nova' 
-              ? [0.7, 0.85, 0.7]  // Mais escuro na lua nova
-              : [1, 1, 1],
-          }}
-          transition={{
-            duration: pausado 
-              ? intensidadeConfig.duration * 3 
-              : faseLunar === 'nova'
-              ? intensidadeConfig.duration * 2.5  // Muito lento na lua nova
-              : faseLunar === 'cheia'
-              ? intensidadeConfig.duration * 1.2  // Mais rápido na lua cheia
-              : intensidadeConfig.duration * 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          animate={
+            modoRespiracao
+              ? {
+                  // Modo respiração: sincronizado com ciclo respiratório
+                  scale: faseRespiracao === 'inspirar' 
+                    ? [1, 1.3]  // Expandir ao inspirar
+                    : faseRespiracao === 'segurar'
+                    ? [1.3, 1.3]  // Segurar expandido
+                    : [1.3, 1],  // Contrair ao expirar
+                  opacity: faseRespiracao === 'inspirar'
+                    ? [0.8, 1]
+                    : faseRespiracao === 'segurar'
+                    ? [1, 1]
+                    : [1, 0.7],
+                }
+              : {
+                  // Modo normal: baseado na lua
+                  scale: pausado 
+                    ? [1, 1.01, 1] 
+                    : faseLunar === 'cheia'
+                    ? [1, 1.05, 1]  // Pulso mais forte na lua cheia
+                    : faseLunar === 'nova'
+                    ? [1, 1.015, 1] // Pulso muito sutil na lua nova
+                    : [1, 1.03, 1], // Pulso padrão
+                  opacity: faseLunar === 'nova' 
+                    ? [0.7, 0.85, 0.7]  // Mais escuro na lua nova
+                    : [1, 1, 1],
+                }
+          }
+          transition={
+            modoRespiracao
+              ? {
+                  duration: 4,  // 4 segundos por fase
+                  repeat: 0,    // Sem repeat (controlado pelo hook)
+                  ease: faseRespiracao === 'segurar' ? 'linear' : 'easeInOut',
+                }
+              : {
+                  duration: pausado 
+                    ? intensidadeConfig.duration * 3 
+                    : faseLunar === 'nova'
+                    ? intensidadeConfig.duration * 2.5  // Muito lento na lua nova
+                    : faseLunar === 'cheia'
+                    ? intensidadeConfig.duration * 1.2  // Mais rápido na lua cheia
+                    : intensidadeConfig.duration * 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }
+          }
           style={{ transformOrigin: '96px 96px' }}
         />
 
@@ -349,18 +432,50 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
       />
       
       {/* Indicador sutil da fase lunar (canto superior direito) */}
-      <motion.div
-        className="absolute -top-1 -right-1 text-xs opacity-60 pointer-events-none transition-all duration-700 ease-in-out"
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 0.6, scale: 1 }}
-        transition={{ duration: 1, ease: "easeOut" }}
-        title={configuracaoLunar.descricao}
-      >
-        {faseLunar === 'cheia' && '🌕'}
-        {faseLunar === 'nova' && '🌑'}
-        {faseLunar === 'crescente' && '🌓'}
-        {faseLunar === 'minguante' && '🌗'}
-      </motion.div>
+      {!modoRespiracao && (
+        <motion.div
+          className="absolute -top-1 -right-1 text-xs opacity-60 pointer-events-none transition-all duration-700 ease-in-out"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 0.6, scale: 1 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          title={configuracaoLunar.descricao}
+        >
+          {faseLunar === 'cheia' && '🌕'}
+          {faseLunar === 'nova' && '🌑'}
+          {faseLunar === 'crescente' && '🌓'}
+          {faseLunar === 'minguante' && '🌗'}
+        </motion.div>
+      )}
+      
+      {/* Guia de respiração (texto central) */}
+      {modoRespiracao && (
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.p
+            className="text-sm font-light tracking-widest uppercase transition-all duration-700 ease-in-out"
+            style={{
+              color: corPrincipal,
+              textShadow: `0 0 20px ${corPrincipal}80`,
+            }}
+            animate={{
+              opacity: faseRespiracao === 'segurar' ? [1, 0.7, 1] : 1,
+            }}
+            transition={{
+              duration: 2,
+              repeat: faseRespiracao === 'segurar' ? Infinity : 0,
+              ease: "easeInOut",
+            }}
+          >
+            {faseRespiracao === 'inspirar' && '✨ Inspirar ✨'}
+            {faseRespiracao === 'segurar' && '🌟 Segurar 🌟'}
+            {faseRespiracao === 'expirar' && '🌙 Expirar 🌙'}
+          </motion.p>
+        </motion.div>
+      )}
     </div>
   );
 }
