@@ -18,6 +18,7 @@ import { Mandala } from "@/components/ui/Mandala";
 import { motion } from "framer-motion";
 import { analisarPadrao, calcularScoreProdutividade, detectarMelhorHorario } from "@/lib/adaptiveEngine";
 import { ajustarAmbiente, detectarTendenciaCansaco, calcularVelocidadeMandala } from "@/lib/environmentFeedback";
+import { faseDaLua } from "@/lib/lua";
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -1429,6 +1430,26 @@ export default function Home() {
 
           {/* Main Content */}
           <div className="p-6 space-y-8">
+            {/* 🌕 Marcador Lunar (topo) */}
+            <motion.div 
+              className="absolute top-4 right-4 text-xs text-gray-400 select-none z-50"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 0.7, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2.5 py-1.5 rounded-lg border border-white/10">
+                <span className="text-base" role="img" aria-label="Fase lunar">
+                  {faseDaLua() === 'cheia' && '🌕'}
+                  {faseDaLua() === 'nova' && '🌑'}
+                  {faseDaLua() === 'crescente' && '🌓'}
+                  {faseDaLua() === 'minguante' && '🌗'}
+                </span>
+                <span className="text-[10px] font-medium tracking-wide capitalize opacity-80">
+                  {faseDaLua()}
+                </span>
+              </div>
+            </motion.div>
+            
             {/* Timer Circle com estados visuais reativos */}
             <div className="flex justify-center relative">
               {/* Partículas de conclusão (apenas no estado completing) */}

@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { faseDaLua, estiloLunar, type FaseLunar } from "@/lib/lua";
+import { faseDaLua, estiloLunar, type FaseLunar, emojiLunar } from "@/lib/lua";
 import { tocarSomRespiracao, suportaSomTerapeutico } from "@/lib/soundHealing";
+import { cerebroLunar, type ConfiguracaoCerebralLunar } from "@/lib/cerebroLunar";
 
 interface MandalaProps {
   progresso: number; // 0 a 1 (porcentagem de progresso)
@@ -161,6 +162,9 @@ export function Mandala({
   // Estado da fase lunar
   const [faseLunar, setFaseLunar] = useState<FaseLunar>('cheia');
   
+  // 🌕 Estado do Cérebro Lunar
+  const [configCerebralLunar, setConfigCerebralLunar] = useState<ConfiguracaoCerebralLunar | null>(null);
+  
   // Estado da cor adaptativa (combina emoção + lua + intensidade + progresso)
   const [corAdaptativa, setCorAdaptativa] = useState({
     cor: 'hsl(145, 70%, 55%)',
@@ -169,35 +173,62 @@ export function Mandala({
     velocidade: 1.0,
   });
   
-  // Calcular fase lunar ao montar componente
+  // 🌕 CÉREBRO LUNAR - Sincronização cósmica + emocional
   useEffect(() => {
-    const fase = faseDaLua();
-    setFaseLunar(fase);
+    const atualizarCerebroLunar = () => {
+      const config = cerebroLunar({
+        emocao,
+        data: new Date(),
+      });
+      
+      setConfigCerebralLunar(config);
+      setFaseLunar(config.fase as FaseLunar);
+      
+      console.info('🌕 [Cérebro Lunar] Configuração atualizada:', {
+        fase: config.fase,
+        emoji: config.emoji,
+        tonalidade: config.tonalidade,
+        frequencia: `${config.frequencia}Hz`,
+        energia: config.energia.toFixed(2),
+        iluminacao: `${config.iluminacao}%`,
+      });
+    };
+    
+    // Atualizar imediatamente
+    atualizarCerebroLunar();
     
     // Atualizar a cada hora (caso usuário deixe app aberto por muito tempo)
-    const intervalo = setInterval(() => {
-      setFaseLunar(faseDaLua());
-    }, 60 * 60 * 1000); // 1 hora
+    const intervalo = setInterval(atualizarCerebroLunar, 60 * 60 * 1000); // 1 hora
     
     return () => clearInterval(intervalo);
-  }, []);
+  }, [emocao]); // Reagir a mudanças de emoção
   
   // Calcular cor adaptativa baseada em múltiplos fatores
+  // Agora usa o Cérebro Lunar como fonte principal de cor
   useEffect(() => {
     if (!ativo && !modoRespiracao) return;
+    if (!configCerebralLunar) return;
     
-    const estadoCor = calcularCor(faseLunar, emocao, intensidade, progresso);
+    // Usar cores do Cérebro Lunar com ajustes de intensidade local
+    const estadoCor = {
+      cor: configCerebralLunar.tonalidade,
+      brilho: configCerebralLunar.brilho,
+      saturacao: configCerebralLunar.saturacao,
+      velocidade: configCerebralLunar.velocidadePulso,
+    };
+    
     setCorAdaptativa(estadoCor);
     
-    console.info('[Mandala Viva] 🎨 Cor adaptativa:', {
-      fase: faseLunar,
+    console.info('[Mandala Viva] 🎨 Cor adaptativa (Cérebro Lunar):', {
+      fase: configCerebralLunar.fase,
       emocao,
       intensidade,
       progresso: `${Math.round(progresso * 100)}%`,
       cor: estadoCor.cor,
+      energia: configCerebralLunar.energia.toFixed(2),
     });
     
-  }, [ativo, emocao, progresso, faseLunar, intensidade, modoRespiracao]);
+  }, [ativo, emocao, progresso, intensidade, modoRespiracao, configCerebralLunar]);
   
   // Guia de respiração
   const { faseRespiracao } = usarRespiracao(modoRespiracao, ciclo);
@@ -575,19 +606,27 @@ export function Mandala({
         }}
       />
       
-      {/* Indicador sutil da fase lunar (canto superior direito) */}
-      {!modoRespiracao && (
+      {/* 🌕 Indicador do Cérebro Lunar (canto superior direito) */}
+      {!modoRespiracao && configCerebralLunar && (
         <motion.div
-          className="absolute -top-1 -right-1 text-xs opacity-60 pointer-events-none transition-all duration-700 ease-in-out"
+          className="absolute -top-1 -right-1 text-xs opacity-70 pointer-events-none transition-all duration-700 ease-in-out select-none"
           initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 0.6, scale: 1 }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          title={configuracaoLunar.descricao}
+          animate={{ 
+            opacity: 0.7, 
+            scale: [1, 1.1, 1],
+            rotate: [0, 5, -5, 0]
+          }}
+          transition={{ 
+            opacity: { duration: 1, ease: "easeOut" },
+            scale: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+            rotate: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+          }}
+          title={`${configCerebralLunar.descricao}\nIluminação: ${configCerebralLunar.iluminacao}%\nFrequência: ${configCerebralLunar.frequencia}Hz`}
+          style={{
+            filter: `drop-shadow(0 0 4px ${configCerebralLunar.tonalidade})`,
+          }}
         >
-          {faseLunar === 'cheia' && '🌕'}
-          {faseLunar === 'nova' && '🌑'}
-          {faseLunar === 'crescente' && '🌓'}
-          {faseLunar === 'minguante' && '🌗'}
+          {configCerebralLunar.emoji}
         </motion.div>
       )}
       
