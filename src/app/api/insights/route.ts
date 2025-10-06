@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
 
 export async function POST(request: NextRequest) {
   try {
     const { usageHistory } = await request.json();
 
+    // Validar payload
+    if (!usageHistory || !Array.isArray(usageHistory)) {
+      return NextResponse.json(
+        { error: "Invalid payload: usageHistory must be an array" },
+        { status: 400 }
+      );
+    }
+
+    // Validar API key
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -12,47 +22,68 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const systemPrompt = `Você é uma inteligência adaptativa silenciosa. Analise padrões de uso do Timer X2 e retorne ajustes internos sutis (paleta, ritmo, animações) que ajudem o app a se harmonizar com o usuário sem que ele perceba recomendações.`;
+    // Inicializar cliente OpenAI
+    const openai = new OpenAI({
+      apiKey,
+    });
+
+    // Montar prompt de análise
+    const systemPrompt = `Você é uma IA sensível que interpreta padrões de foco humano.
+Analise os seguintes dados de uso e descreva padrões sutis de energia, tempo e consistência.
+Retorne apenas ajustes internos, nunca recomendações diretas ao usuário.
+
+Estrutura esperada de retorno (JSON):
+{
+  "adjustments": {
+    "palette": {
+      "primary": "#HEXCOLOR",
+      "accent": "#HEXCOLOR"
+    },
+    "tempoModifier": number (0.95 a 1.05),
+    "mandalaVariance": "calm" | "default" | "vivid"
+  }
+}`;
+
     const userPrompt = `Histórico recente de uso:
 ${usageHistory
         ?.slice(-20)
-        ?.map((item: { preset: string; duration: number; startedAt: number }, index: number) => `Sessão ${index + 1}: preset ${item.preset}, duração ${item.duration} minutos, iniciado em ${new Date(item.startedAt).toISOString()}`)
-        ?.join("\n") || "Sem dados"}
+        ?.map((item: { preset: string; duration: number; startedAt: number }, index: number) => {
+          const data = new Date(item.startedAt);
+          return `Sessão ${index + 1}: preset "${item.preset}", duração ${item.duration} min, iniciado em ${data.toISOString()}`;
+        })
+        ?.join("\n") || "Sem dados disponíveis"}
 
-Analise o comportamento de uso e descreva padrões sutis de foco.
-Responda com sugestões de ajuste interno (nunca diretas para o usuário).
-Retorne apenas JSON válido com chave 'adjustments'.`;
+Analise o comportamento de uso acima e retorne ajustes sutis que harmonizem o app com o padrão do usuário.
+Considere:
+- Frequência e duração das sessões
+- Tipos de presets escolhidos
+- Horários de uso
+- Consistência ao longo do tempo
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 400,
-      }),
+Retorne apenas JSON válido com a chave 'adjustments'.`;
+
+    // Chamar OpenAI com gpt-4-turbo
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4-turbo",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.5,
+      max_tokens: 500,
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    const content = completion.choices?.[0]?.message?.content;
 
     if (!content) {
       throw new Error("No content from OpenAI");
     }
 
     const parsed = JSON.parse(content);
+    
+    console.info("[Insights IA] Ajustes gerados:", parsed);
+    
     return NextResponse.json(parsed);
   } catch (error) {
     console.error("[Insights] Error:", error);
