@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { faseDaLua, estiloLunar, type FaseLunar } from "@/lib/lua";
 
 interface MandalaProps {
   progresso: number; // 0 a 1 (porcentagem de progresso)
@@ -19,7 +21,53 @@ function energiaCor(intensidade: 'leve' | 'media' | 'forte'): string {
     : '#F9F9F9'; // Branco suave
 }
 
+/**
+ * Mistura duas cores hex com base em um fator de saturação
+ * @param cor1 - Cor base (energia)
+ * @param cor2 - Cor lunar
+ * @param fator - Quanto de cor2 misturar (0-1)
+ */
+function blendColors(cor1: string, cor2: string, fator: number): string {
+  // Converter hex para RGB
+  const hex2rgb = (hex: string) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return { r, g, b };
+  };
+  
+  const rgb1 = hex2rgb(cor1);
+  const rgb2 = hex2rgb(cor2);
+  
+  // Misturar cores
+  const r = Math.round(rgb1.r * (1 - fator * 0.3) + rgb2.r * (fator * 0.3));
+  const g = Math.round(rgb1.g * (1 - fator * 0.3) + rgb2.g * (fator * 0.3));
+  const b = Math.round(rgb1.b * (1 - fator * 0.3) + rgb2.b * (fator * 0.3));
+  
+  // Converter de volta para hex
+  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
 export function Mandala({ progresso, intensidade = 'media', pausado = false }: MandalaProps) {
+  // Estado da fase lunar
+  const [faseLunar, setFaseLunar] = useState<FaseLunar>('cheia');
+  
+  // Calcular fase lunar ao montar componente
+  useEffect(() => {
+    const fase = faseDaLua();
+    setFaseLunar(fase);
+    
+    // Atualizar a cada hora (caso usuário deixe app aberto por muito tempo)
+    const intervalo = setInterval(() => {
+      setFaseLunar(faseDaLua());
+    }, 60 * 60 * 1000); // 1 hora
+    
+    return () => clearInterval(intervalo);
+  }, []);
+  
+  // Obter configurações lunares
+  const configuracaoLunar = estiloLunar(faseLunar);
   // Configurações de intensidade
   const intensidadeConfig = {
     leve: {
@@ -45,14 +93,22 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
   // Ajustar velocidade quando pausado
   const velocidadeRotacao = pausado 
     ? intensidadeConfig.rotationDuration * 3 // 3x mais lento quando pausado
-    : intensidadeConfig.rotationDuration;
+    : intensidadeConfig.rotationDuration * configuracaoLunar.velocidade; // Ajuste lunar
   
   const brilhoAtual = pausado
     ? intensidadeConfig.glowOpacity * 0.5 // 50% do brilho quando pausado
-    : intensidadeConfig.glowOpacity;
+    : intensidadeConfig.glowOpacity * configuracaoLunar.brilho; // Ajuste lunar
 
-  // Cor dinâmica baseada na energia
-  const corPrincipal = energiaCor(intensidade);
+  // Cor dinâmica baseada na energia e fase lunar
+  const corEnergia = energiaCor(intensidade);
+  const corPrincipal = blendColors(corEnergia, configuracaoLunar.cor, configuracaoLunar.saturacao);
+  
+  // Ajuste de escala de pulso baseado na lua
+  const pulseScaleAjustado = faseLunar === 'cheia' 
+    ? intensidadeConfig.pulseScale * 1.2  // Pulso mais forte na lua cheia
+    : faseLunar === 'nova'
+    ? intensidadeConfig.pulseScale * 0.8  // Pulso mais suave na lua nova
+    : intensidadeConfig.pulseScale;
 
   // Calcular circunferência para o anel de progresso
   const radius = 80;
@@ -60,12 +116,17 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
   const strokeDashoffset = circumference - (progresso * circumference);
 
   return (
-    <div className="relative w-48 h-48 flex items-center justify-center">
+    <div 
+      className="relative w-48 h-48 flex items-center justify-center transition-all duration-700 ease-in-out"
+      style={{
+        filter: `brightness(${configuracaoLunar.brilho}) saturate(${configuracaoLunar.saturacao})`,
+      }}
+    >
       <svg
         width="192"
         height="192"
         viewBox="0 0 192 192"
-        className="absolute inset-0"
+        className="absolute inset-0 transition-all duration-700 ease-in-out"
         style={{ filter: 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.3))' }}
       >
         <defs>
@@ -103,13 +164,19 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
           animate={{
             scale: pausado 
               ? [1, 1.01, 1] // Pulso mínimo quando pausado
-              : [1, intensidadeConfig.pulseScale, 1],
+              : [1, pulseScaleAjustado, 1], // Pulso ajustado pela lua
             opacity: pausado
-              ? [brilhoAtual, brilhoAtual * 0.8, brilhoAtual] // Variação reduzida quando pausado
+              ? [brilhoAtual, brilhoAtual * 0.8, brilhoAtual]
               : [brilhoAtual, brilhoAtual * 0.7, brilhoAtual],
           }}
           transition={{
-            duration: pausado ? intensidadeConfig.duration * 2 : intensidadeConfig.duration,
+            duration: pausado 
+              ? intensidadeConfig.duration * 2 
+              : faseLunar === 'nova' 
+                ? intensidadeConfig.duration * 1.5  // Respiração lenta na lua nova
+                : faseLunar === 'cheia'
+                ? intensidadeConfig.duration * 0.8  // Respiração rápida na lua cheia
+                : intensidadeConfig.duration,
             repeat: Infinity,
             ease: "easeInOut",
           }}
@@ -179,11 +246,24 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
           fill="url(#centerGradient)"
           filter="url(#glow)"
           animate={{
-            scale: pausado ? [1, 1.01, 1] : [1, 1.03, 1],
+            scale: pausado 
+              ? [1, 1.01, 1] 
+              : faseLunar === 'cheia'
+              ? [1, 1.05, 1]  // Pulso mais forte na lua cheia
+              : faseLunar === 'nova'
+              ? [1, 1.015, 1] // Pulso muito sutil na lua nova
+              : [1, 1.03, 1], // Pulso padrão
+            opacity: faseLunar === 'nova' 
+              ? [0.7, 0.85, 0.7]  // Mais escuro na lua nova
+              : [1, 1, 1],
           }}
           transition={{
             duration: pausado 
               ? intensidadeConfig.duration * 3 
+              : faseLunar === 'nova'
+              ? intensidadeConfig.duration * 2.5  // Muito lento na lua nova
+              : faseLunar === 'cheia'
+              ? intensidadeConfig.duration * 1.2  // Mais rápido na lua cheia
               : intensidadeConfig.duration * 1.5,
             repeat: Infinity,
             ease: "easeInOut",
@@ -247,22 +327,40 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false }: M
 
       {/* Indicador de intensidade (halo externo adaptativo) */}
       <motion.div
-        className="absolute inset-0 rounded-full pointer-events-none"
+        className="absolute inset-0 rounded-full pointer-events-none transition-all duration-700 ease-in-out"
         style={{
           background: `radial-gradient(circle, transparent 40%, ${corPrincipal}${Math.round(brilhoAtual * 25.5).toString(16).padStart(2, '0')} 100%)`,
         }}
         animate={{
           opacity: pausado ? [0.2, 0.3, 0.2] : [0.5, 1, 0.5],
-          scale: pausado ? [1, 1.01, 1] : [1, 1.05, 1],
+          scale: pausado ? [1, 1.01, 1] : [1, pulseScaleAjustado * 0.5, 1],
         }}
         transition={{
           duration: pausado 
             ? intensidadeConfig.duration * 3
+            : faseLunar === 'nova'
+            ? intensidadeConfig.duration * 1.8
+            : faseLunar === 'cheia'
+            ? intensidadeConfig.duration * 0.7
             : intensidadeConfig.duration,
           repeat: Infinity,
           ease: "easeInOut",
         }}
       />
+      
+      {/* Indicador sutil da fase lunar (canto superior direito) */}
+      <motion.div
+        className="absolute -top-1 -right-1 text-xs opacity-60 pointer-events-none transition-all duration-700 ease-in-out"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 0.6, scale: 1 }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        title={configuracaoLunar.descricao}
+      >
+        {faseLunar === 'cheia' && '🌕'}
+        {faseLunar === 'nova' && '🌑'}
+        {faseLunar === 'crescente' && '🌓'}
+        {faseLunar === 'minguante' && '🌗'}
+      </motion.div>
     </div>
   );
 }
