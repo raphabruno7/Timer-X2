@@ -466,6 +466,27 @@ export default function Home() {
     };
   }, [rodando, tempoRestante]);
 
+  // Detectar emoção quando sessão finaliza
+  const detectarEmocaoSessao = useCallback(async (tempoMinutos: number, pausasCount: number) => {
+    try {
+      const response = await fetch('/api/emocao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          sessionId,
+          tempo: tempoMinutos,
+          pausas: pausasCount,
+        }),
+      });
+      
+      const resultado = await response.json();
+      setEstadoEmocional(resultado);
+      console.info("Emoção detectada:", resultado.emocao);
+    } catch (error) {
+      console.error("[Detecção Emocional] Erro:", error);
+    }
+  }, [sessionId]);
+
   // useEffect para registrar uso quando timer terminar
   useEffect(() => {
     if (!rodando && presetAtivo && tempoInicio && tempoRestante === 0 && !rewardTriggered) {
@@ -626,27 +647,6 @@ export default function Home() {
       buscarAjustes();
     }
   }, [mandalaActive, rewardTriggered]);
-
-  // Detectar emoção quando sessão finaliza
-  const detectarEmocaoSessao = useCallback(async (tempoMinutos: number, pausasCount: number) => {
-    try {
-      const response = await fetch('/api/emocao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          sessionId,
-          tempo: tempoMinutos,
-          pausas: pausasCount,
-        }),
-      });
-      
-      const resultado = await response.json();
-      setEstadoEmocional(resultado);
-      console.info("Emoção detectada:", resultado.emocao);
-    } catch (error) {
-      console.error("[Detecção Emocional] Erro:", error);
-    }
-  }, [sessionId]);
 
   return (
     <>
