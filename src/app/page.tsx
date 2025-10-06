@@ -15,6 +15,7 @@ import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, T
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { MandalaReward } from "@/components/ui/MandalaReward";
 import { Mandala } from "@/components/ui/Mandala";
+import { AlquimiaPanel } from "@/components/ui/AlquimiaPanel";
 import { motion } from "framer-motion";
 import { analisarPadrao, calcularScoreProdutividade, detectarMelhorHorario } from "@/lib/adaptiveEngine";
 import { ajustarAmbiente, detectarTendenciaCansaco, calcularVelocidadeMandala } from "@/lib/environmentFeedback";
@@ -1638,6 +1639,16 @@ export default function Home() {
                 </Button>
               </motion.div>
             </div>
+
+            {/* 🜂 Painel Alquímico - Conversão simbólica de métricas */}
+            {rodando && (
+              <AlquimiaPanel
+                energia={mandalaAdaptiveIntensity} // Usa intensidade da mandala como proxy de energia
+                foco={tempo > 0 ? 1 - (tempo / tempoInicial) : 1} // Progresso do foco
+                emocao={emocaoMandala}
+                fase={faseDaLua()}
+              />
+            )}
           </div>
 
           {/* Bottom Navigation com animações suaves */}
