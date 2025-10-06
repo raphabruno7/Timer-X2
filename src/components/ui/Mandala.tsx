@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { faseDaLua, estiloLunar, type FaseLunar } from "@/lib/lua";
+import { tocarSomRespiracao, suportaSomTerapeutico } from "@/lib/soundHealing";
 
 interface MandalaProps {
   progresso: number; // 0 a 1 (porcentagem de progresso)
@@ -110,6 +111,20 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
   
   // Guia de respiração
   const { faseRespiracao } = usarRespiracao(modoRespiracao, ciclo);
+  
+  // Sincronização sonora com respiração
+  useEffect(() => {
+    if (!modoRespiracao) return;
+    if (!suportaSomTerapeutico()) {
+      console.info('[Mandala] Navegador não suporta Web Audio API');
+      return;
+    }
+    
+    // Tocar som harmônico sincronizado com a fase
+    tocarSomRespiracao(faseRespiracao as 'inspirar' | 'expirar')
+      .catch(err => console.warn('[Mandala] Erro ao tocar som:', err));
+    
+  }, [faseRespiracao, modoRespiracao]);
   
   // Obter configurações lunares
   const configuracaoLunar = estiloLunar(faseLunar);
