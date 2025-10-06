@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History, Trophy, LineChart as LineChartIcon } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { MandalaReward } from "@/components/ui/MandalaReward";
+import { Mandala } from "@/components/ui/Mandala";
 import { motion } from "framer-motion";
 import { analisarPadrao, calcularScoreProdutividade, detectarMelhorHorario } from "@/lib/adaptiveEngine";
 import { ajustarAmbiente, detectarTendenciaCansaco, calcularVelocidadeMandala } from "@/lib/environmentFeedback";
@@ -1477,9 +1478,23 @@ export default function Home() {
                   ease: "easeInOut",
                 }}
               >
-                <div className="text-center">
+                {/* Mandala viva de fundo */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Mandala 
+                    progresso={1 - (tempoRestante / tempoInicial)}
+                    intensidade={
+                      mandalaIntensityModifier >= 1.2 ? 'forte' 
+                      : mandalaIntensityModifier <= 0.8 ? 'leve' 
+                      : 'media'
+                    }
+                  />
+                </div>
+
+                {/* Conteúdo do timer sobre a mandala */}
+                <div className="text-center relative z-10">
                   <motion.div 
                     className="text-3xl font-mono font-bold text-[#F9F9F9] mb-2"
+                    style={{ textShadow: '0 0 20px rgba(0,0,0,0.8)' }}
                     animate={{
                       opacity: [1, 0.85, 1],
                     }}
@@ -1491,7 +1506,7 @@ export default function Home() {
                   >
                     {formatarTempo(tempo)}
                   </motion.div>
-                  <div className="text-sm text-[#F9F9F9]/70">
+                  <div className="text-sm text-[#F9F9F9]/70" style={{ textShadow: '0 0 10px rgba(0,0,0,0.8)' }}>
                     {rodando ? "Running..." : tempo === 0 ? "Time's up!" : "Ready to begin"}
                   </div>
                 </div>
