@@ -52,4 +52,11 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_created_at", ["createdAt"]),
+  ciclos: defineTable({
+    usuarioId: v.string(),
+    totalCiclos: v.number(), // número total de ciclos completados
+    ultimoElemento: v.string(), // "terra" | "agua" | "fogo" | "ar" | "eter"
+    ultimaAtualizacao: v.number(), // timestamp em ms
+  })
+    .index("by_usuario", ["usuarioId"]),
 });

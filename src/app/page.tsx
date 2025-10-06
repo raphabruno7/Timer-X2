@@ -16,6 +16,8 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContai
 import { MandalaReward } from "@/components/ui/MandalaReward";
 import { Mandala } from "@/components/ui/Mandala";
 import { AlquimiaPanel } from "@/components/ui/AlquimiaPanel";
+import { CicloVital, type Elemento } from "@/components/ui/CicloVital";
+import { Toaster, toast } from "@/components/ui/sonner";
 import { motion } from "framer-motion";
 import { analisarPadrao, calcularScoreProdutividade, detectarMelhorHorario } from "@/lib/adaptiveEngine";
 import { ajustarAmbiente, detectarTendenciaCansaco, calcularVelocidadeMandala } from "@/lib/environmentFeedback";
@@ -135,6 +137,10 @@ export default function Home() {
   const estatisticasGerais = useQuery(api.historico.estatisticasGerais);
   const estatisticasPorDia = useQuery(api.historico.estatisticasPorDia);
   const sessoesRegistradasQuery = useQuery(api.sessoes.listar);
+  
+  // Ciclo Vital hooks
+  const incrementarCiclo = useMutation(api.ciclos.incrementarCiclo);
+  const ciclosQuery = useQuery(api.ciclos.obterCiclos, { usuarioId: "guest" });
 
   // Memoize queries to prevent re-renders
   const presets = useMemo(() => presetsQuery || [], [presetsQuery]);
@@ -806,6 +812,33 @@ export default function Home() {
               energiaAntes: duracao >= 2700 ? 'média' : 'alta',
               energiaDepois: 'calma',
             }).catch(console.error);
+            
+            // Incrementar ciclo vital
+            incrementarCiclo({ usuarioId: "guest" })
+              .then((resultado) => {
+                console.info('[Ciclo Vital] Ciclo incrementado:', resultado);
+                
+                // Se evoluiu, mostrar toast
+                if (resultado?.evoluiu) {
+                  const elementos: Record<string, { nome: string; icone: string }> = {
+                    terra: { nome: "Terra", icone: "🌍" },
+                    agua: { nome: "Água", icone: "💧" },
+                    fogo: { nome: "Fogo", icone: "🔥" },
+                    ar: { nome: "Ar", icone: "🌬️" },
+                    eter: { nome: "Éter", icone: "✨" },
+                  };
+                  
+                  const elementoAtual = elementos[resultado.elemento as keyof typeof elementos] || { nome: resultado.elemento, icone: "✨" };
+                  
+                  toast(`Você evoluiu para o Elemento ${elementoAtual.nome}! ${elementoAtual.icone}`, {
+                    description: `${resultado.totalCiclos} ciclos completados`,
+                    duration: 5000,
+                  });
+                }
+              })
+              .catch(err => {
+                console.error('[Ciclo Vital] Erro ao incrementar:', err);
+              });
           })
           .catch(err => {
             console.error("Erro ao buscar sugestão IA:", err);
@@ -1257,6 +1290,16 @@ export default function Home() {
         >
           {/* Header */}
           <div className="p-6 text-center border-b border-[#2ECC71]/10">
+            {/* Ciclo Vital - discreto no topo */}
+            <div className="flex justify-center mb-3">
+              {ciclosQuery && (
+                <CicloVital
+                  totalCiclos={ciclosQuery.totalCiclos}
+                  mostrarDetalhes={false}
+                />
+              )}
+            </div>
+            
             <h1 className="text-2xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2 mb-4">
               <Leaf className="w-6 h-6 text-[#2ECC71]" />
               Timer X2
@@ -1704,6 +1747,13 @@ export default function Home() {
         </Card>
       </motion.div>
       </div>
+      
+      {/* Toaster para notificações de evolução */}
+      <Toaster 
+        position="top-center"
+        richColors
+        theme={isDarkMode ? "dark" : "light"}
+      />
     </main>
   );
 }
