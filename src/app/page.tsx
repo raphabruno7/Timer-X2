@@ -54,6 +54,7 @@ export default function Home() {
     accent: "#FFD700",
   });
   const [mandalaIntensityModifier, setMandalaIntensityModifier] = useState(1);
+  const [mandalaState, setMandalaState] = useState<"idle" | "starting" | "running" | "completing">("idle");
 
   // Convex hooks
   const presetsQuery = useQuery(api.presets.listar);
@@ -248,7 +249,14 @@ export default function Home() {
 
   // Função para iniciar o timer
   const iniciar = async () => {
-    setRodando(true);
+    // Transição visual de início
+    setMandalaState("starting");
+    
+    setTimeout(() => {
+      setMandalaState("running");
+      setRodando(true);
+    }, 800); // Dar tempo para animação de expansão
+    
     setTempoInicio(Date.now());
     setMandalaActive(false); // Fechar mandala ao iniciar novo ciclo
     setRewardTriggered(false); // Permitir nova mandala ao fim do ciclo
@@ -312,6 +320,7 @@ export default function Home() {
     setPresetAtivo(null);
     setRewardTriggered(false); // Reset flag de recompensa
     setMandalaActive(false); // Fechar mandala se estiver aberta
+    setMandalaState("idle"); // Voltar ao estado inicial
     
     // Incrementar contador de reset
     const novasInteracoes = { ...interacoes, botaoReset: interacoes.botaoReset + 1 };
@@ -490,6 +499,9 @@ export default function Home() {
   // useEffect para registrar uso quando timer terminar
   useEffect(() => {
     if (!rodando && presetAtivo && tempoInicio && tempoRestante === 0 && !rewardTriggered) {
+      // Transição visual de conclusão
+      setMandalaState("completing");
+      
       const duracao = Math.floor((Date.now() - tempoInicio) / 1000);
       if (duracao > 0) {
         registrarUso({ presetId: presetAtivo, duracao }).catch(console.error);
@@ -1179,21 +1191,71 @@ export default function Home() {
 
           {/* Main Content */}
           <div className="p-6 space-y-8">
-            {/* Timer Circle com ajustes adaptativos e emocionais */}
-            <div className="flex justify-center">
+            {/* Timer Circle com estados visuais reativos */}
+            <div className="flex justify-center relative">
+              {/* Partículas de conclusão (apenas no estado completing) */}
+              {mandalaState === "completing" && (
+                <>
+                  {[...Array(8)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-3 h-3 rounded-full bg-[#2ECC71]"
+                      style={{
+                        top: "50%",
+                        left: "50%",
+                      }}
+                      initial={{ scale: 0, x: 0, y: 0, opacity: 1 }}
+                      animate={{
+                        x: Math.cos((i * Math.PI) / 4) * 120,
+                        y: Math.sin((i * Math.PI) / 4) * 120,
+                        opacity: 0,
+                        scale: [0, 1, 0.5, 0],
+                      }}
+                      transition={{
+                        duration: 1.5,
+                        ease: "easeOut",
+                      }}
+                    />
+                  ))}
+                </>
+              )}
+
               <motion.div 
-                className="w-48 h-48 rounded-full border-4 flex items-center justify-center shadow-lg"
+                className="w-48 h-48 rounded-full border-4 flex items-center justify-center shadow-lg relative"
                 style={{
-                  borderColor: `${adaptivePrimary}66`,
-                  background: `linear-gradient(135deg, ${adaptivePrimary}1A, ${adaptiveAccent}10)`,
-                  transition: 'all 1s ease-in-out',
-                  boxShadow: `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
+                  borderColor: mandalaState === "starting" 
+                    ? "#FFD700" 
+                    : `${adaptivePrimary}66`,
+                  background: mandalaState === "starting"
+                    ? `linear-gradient(135deg, #FFD7001A, #FFD70030)`
+                    : `linear-gradient(135deg, ${adaptivePrimary}1A, ${adaptiveAccent}10)`,
+                  transition: 'all 0.8s ease-in-out',
+                  boxShadow: mandalaState === "starting"
+                    ? '0 0 40px #FFD70080'
+                    : `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
                 }}
                 animate={{
-                  scale: rodando 
+                  scale: mandalaState === "starting"
+                    ? [1, 1.15, 1.05]
+                    : mandalaState === "completing"
+                    ? [1, 1.2, 0.95]
+                    : rodando 
                     ? [1, 1.03, 1] 
                     : [1, 1 + (0.02 * mandalaAdaptiveIntensity), 1],
-                  boxShadow: rodando
+                  opacity: mandalaState === "completing" ? [1, 1, 0.7] : 1,
+                  boxShadow: mandalaState === "starting"
+                    ? [
+                        '0 0 30px #FFD70060',
+                        '0 0 50px #FFD700A0',
+                        '0 0 35px #FFD70070',
+                      ]
+                    : mandalaState === "completing"
+                    ? [
+                        `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
+                        `0 0 60px #2ECC71A0`,
+                        `0 0 80px #2ECC7160`,
+                      ]
+                    : rodando
                     ? [
                         `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
                         `0 0 ${35 * mandalaAdaptiveIntensity}px ${adaptiveAccent}80`,
@@ -1202,8 +1264,14 @@ export default function Home() {
                     : `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
                 }}
                 transition={{
-                  duration: rodando ? 1 : (estadoEmocional.emocao === "disperso" ? 1.5 : 3),
-                  repeat: Infinity,
+                  duration: mandalaState === "starting"
+                    ? 0.8
+                    : mandalaState === "completing"
+                    ? 1.5
+                    : rodando 
+                    ? 1 
+                    : (estadoEmocional.emocao === "disperso" ? 1.5 : 3),
+                  repeat: mandalaState === "starting" || mandalaState === "completing" ? 0 : Infinity,
                   ease: "easeInOut",
                 }}
               >
