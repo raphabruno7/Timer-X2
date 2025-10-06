@@ -19,6 +19,7 @@ import { AlquimiaPanel } from "@/components/ui/AlquimiaPanel";
 import { CicloVital, type Elemento } from "@/components/ui/CicloVital";
 import { MemoriaElemental } from "@/components/ui/MemoriaElemental";
 import { MandalaElemental } from "@/components/ui/MandalaElemental";
+import { ModoMeditacao } from "@/components/ui/ModoMeditacao";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -119,6 +120,7 @@ export default function Home() {
     transicao: '1.5s ease-in-out',
     intensidadeLuz: 0.7,
   });
+  const [modoMeditacaoAtivo, setModoMeditacaoAtivo] = useState(false);
 
   // Convex hooks
   const presetsQuery = useQuery(api.presets.listar);
@@ -1314,10 +1316,25 @@ export default function Home() {
               )}
             </div>
             
-            <h1 className="text-2xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2 mb-4">
+            <h1 className="text-2xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2 mb-2">
               <Leaf className="w-6 h-6 text-[#2ECC71]" />
               Timer X2
             </h1>
+            
+            {/* Botão Modo Meditação */}
+            <div className="flex justify-center mb-4">
+              <motion.button
+                onClick={() => setModoMeditacaoAtivo(true)}
+                disabled={tempo === 0}
+                className="text-xs px-4 py-1.5 rounded-full bg-gradient-to-r from-[#2ECC71]/20 to-[#FFD700]/20 border border-[#FFD700]/30 text-[#FFD700] hover:from-[#2ECC71]/30 hover:to-[#FFD700]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                title="Experiência imersiva com a Mandala"
+              >
+                <span>🌙</span>
+                <span>Modo Meditação Dinâmica</span>
+              </motion.button>
+            </div>
             
             {/* Preset Selector */}
             <div className="flex justify-center mb-4">
@@ -1802,6 +1819,18 @@ export default function Home() {
         </Card>
       </motion.div>
       </div>
+      
+      {/* Modo Meditação Dinâmica */}
+      <ModoMeditacao
+        ativo={modoMeditacaoAtivo}
+        onFechar={() => setModoMeditacaoAtivo(false)}
+        timerRodando={rodando}
+        timerPausado={!rodando && tempo > 0 && tempo < tempoInicial}
+        tempoRestante={tempo}
+        tempoTotal={tempoInicial}
+        presetNome={presets.find(p => p._id === presetAtivo)?.nome}
+        usuarioId="guest"
+      />
       
       {/* Toaster para notificações de evolução */}
       <Toaster 
