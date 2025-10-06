@@ -10,6 +10,7 @@ interface MandalaProps {
   pausado?: boolean; // Timer está pausado?
   ativo?: boolean; // Timer está ativo/rodando?
   modoRespiracao?: boolean; // Ativa guia de respiração visual
+  ciclo?: number; // Duração completa de uma respiração (em segundos), padrão: 8s
 }
 
 /**
@@ -56,9 +57,9 @@ function blendColors(cor1: string, cor2: string, fator: number): string {
 
 /**
  * Hook personalizado para guia de respiração
- * Ciclo: 4s inspirar → 4s segurar → 4s expirar
+ * Ciclo simplificado: inspirar → expirar (contínuo)
  */
-function usarRespiracao(ativo: boolean) {
+function usarRespiracao(ativo: boolean, duracaoCiclo: number) {
   const [faseRespiracao, setFaseRespiracao] = useState<'inspirar' | 'segurar' | 'expirar'>('inspirar');
   const [cicloAtual, setCicloAtual] = useState(0);
   
@@ -69,15 +70,15 @@ function usarRespiracao(ativo: boolean) {
       return;
     }
     
-    const duracaoFase = 4000; // 4 segundos por fase
+    // Duração de cada fase (metade do ciclo completo)
+    const duracaoFase = (duracaoCiclo * 1000) / 2; // segundos → ms
     
     const intervalo = setInterval(() => {
       setCicloAtual((prev) => {
         const proximoCiclo = prev + 1;
-        const fase = proximoCiclo % 3;
+        const fase = proximoCiclo % 2; // Alternar entre 0 e 1
         
         if (fase === 0) setFaseRespiracao('inspirar');
-        else if (fase === 1) setFaseRespiracao('segurar');
         else setFaseRespiracao('expirar');
         
         return proximoCiclo;
@@ -85,12 +86,12 @@ function usarRespiracao(ativo: boolean) {
     }, duracaoFase);
     
     return () => clearInterval(intervalo);
-  }, [ativo]);
+  }, [ativo, duracaoCiclo]);
   
   return { faseRespiracao, cicloAtual };
 }
 
-export function Mandala({ progresso, intensidade = 'media', pausado = false, ativo = true, modoRespiracao = false }: MandalaProps) {
+export function Mandala({ progresso, intensidade = 'media', pausado = false, ativo = true, modoRespiracao = false, ciclo = 8 }: MandalaProps) {
   // Estado da fase lunar
   const [faseLunar, setFaseLunar] = useState<FaseLunar>('cheia');
   
@@ -108,7 +109,7 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
   }, []);
   
   // Guia de respiração
-  const { faseRespiracao } = usarRespiracao(modoRespiracao);
+  const { faseRespiracao } = usarRespiracao(modoRespiracao, ciclo);
   
   // Obter configurações lunares
   const configuracaoLunar = estiloLunar(faseLunar);
@@ -175,13 +176,30 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progresso * circumference);
 
+  // Cálculo de valores para modo respiração
+  const duracaoFaseRespiracao = (ciclo * 1000) / 2; // ms
+  const scaleRespiracao = faseRespiracao === 'inspirar' ? 1.1 : 1.0;
+  const brightnessRespiracao = faseRespiracao === 'inspirar' ? 1.25 : 1.0;
+  const shadowRespiracao = faseRespiracao === 'inspirar' 
+    ? 'drop-shadow(0 0 8px #FFD700)' 
+    : 'drop-shadow(0 0 0px transparent)';
+
   return (
-    <div 
-      className="relative w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] flex items-center justify-center transition-all duration-700 ease-in-out"
+    <motion.div 
+      className="relative w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] flex items-center justify-center"
+      animate={modoRespiracao ? {
+        scale: scaleRespiracao,
+      } : {}}
+      transition={modoRespiracao ? {
+        duration: duracaoFaseRespiracao / 1000,
+        ease: "easeInOut",
+        repeat: 0, // Controlado pelo hook
+      } : {}}
       style={{
         filter: modoRespiracao
-          ? `brightness(${brilhoRespiracao}) saturate(0.8) blur(0.5px)`
+          ? `brightness(${brightnessRespiracao}) saturate(0.9) ${shadowRespiracao}`
           : `brightness(${configuracaoLunar.brilho}) saturate(${configuracaoLunar.saturacao})`,
+        transition: 'filter 0.7s ease-in-out',
       }}
     >
       <svg
@@ -305,27 +323,22 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
           cx="96"
           cy="96"
           r="45"
-          fill="url(#centerGradient)"
+          fill={modoRespiracao 
+            ? (faseRespiracao === 'inspirar' ? '#FFD700' : '#2ECC71') // Transição dourado → verde
+            : "url(#centerGradient)"
+          }
           filter="url(#glow)"
           animate={
             modoRespiracao
               ? {
-                  // Modo respiração: sincronizado com ciclo respiratório
-                  scale: faseRespiracao === 'inspirar' 
-                    ? [1, 1.3]  // Expandir ao inspirar
-                    : faseRespiracao === 'segurar'
-                    ? [1.3, 1.3]  // Segurar expandido
-                    : [1.3, 1],  // Contrair ao expirar
-                  opacity: faseRespiracao === 'inspirar'
-                    ? [0.8, 1]
-                    : faseRespiracao === 'segurar'
-                    ? [1, 1]
-                    : [1, 0.7],
+                  // Modo respiração: ciclo inspirar/expirar simplificado
+                  scale: faseRespiracao === 'inspirar' ? 1.15 : 1.0,
+                  opacity: faseRespiracao === 'inspirar' ? 1.0 : 0.85,
                 }
               : {
                   // Modo normal: baseado na lua
-                  scale: pausado 
-                    ? [1, 1.01, 1] 
+                  scale: (pausado || !ativo)
+                    ? 1
                     : faseLunar === 'cheia'
                     ? [1, 1.05, 1]  // Pulso mais forte na lua cheia
                     : faseLunar === 'nova'
@@ -339,23 +352,26 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
           transition={
             modoRespiracao
               ? {
-                  duration: 4,  // 4 segundos por fase
+                  duration: duracaoFaseRespiracao / 1000,  // Duração configurável
                   repeat: 0,    // Sem repeat (controlado pelo hook)
-                  ease: faseRespiracao === 'segurar' ? 'linear' : 'easeInOut',
+                  ease: 'easeInOut',
                 }
               : {
-                  duration: pausado 
-                    ? intensidadeConfig.duration * 3 
+                  duration: (pausado || !ativo)
+                    ? 0
                     : faseLunar === 'nova'
                     ? intensidadeConfig.duration * 2.5  // Muito lento na lua nova
                     : faseLunar === 'cheia'
                     ? intensidadeConfig.duration * 1.2  // Mais rápido na lua cheia
                     : intensidadeConfig.duration * 1.5,
-                  repeat: Infinity,
+                  repeat: (pausado || !ativo) ? 0 : Infinity,
                   ease: "easeInOut",
                 }
           }
-          style={{ transformOrigin: '96px 96px' }}
+          style={{ 
+            transformOrigin: '96px 96px',
+            transition: modoRespiracao ? 'fill 0.7s ease-in-out' : 'none',
+          }}
         />
 
         {/* Círculo interno - borda */}
@@ -462,21 +478,23 @@ export function Mandala({ progresso, intensidade = 'media', pausado = false, ati
           <motion.p
             className="text-sm font-light tracking-widest uppercase transition-all duration-700 ease-in-out"
             style={{
-              color: corPrincipal,
-              textShadow: `0 0 20px ${corPrincipal}80`,
+              color: faseRespiracao === 'inspirar' ? '#FFD700' : '#2ECC71',
+              textShadow: faseRespiracao === 'inspirar' 
+                ? '0 0 20px rgba(255, 215, 0, 0.8)' 
+                : '0 0 20px rgba(46, 204, 113, 0.8)',
+              transition: 'color 0.7s ease-in-out, text-shadow 0.7s ease-in-out',
             }}
             animate={{
-              opacity: faseRespiracao === 'segurar' ? [1, 0.7, 1] : 1,
+              opacity: [0.8, 1, 0.8],
             }}
             transition={{
-              duration: 2,
-              repeat: faseRespiracao === 'segurar' ? Infinity : 0,
+              duration: duracaoFaseRespiracao / 1000,
+              repeat: 0,
               ease: "easeInOut",
             }}
           >
             {faseRespiracao === 'inspirar' && '✨ Inspirar ✨'}
-            {faseRespiracao === 'segurar' && '🌟 Segurar 🌟'}
-            {faseRespiracao === 'expirar' && '🌙 Expirar 🌙'}
+            {faseRespiracao === 'expirar' && '🌿 Expirar 🌿'}
           </motion.p>
         </motion.div>
       )}
