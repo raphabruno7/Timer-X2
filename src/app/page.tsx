@@ -16,6 +16,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContai
 import { MandalaReward } from "@/components/ui/MandalaReward";
 import { motion } from "framer-motion";
 import { analisarPadrao, calcularScoreProdutividade, detectarMelhorHorario } from "@/lib/adaptiveEngine";
+import { ajustarAmbiente, detectarTendenciaCansaco, calcularVelocidadeMandala } from "@/lib/environmentFeedback";
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -102,6 +103,13 @@ export default function Home() {
   });
   const [mandalaIntensityModifier, setMandalaIntensityModifier] = useState(1);
   const [mandalaState, setMandalaState] = useState<"idle" | "starting" | "running" | "completing">("idle");
+  const [ambienteAdaptativo, setAmbienteAdaptativo] = useState({
+    corFundo: '#1C1C1C',
+    corMandala: '#2ECC71',
+    corAccent: '#FFD700',
+    transicao: '1.5s ease-in-out',
+    intensidadeLuz: 0.7,
+  });
 
   // Convex hooks
   const presetsQuery = useQuery(api.presets.listar);
@@ -308,6 +316,58 @@ export default function Home() {
       console.log(`[Adaptive Engine] 💡 ${ajustes.recomendacao}`);
     }
   }, [padrõesUsoRecentes, rodando, tempoInicial, mandalaIntensityModifier]);
+
+  // Ajustar ambiente visual baseado em contexto e padrões
+  useEffect(() => {
+    const atualizarAmbiente = () => {
+      const horaAtual = new Date().getHours();
+      const sessõesHoje = padrõesUsoRecentes?.filter(p => {
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        return p.createdAt >= hoje.getTime();
+      }) || [];
+
+      // Detectar tendência de cansaço
+      const tendenciaCansaco = padrõesUsoRecentes && padrõesUsoRecentes.length >= 3
+        ? detectarTendenciaCansaco(padrõesUsoRecentes)
+        : false;
+
+      // Calcular média de duração e total de pausas
+      const mediaDuracao = padrõesUsoRecentes && padrõesUsoRecentes.length > 0
+        ? padrõesUsoRecentes.reduce((acc, p) => acc + p.duration, 0) / padrõesUsoRecentes.length
+        : undefined;
+
+      const ultimaSessao = padrõesUsoRecentes?.[0];
+
+      // Ajustar ambiente
+      const novoAmbiente = ajustarAmbiente({
+        horario: horaAtual,
+        sessoesConcluidas: sessõesHoje.length,
+        ultimaSessaoDuracao: ultimaSessao?.duration,
+        tendenciaCansaco,
+        mediaDuracao,
+        totalPausas: numeroPausas,
+      });
+
+      setAmbienteAdaptativo(novoAmbiente);
+
+      // Ajustar velocidade da animação da mandala
+      const nivelEnergia = tendenciaCansaco ? 'baixa' 
+        : sessõesHoje.length > 5 ? 'baixa'
+        : sessõesHoje.length <= 2 ? 'alta'
+        : 'media';
+      
+      const velocidade = calcularVelocidadeMandala(nivelEnergia);
+      console.log(`[Environment Feedback] 🎭 Velocidade mandala: ${velocidade}x`);
+    };
+
+    atualizarAmbiente();
+
+    // Atualizar a cada hora para ajuste de período do dia
+    const interval = setInterval(atualizarAmbiente, 60 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [padrõesUsoRecentes, numeroPausas]);
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -795,8 +855,11 @@ export default function Home() {
 
   return (
     <main 
-      className="min-h-screen flex items-center justify-center p-4 gap-4 transition-colors duration-1000"
-      style={{ backgroundColor: themeColors.background }}
+      className="min-h-screen flex items-center justify-center p-4 gap-4"
+      style={{ 
+        backgroundColor: ambienteAdaptativo.corFundo,
+        transition: `background-color ${ambienteAdaptativo.transicao}`,
+      }}
       role="application"
       aria-label="Timer X2 - Aplicativo de foco e produtividade"
     >
@@ -1135,7 +1198,7 @@ export default function Home() {
         </Card>
       )}
 
-      {/* Phone Frame com ajustes adaptativos, emocionais e tema automático */}
+      {/* Phone Frame com ajustes adaptativos, emocionais, tema e ambiente */}
       <motion.div 
         className="w-full max-w-sm mx-auto"
         animate={{ 
@@ -1147,11 +1210,11 @@ export default function Home() {
         <Card 
           className="rounded-3xl overflow-hidden shadow-2xl"
           style={{
-            backgroundColor: themeColors.background,
+            backgroundColor: ambienteAdaptativo.corFundo,
             borderWidth: '2px',
-            borderColor: `${adaptivePrimary}33`,
-            transition: 'all 1s ease-in-out',
-            boxShadow: `0 0 ${18 * mandalaAdaptiveIntensity}px ${adaptiveAccent}40`,
+            borderColor: `${ambienteAdaptativo.corMandala}33`,
+            transition: `all ${ambienteAdaptativo.transicao}`,
+            boxShadow: `0 0 ${18 * mandalaAdaptiveIntensity * ambienteAdaptativo.intensidadeLuz}px ${ambienteAdaptativo.corAccent}40`,
           }}
         >
           {/* Header */}
@@ -1363,15 +1426,15 @@ export default function Home() {
                 className="w-48 h-48 rounded-full border-4 flex items-center justify-center shadow-lg relative"
                 style={{
                   borderColor: mandalaState === "starting" 
-                    ? "#FFD700" 
-                    : `${adaptivePrimary}66`,
+                    ? ambienteAdaptativo.corAccent
+                    : `${ambienteAdaptativo.corMandala}66`,
                   background: mandalaState === "starting"
-                    ? `linear-gradient(135deg, #FFD7001A, #FFD70030)`
-                    : `linear-gradient(135deg, ${adaptivePrimary}1A, ${adaptiveAccent}10)`,
-                  transition: 'all 0.8s ease-in-out',
+                    ? `linear-gradient(135deg, ${ambienteAdaptativo.corAccent}1A, ${ambienteAdaptativo.corAccent}30)`
+                    : `linear-gradient(135deg, ${ambienteAdaptativo.corMandala}1A, ${ambienteAdaptativo.corAccent}10)`,
+                  transition: `all ${ambienteAdaptativo.transicao}`,
                   boxShadow: mandalaState === "starting"
-                    ? '0 0 40px #FFD70080'
-                    : `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
+                    ? `0 0 ${40 * ambienteAdaptativo.intensidadeLuz}px ${ambienteAdaptativo.corAccent}80`
+                    : `0 0 ${28 * mandalaAdaptiveIntensity * ambienteAdaptativo.intensidadeLuz}px ${ambienteAdaptativo.corAccent}60`,
                 }}
                 animate={{
                   scale: mandalaState === "starting"
