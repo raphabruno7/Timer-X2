@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
@@ -15,6 +15,8 @@ import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, T
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { MandalaReward } from "@/components/ui/MandalaReward";
 import { motion } from "framer-motion";
+
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 export default function Home() {
   const [tempoInicial, setTempoInicial] = useState(1500); // 25 minutos em segundos
@@ -46,6 +48,14 @@ export default function Home() {
     cor: "#2ECC71",
     pulsacao: 0.5,
   });
+  const [ajustesIA, setAjustesIA] = useState<Record<string, any> | null>(null);
+  const [contadorSessoesIA, setContadorSessoesIA] = useState(0);
+  const [carregandoInsights, setCarregandoInsights] = useState(false);
+  const [paletaAdaptativa, setPaletaAdaptativa] = useState({
+    primary: "#2ECC71",
+    accent: "#FFD700",
+  });
+  const [mandalaIntensityModifier, setMandalaIntensityModifier] = useState(1);
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -63,6 +73,104 @@ export default function Home() {
   const rankingPresets = useQuery(api.historico.rankingPresets);
   const estatisticasGerais = useQuery(api.historico.estatisticasGerais);
   const estatisticasPorDia = useQuery(api.historico.estatisticasPorDia);
+  const sessoesRegistradas = useQuery(api.sessoes.listar) || [];
+
+  const adaptivePrimary = paletaAdaptativa.primary ?? estadoEmocional.cor;
+  const adaptiveAccent = paletaAdaptativa.accent ?? "#FFD700";
+  const mandalaAdaptiveIntensity = clamp(
+    estadoEmocional.pulsacao * mandalaIntensityModifier,
+    0.3,
+    1.4
+  );
+
+
+  const applyAdaptiveAdjustments = useCallback((adjustments: Record<string, any>) => {
+    if (!adjustments) return;
+
+    if (adjustments.palette && typeof adjustments.palette === "object") {
+      setPaletaAdaptativa((prev) => ({
+        primary: adjustments.palette.primary || prev.primary,
+        accent: adjustments.palette.accent || adjustments.palette.secondary || prev.accent,
+      }));
+    }
+
+    if (typeof adjustments.tempoModifier === "number" && !Number.isNaN(adjustments.tempoModifier)) {
+      const modifier = clamp(adjustments.tempoModifier, 0.95, 1.05);
+      if (rodando) {
+        setTempoRestante((prev) => clamp(Math.round(prev * modifier), 60, 7200));
+      } else {
+        const novoTempo = clamp(Math.round(tempoInicial * modifier), 300, 7200);
+        setTempoInicial(novoTempo);
+        setTempo(novoTempo);
+        setTempoRestante(novoTempo);
+      }
+    }
+
+    if (adjustments.mandalaVariance) {
+      const varianceMap: Record<string, number> = {
+        calm: 0.85,
+        default: 1,
+        vivid: 1.15,
+      };
+      let intensityValue = 1;
+      if (typeof adjustments.mandalaVariance === "number") {
+        intensityValue = clamp(adjustments.mandalaVariance, 0.7, 1.3);
+      } else {
+        intensityValue = varianceMap[adjustments.mandalaVariance] ?? 1;
+      }
+      setMandalaIntensityModifier(intensityValue);
+    }
+
+    setAjustesIA(adjustments);
+    console.info("[Adaptive IA] Ajustes aplicados:", adjustments);
+  }, [rodando, tempoInicial]);
+
+  const fetchAdaptiveInsights = useCallback(async () => {
+    if (carregandoInsights) return;
+    if (!sessoesRegistradas || sessoesRegistradas.length === 0) return;
+
+    try {
+      setCarregandoInsights(true);
+      const usageHistoryPayload = sessoesRegistradas
+        .slice(0, 12)
+        .map((sessao) => ({
+          preset: sessao.preset,
+          duration: sessao.duracao,
+          startedAt: sessao.timestamp,
+        }))
+        .reverse();
+
+      const response = await fetch('/api/insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usageHistory: usageHistoryPayload }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API insights status ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data?.adjustments) {
+        applyAdaptiveAdjustments(data.adjustments);
+        setContadorSessoesIA(0);
+      }
+    } catch (error) {
+      console.error("[Adaptive IA] Erro ao buscar insights:", error);
+    } finally {
+      setCarregandoInsights(false);
+    }
+  }, [carregandoInsights, sessoesRegistradas, applyAdaptiveAdjustments]);
+
+  useEffect(() => {
+    if (
+      sessoesRegistradas &&
+      sessoesRegistradas.length >= 3 &&
+      contadorSessoesIA >= 3
+    ) {
+      fetchAdaptiveInsights();
+    }
+  }, [sessoesRegistradas, contadorSessoesIA, fetchAdaptiveInsights]);
 
   // Presets estáticos como fallback
   const presetsEstaticos = [
@@ -427,10 +535,10 @@ export default function Home() {
           
           console.log("[Tracking] Sessão concluída com sucesso");
           
-          // Detectar emoção da sessão
           const preset = presets.find(p => p._id === presetAtivo);
           const tempoMinutos = preset?.tempoMinutos || 25;
           detectarEmocaoSessao(tempoMinutos, numeroPausas);
+          setContadorSessoesIA((prev) => prev + 1);
         }
         
         // Mostrar mandala de recompensa (apenas uma vez)
@@ -517,9 +625,9 @@ export default function Home() {
       <MandalaReward 
         visible={mandalaActive}
         mood={mandalaMood}
-        intensity={estadoEmocional.pulsacao}
+        intensity={mandalaAdaptiveIntensity}
         iaSugestao={iaSugestao}
-        corEmocional={estadoEmocional.cor}
+        corEmocional={adaptivePrimary}
         onIniciarSugestao={() => {
           // Fechar mandala e resetar timer
           setMandalaActive(false);
@@ -861,9 +969,9 @@ export default function Home() {
           className="bg-[#1C1C1C] rounded-3xl overflow-hidden shadow-2xl"
           style={{
             borderWidth: '2px',
-            borderColor: `${estadoEmocional.cor}33`, // Cor emocional com 20% opacity
+            borderColor: `${adaptivePrimary}33`,
             transition: 'all 1s ease-in-out',
-            boxShadow: `0 0 ${20 * estadoEmocional.pulsacao}px ${estadoEmocional.cor}40`, // Brilho baseado na pulsação
+            boxShadow: `0 0 ${18 * mandalaAdaptiveIntensity}px ${adaptiveAccent}40`,
           }}
         >
           {/* Header */}
@@ -1047,13 +1155,13 @@ export default function Home() {
               <motion.div 
                 className="w-48 h-48 rounded-full border-4 flex items-center justify-center shadow-lg"
                 style={{
-                  borderColor: `${estadoEmocional.cor}66`, // Cor emocional com mais intensidade
-                  background: `linear-gradient(135deg, ${estadoEmocional.cor}1A, ${ajustesAdaptativos.sugestaoCor}10)`,
+                  borderColor: `${adaptivePrimary}66`,
+                  background: `linear-gradient(135deg, ${adaptivePrimary}1A, ${adaptiveAccent}10)`,
                   transition: 'all 1s ease-in-out',
-                  boxShadow: `0 0 ${30 * estadoEmocional.pulsacao}px ${estadoEmocional.cor}60`,
+                  boxShadow: `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
                 }}
                 animate={{
-                  scale: [1, 1 + (0.02 * estadoEmocional.pulsacao), 1],
+                  scale: [1, 1 + (0.02 * mandalaAdaptiveIntensity), 1],
                 }}
                 transition={{
                   duration: estadoEmocional.emocao === "disperso" ? 1.5 : 3,
@@ -1157,7 +1265,7 @@ export default function Home() {
           </div>
         </Card>
       </motion.div>
-    </div>
+      </div>
     </>
   );
 }
