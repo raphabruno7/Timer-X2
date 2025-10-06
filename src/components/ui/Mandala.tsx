@@ -553,8 +553,9 @@ export function Mandala({
           style={{ transformOrigin: '96px 96px' }}
         >
           {[0, 60, 120, 180, 240, 300].map((angle, i) => {
-            const x = 96 + 70 * Math.cos((angle * Math.PI) / 180);
-            const y = 96 + 70 * Math.sin((angle * Math.PI) / 180);
+            // Arredondar para 2 casas decimais para evitar hydration mismatch
+            const x = Math.round((96 + 70 * Math.cos((angle * Math.PI) / 180)) * 100) / 100;
+            const y = Math.round((96 + 70 * Math.sin((angle * Math.PI) / 180)) * 100) / 100;
             
             return (
               <motion.circle
