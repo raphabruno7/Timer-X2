@@ -32,6 +32,9 @@ export default function Home() {
   const [aiMessage, setAiMessage] = useState<string>(""); // Mensagem da AI
   const [mandalaMood, setMandalaMood] = useState<"foco" | "criatividade" | "relaxamento" | "energia">("foco");
   const [iaSugestao, setIaSugestao] = useState<{ sugestao: string; descricao: string } | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [interacoes, setInteracoes] = useState({ botaoPlay: 0, botaoPause: 0, botaoReset: 0 });
+  const [numeroPausas, setNumeroPausas] = useState(0);
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -40,6 +43,8 @@ export default function Home() {
   const registrarUso = useMutation(api.historico.registrarUso);
   const registrarMandala = useMutation(api.mandalas.registrarMandala);
   const registrarSessao = useMutation(api.sessoes.registrar);
+  const iniciarSessaoConvex = useMutation(api.userSessions.iniciarSessao);
+  const finalizarSessaoConvex = useMutation(api.userSessions.finalizarSessao);
   const historico = useQuery(api.historico.listarHistorico, {}) || [];
   const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo: periodoSelecionado });
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
@@ -98,16 +103,47 @@ export default function Home() {
   };
 
   // Função para iniciar o timer
-  const iniciar = () => {
+  const iniciar = async () => {
     setRodando(true);
     setTempoInicio(Date.now());
     setMandalaActive(false); // Fechar mandala ao iniciar novo ciclo
     setRewardTriggered(false); // Permitir nova mandala ao fim do ciclo
+    
+    // Incrementar contador de play
+    const novasInteracoes = { ...interacoes, botaoPlay: interacoes.botaoPlay + 1 };
+    setInteracoes(novasInteracoes);
+    
+    // Detectar device e idioma
+    const device = /mobile|android|iphone|ipad/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+    const idioma = navigator.language || 'pt-BR';
+    
+    // Iniciar sessão no Convex (silencioso)
+    try {
+      const preset = presets.find(p => p._id === presetAtivo);
+      const presetNome = preset?.nome || "Manual";
+      
+      const newSessionId = await iniciarSessaoConvex({
+        presetAtivo: presetNome,
+        duracaoMinutos: Math.floor(tempoInicial / 60),
+        idioma,
+        device,
+        userId: null,
+      });
+      
+      setSessionId(newSessionId);
+      console.log("[Tracking] Sessão iniciada:", newSessionId);
+    } catch (error) {
+      console.error("[Tracking] Erro ao iniciar sessão:", error);
+    }
   };
 
   // Função para pausar o timer
   const pausar = async () => {
     setRodando(false);
+    
+    // Incrementar contador de pause
+    setInteracoes(prev => ({ ...prev, botaoPause: prev.botaoPause + 1 }));
+    setNumeroPausas(prev => prev + 1);
     
     // Registrar uso se houver preset ativo e tempo de início
     if (presetAtivo && tempoInicio) {
@@ -125,13 +161,35 @@ export default function Home() {
   };
 
   // Função para resetar o timer
-  const resetar = () => {
+  const resetar = async () => {
     setRodando(false);
     setTempo(tempoInicial);
     setTempoRestante(tempoInicial);
     setPresetAtivo(null);
     setRewardTriggered(false); // Reset flag de recompensa
     setMandalaActive(false); // Fechar mandala se estiver aberta
+    
+    // Incrementar contador de reset
+    const novasInteracoes = { ...interacoes, botaoReset: interacoes.botaoReset + 1 };
+    setInteracoes(novasInteracoes);
+    
+    // Finalizar sessão no Convex se existir
+    if (sessionId) {
+      try {
+        await finalizarSessaoConvex({
+          sessionId,
+          pausas: numeroPausas,
+          interacoes: novasInteracoes,
+        });
+        console.log("[Tracking] Sessão finalizada no reset");
+      } catch (error) {
+        console.error("[Tracking] Erro ao finalizar sessão:", error);
+      }
+      
+      setSessionId(null);
+      setNumeroPausas(0);
+      setInteracoes({ botaoPlay: 0, botaoPause: 0, botaoReset: 0 });
+    }
   };
 
   // Função para lidar com mudança de preset
@@ -347,13 +405,25 @@ export default function Home() {
             console.error("Erro ao buscar sugestão IA:", err);
           });
         
+        // Finalizar sessão no Convex
+        if (sessionId) {
+          finalizarSessaoConvex({
+            sessionId,
+            pausas: numeroPausas,
+            interacoes,
+            sentimento: mood,
+          }).catch(err => console.error("[Tracking] Erro ao finalizar:", err));
+          
+          console.log("[Tracking] Sessão concluída com sucesso");
+        }
+        
         // Mostrar mandala de recompensa (apenas uma vez)
         setMandalaActive(true);
         setRewardTriggered(true);
       }
       setTempoInicio(null);
     }
-  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, registrarMandala, registrarSessao, presets, historico, rewardTriggered]);
+  }, [rodando, presetAtivo, tempoInicio, tempoRestante, registrarUso, registrarMandala, registrarSessao, finalizarSessaoConvex, presets, historico, rewardTriggered, sessionId, numeroPausas, interacoes]);
 
   // Sincronizar tempo com tempoRestante
   useEffect(() => {

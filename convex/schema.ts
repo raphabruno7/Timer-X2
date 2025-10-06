@@ -26,4 +26,20 @@ export default defineSchema({
     energiaAntes: v.optional(v.string()), // ex: "baixa", "média", "alta"
     energiaDepois: v.optional(v.string()), // IA pode prever ou usuário informar
   }),
+  user_sessions: defineTable({
+    userId: v.union(v.string(), v.null()),
+    presetAtivo: v.string(),
+    duracaoMinutos: v.number(),
+    iniciadoEm: v.number(),
+    finalizadoEm: v.optional(v.number()),
+    pausas: v.number(),
+    interacoes: v.object({
+      botaoPlay: v.number(),
+      botaoPause: v.number(),
+      botaoReset: v.number(),
+    }),
+    sentimento: v.optional(v.string()),
+    idioma: v.string(),
+    device: v.string(),
+  }),
 });

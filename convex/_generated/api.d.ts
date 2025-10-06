@@ -17,6 +17,7 @@ import type * as historico from "../historico.js";
 import type * as mandalas from "../mandalas.js";
 import type * as presets from "../presets.js";
 import type * as sessoes from "../sessoes.js";
+import type * as userSessions from "../userSessions.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   mandalas: typeof mandalas;
   presets: typeof presets;
   sessoes: typeof sessoes;
+  userSessions: typeof userSessions;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
