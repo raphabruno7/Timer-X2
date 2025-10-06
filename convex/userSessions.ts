@@ -132,3 +132,67 @@ export const analisarPadroes = query({
   },
 });
 
+// Query para detectar emoção da sessão atual
+export const detectarEmocao = query({
+  args: {
+    sessionId: v.union(v.id("user_sessions"), v.null()),
+    tempo: v.number(), // em minutos
+    pausas: v.number(),
+  },
+  handler: async (ctx, args) => {
+    let emocao: "disperso" | "centrado" | "neutro";
+    let cor: string;
+    let pulsacao: number;
+
+    // Algoritmo de inferência emocional
+    if (args.pausas > 3 && args.tempo < 15) {
+      emocao = "disperso";
+      cor = "#00C2FF"; // Azul ciano - dispersão
+      pulsacao = 0.8; // Alta vibração visual
+    } else if (args.tempo >= 25 && args.pausas <= 1) {
+      emocao = "centrado";
+      cor = "#FFD700"; // Dourado - centramento
+      pulsacao = 0.3; // Baixa vibração, estado calmo
+    } else {
+      emocao = "neutro";
+      cor = "#2ECC71"; // Verde - equilíbrio
+      pulsacao = 0.5; // Vibração moderada
+    }
+
+    // Se tiver sessionId, buscar dados da sessão real
+    if (args.sessionId) {
+      try {
+        const sessao = await ctx.db.get(args.sessionId);
+        if (sessao && sessao.finalizadoEm) {
+          const duracaoReal = sessao.duracaoMinutos;
+          const pausasReais = sessao.pausas;
+          
+          // Recalcular baseado nos dados reais
+          if (pausasReais > 3 && duracaoReal < 15) {
+            emocao = "disperso";
+            cor = "#00C2FF";
+            pulsacao = 0.8;
+          } else if (duracaoReal >= 25 && pausasReais <= 1) {
+            emocao = "centrado";
+            cor = "#FFD700";
+            pulsacao = 0.3;
+          } else {
+            emocao = "neutro";
+            cor = "#2ECC71";
+            pulsacao = 0.5;
+          }
+        }
+      } catch (error) {
+        // Se não encontrar a sessão, usar os valores passados
+        console.error("Sessão não encontrada:", error);
+      }
+    }
+
+    return {
+      emocao,
+      cor,
+      pulsacao,
+    };
+  },
+});
+

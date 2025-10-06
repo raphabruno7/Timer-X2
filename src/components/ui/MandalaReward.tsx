@@ -10,6 +10,7 @@ interface MandalaRewardProps {
   intensity?: number;
   iaSugestao?: { sugestao: string; descricao: string } | null;
   onIniciarSugestao?: () => void;
+  corEmocional?: string;
 }
 
 export function MandalaReward({ 
@@ -17,7 +18,8 @@ export function MandalaReward({
   mood = "foco", 
   intensity = 0.5,
   iaSugestao,
-  onIniciarSugestao
+  onIniciarSugestao,
+  corEmocional = "#2ECC71"
 }: MandalaRewardProps) {
   return (
     <AnimatePresence>
@@ -26,13 +28,17 @@ export function MandalaReward({
           {/* Som sincronizado com mandala */}
           <MandalaSound mood={mood} intensity={intensity} playing={visible} />
           
-          {/* Tela de Recompensa Completa */}
+          {/* Tela de Recompensa Completa com cor emocional */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 2 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-lg"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-lg"
+            style={{
+              background: `radial-gradient(circle at center, ${corEmocional}15 0%, #000000E6 60%)`,
+              transition: 'background 1s ease-in-out',
+            }}
           >
             {/* Dynamic Mandala baseada em mood */}
             <motion.div
@@ -43,12 +49,17 @@ export function MandalaReward({
               <DynamicMandala mood={mood} intensity={intensity} />
             </motion.div>
 
-            {/* Mensagem de celebração */}
+            {/* Mensagem de celebração com cor emocional */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 1 }}
-              className="text-yellow-400 mt-8 text-lg animate-pulse text-center px-6"
+              className="mt-8 text-lg animate-pulse text-center px-6"
+              style={{
+                color: corEmocional,
+                textShadow: `0 0 20px ${corEmocional}80`,
+                transition: 'color 1s ease-in-out',
+              }}
             >
               ✨ Ciclo concluído. Respire e receba. ✨
             </motion.p>

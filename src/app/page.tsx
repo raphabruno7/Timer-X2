@@ -41,6 +41,11 @@ export default function Home() {
     sugestaoCor: "#2ECC71",
     ritmo: 25,
   });
+  const [estadoEmocional, setEstadoEmocional] = useState({
+    emocao: "neutro" as "disperso" | "centrado" | "neutro",
+    cor: "#2ECC71",
+    pulsacao: 0.5,
+  });
 
   // Convex hooks
   const presets = useQuery(api.presets.listar) || [];
@@ -421,6 +426,11 @@ export default function Home() {
           }).catch(err => console.error("[Tracking] Erro ao finalizar:", err));
           
           console.log("[Tracking] Sessão concluída com sucesso");
+          
+          // Detectar emoção da sessão
+          const preset = presets.find(p => p._id === presetAtivo);
+          const tempoMinutos = preset?.tempoMinutos || 25;
+          detectarEmocaoSessao(tempoMinutos, numeroPausas);
         }
         
         // Mostrar mandala de recompensa (apenas uma vez)
@@ -480,14 +490,36 @@ export default function Home() {
     }
   }, [mandalaActive, rewardTriggered]);
 
+  // Detectar emoção quando sessão finaliza
+  const detectarEmocaoSessao = async (tempoMinutos: number, pausasCount: number) => {
+    try {
+      const response = await fetch('/api/emocao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          sessionId,
+          tempo: tempoMinutos,
+          pausas: pausasCount,
+        }),
+      });
+      
+      const resultado = await response.json();
+      setEstadoEmocional(resultado);
+      console.info("Emoção detectada:", resultado.emocao);
+    } catch (error) {
+      console.error("[Detecção Emocional] Erro:", error);
+    }
+  };
+
   return (
     <>
-      {/* Mandala de Recompensa */}
+      {/* Mandala de Recompensa com feedback emocional */}
       <MandalaReward 
         visible={mandalaActive}
         mood={mandalaMood}
-        intensity={0.7}
+        intensity={estadoEmocional.pulsacao}
         iaSugestao={iaSugestao}
+        corEmocional={estadoEmocional.cor}
         onIniciarSugestao={() => {
           // Fechar mandala e resetar timer
           setMandalaActive(false);
@@ -816,7 +848,7 @@ export default function Home() {
         </Card>
       )}
 
-      {/* Phone Frame com ajustes adaptativos */}
+      {/* Phone Frame com ajustes adaptativos e emocionais */}
       <motion.div 
         className="w-full max-w-sm mx-auto"
         animate={{ 
@@ -829,8 +861,9 @@ export default function Home() {
           className="bg-[#1C1C1C] rounded-3xl overflow-hidden shadow-2xl"
           style={{
             borderWidth: '2px',
-            borderColor: `${ajustesAdaptativos.sugestaoCor}33`, // 20% opacity
-            transition: 'border-color 2s ease-in-out',
+            borderColor: `${estadoEmocional.cor}33`, // Cor emocional com 20% opacity
+            transition: 'all 1s ease-in-out',
+            boxShadow: `0 0 ${20 * estadoEmocional.pulsacao}px ${estadoEmocional.cor}40`, // Brilho baseado na pulsação
           }}
         >
           {/* Header */}
@@ -1009,28 +1042,39 @@ export default function Home() {
 
           {/* Main Content */}
           <div className="p-6 space-y-8">
-            {/* Timer Circle com ajustes adaptativos */}
+            {/* Timer Circle com ajustes adaptativos e emocionais */}
             <div className="flex justify-center">
               <motion.div 
                 className="w-48 h-48 rounded-full border-4 flex items-center justify-center shadow-lg"
                 style={{
-                  borderColor: `${ajustesAdaptativos.sugestaoCor}33`,
-                  background: `linear-gradient(135deg, ${ajustesAdaptativos.sugestaoCor}1A, #FFD70010)`,
-                  transition: 'all 2s ease-in-out',
+                  borderColor: `${estadoEmocional.cor}66`, // Cor emocional com mais intensidade
+                  background: `linear-gradient(135deg, ${estadoEmocional.cor}1A, ${ajustesAdaptativos.sugestaoCor}10)`,
+                  transition: 'all 1s ease-in-out',
+                  boxShadow: `0 0 ${30 * estadoEmocional.pulsacao}px ${estadoEmocional.cor}60`,
                 }}
                 animate={{
-                  scale: ajustesAdaptativos.estilo === "intenso" ? [1, 1.02, 1] : [1, 1.01, 1],
+                  scale: [1, 1 + (0.02 * estadoEmocional.pulsacao), 1],
                 }}
                 transition={{
-                  duration: ajustesAdaptativos.estilo === "intenso" ? 2 : 4,
+                  duration: estadoEmocional.emocao === "disperso" ? 1.5 : 3,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
               >
                 <div className="text-center">
-                  <div className="text-3xl font-mono font-bold text-[#F9F9F9] mb-2">
+                  <motion.div 
+                    className="text-3xl font-mono font-bold text-[#F9F9F9] mb-2"
+                    animate={{
+                      opacity: [1, 0.85, 1],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
                     {formatarTempo(tempo)}
-                  </div>
+                  </motion.div>
                   <div className="text-sm text-[#F9F9F9]/70">
                     {rodando ? "Running..." : tempo === 0 ? "Time's up!" : "Ready to begin"}
                   </div>
