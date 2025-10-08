@@ -25,7 +25,7 @@ import { MandalaElemental } from "@/components/ui/MandalaElemental";
 import { ModoMeditacao } from "@/components/ui/ModoMeditacao";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { analisarPadrao, calcularScoreProdutividade, detectarMelhorHorario } from "@/lib/adaptiveEngine";
 import { ajustarAmbiente, detectarTendenciaCansaco, calcularVelocidadeMandala } from "@/lib/environmentFeedback";
 import { faseDaLua } from "@/lib/lua";
@@ -1027,9 +1027,9 @@ export default function Home() {
         transition={{ duration: 0.5 }}
       >
         <Card 
-          className="rounded-3xl overflow-hidden shadow-2xl border-2"
+          className="rounded-3xl overflow-hidden shadow-2xl border-2 relative"
           style={{
-            backgroundColor: '#1A1A1A',
+            background: 'linear-gradient(to bottom, #1C1C1C 0%, #111111 100%)',
             borderColor: 'rgba(46, 204, 113, 0.2)',
             boxShadow: `0 0 ${30}px rgba(46, 204, 113, 0.15), 0 10px 40px rgba(0, 0, 0, 0.3)`,
           }}
@@ -1057,9 +1057,33 @@ export default function Home() {
           </div>
                 
           {/* Main Content - Timer Centralizado */}
-          <div className="px-6 pb-6 space-y-6 flex flex-col items-center" style={{ minHeight: '60vh' }}>
+          <div className="px-6 pb-6 mt-6 space-y-8 flex flex-col items-center justify-center" style={{ minHeight: '60vh' }}>
+            {/* Ícone de respiração discreto (ao pausar) */}
+            <AnimatePresence>
+              {!rodando && tempo > 0 && tempo < tempoInicial && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ 
+                    opacity: [0.4, 0.7, 0.4],
+                    scale: [0.9, 1, 0.9],
+                  }}
+                  exit={{ opacity: 0, scale: 0 }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="text-2xl mb-2"
+                  role="img"
+                  aria-label="Respirar"
+                >
+                  🌬️
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Timer Circle com estados visuais reativos (60% viewport) */}
-            <div className="flex justify-center items-center relative flex-1 w-full">
+            <div className="flex justify-center items-center relative w-full">
               {/* Partículas de conclusão (apenas no estado completing) */}
               {mandalaState === "completing" && (
                 <>
@@ -1070,6 +1094,7 @@ export default function Home() {
                       style={{
                         top: "50%",
                         left: "50%",
+                        zIndex: 20,
                       }}
                       initial={{ scale: 0, x: 0, y: 0, opacity: 1 }}
                       animate={{
@@ -1087,29 +1112,23 @@ export default function Home() {
                 </>
               )}
 
+              {/* Container do Timer com dimensões fixas */}
               <motion.div 
-                className="w-64 h-64 sm:w-80 sm:h-80 rounded-full border-4 flex items-center justify-center shadow-lg relative"
+                className="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto rounded-full"
                 style={{
-                  borderColor: mandalaState === "starting" 
-                    ? '#FFD700'
-                    : 'rgba(46, 204, 113, 0.4)',
-                  background: mandalaState === "starting"
-                    ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.2))'
-                    : 'linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(255, 215, 0, 0.05))',
-                  transition: 'all 1.5s ease-in-out',
                   boxShadow: mandalaState === "starting"
-                    ? '0 0 40px rgba(255, 215, 0, 0.5)'
+                    ? '0 0 40px rgba(255, 215, 0, 0.4), 0 0 20px rgba(46, 204, 113, 0.2)'
                     : '0 0 30px rgba(46, 204, 113, 0.3)',
                 }}
                 animate={{
                   scale: mandalaState === "starting"
-                    ? [1, 1.1, 1.05]
+                    ? [1, 1.05, 1.02]
                     : mandalaState === "completing"
-                    ? [1, 1.15, 1]
+                    ? [1, 1.08, 1]
                     : rodando 
-                    ? [1, 1.02, 1] 
+                    ? [1, 1.01, 1] 
                     : 1,
-                  opacity: mandalaState === "completing" ? [1, 1, 0.8] : 1,
+                  opacity: mandalaState === "completing" ? [1, 1, 0.9] : 1,
                 }}
                 transition={{
                   duration: mandalaState === "starting"
@@ -1117,12 +1136,25 @@ export default function Home() {
                     : mandalaState === "completing"
                     ? 1.5
                     : rodando 
-                    ? 2
+                    ? 3
                     : 0,
                   repeat: (mandalaState === "starting" || mandalaState === "completing") ? 0 : (rodando ? Infinity : 0),
                   ease: "easeInOut",
                 }}
               >
+                {/* Anel de borda com gradiente */}
+                <div 
+                  className="absolute inset-0 rounded-full border-4"
+                  style={{
+                    borderColor: mandalaState === "starting" 
+                      ? '#FFD700'
+                      : 'rgba(46, 204, 113, 0.4)',
+                    background: mandalaState === "starting"
+                      ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 215, 0, 0.15))'
+                      : 'linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(255, 215, 0, 0.03))',
+                  }}
+                />
+
                 {/* Mandala viva de fundo */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Mandala 
@@ -1134,22 +1166,22 @@ export default function Home() {
                     }
                     pausado={!rodando}
                     ativo={rodando}
-                    modoRespiracao={!rodando && tempo === 0} // Respiração apenas após conclusão
+                    modoRespiracao={!rodando && tempo === 0}
                     ciclo={8}
                     emocao={emocaoMandala}
                   />
                 </div>
 
-                {/* Conteúdo do timer sobre a mandala */}
-                <div className="text-center relative z-10">
+                {/* Conteúdo do timer sobre a mandala - Absolutamente centralizado */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                   <motion.div 
                     className="text-5xl sm:text-6xl font-light text-[#F9F9F9] tracking-wider mb-3"
                     style={{ 
-                      textShadow: '0 0 20px rgba(0,0,0,0.8)',
+                      textShadow: '0 2px 10px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.5)',
                       fontVariantNumeric: 'tabular-nums'
                     }}
                     animate={{
-                      opacity: [1, 0.9, 1],
+                      opacity: [1, 0.92, 1],
                     }}
                     transition={{
                       duration: 2,
@@ -1159,7 +1191,7 @@ export default function Home() {
                   >
                     {formatarTempo(tempo)}
                   </motion.div>
-                  <div className="text-sm font-light text-[#F9F9F9]/60 tracking-wide" style={{ textShadow: '0 0 10px rgba(0,0,0,0.8)' }}>
+                  <div className="text-sm font-light text-[#F9F9F9]/70 tracking-wide" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}>
                     {rodando ? "Em foco" : tempo === 0 ? "Sessão concluída" : "Pronto para começar"}
                   </div>
                 </div>
@@ -1167,7 +1199,8 @@ export default function Home() {
             </div>
 
             {/* Control Buttons com animações suaves e acessibilidade */}
-            <div className="flex justify-center gap-6 relative z-10" role="group" aria-label="Controles do timer">
+            <div className="flex justify-center gap-6 relative z-10 mt-8" role="group" aria-label="Controles do timer">
+              {/* Botão Play */}
               <motion.div
                 whileHover={{ scale: rodando || tempo === 0 ? 1 : 1.1 }}
                 whileTap={{ scale: rodando || tempo === 0 ? 1 : 0.95 }}
@@ -1177,21 +1210,25 @@ export default function Home() {
                   size="lg"
                   onClick={iniciar}
                   disabled={rodando || tempo === 0}
-                  className="w-14 h-14 rounded-full bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ pointerEvents: 'auto' }}
+                  className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ 
+                    pointerEvents: 'auto',
+                    boxShadow: (rodando || tempo === 0) ? 'none' : '0 4px 14px rgba(16, 185, 129, 0.4)'
+                  }}
                   aria-label="Iniciar timer"
                   aria-disabled={rodando || tempo === 0}
                   title="Iniciar sessão de foco"
                 >
                   <motion.div
-                    animate={!rodando && tempo > 0 ? { scale: [1, 1.1, 1] } : {}}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    animate={!rodando && tempo > 0 ? { scale: [1, 1.15, 1] } : {}}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <Play className="w-6 h-6 ml-1" aria-hidden="true" />
+                    <Play className="w-6 h-6 ml-0.5" aria-hidden="true" />
                   </motion.div>
                 </Button>
               </motion.div>
               
+              {/* Botão Pause */}
               <motion.div
                 whileHover={{ scale: !rodando ? 1 : 1.1 }}
                 whileTap={{ scale: !rodando ? 1 : 0.95 }}
@@ -1199,11 +1236,13 @@ export default function Home() {
               >
                 <Button
                   size="lg"
-                  variant="outline"
                   onClick={pausar}
                   disabled={!rodando}
-                  className="w-14 h-14 rounded-full border-[#FFD700]/50 text-[#FFD700] hover:bg-[#FFD700]/10 hover:border-[#FFD700] transition-all duration-300 ease-in-out relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ pointerEvents: 'auto' }}
+                  className="w-14 h-14 rounded-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ 
+                    pointerEvents: 'auto',
+                    boxShadow: !rodando ? 'none' : '0 4px 14px rgba(250, 204, 21, 0.5)'
+                  }}
                   aria-label="Pausar timer"
                   aria-disabled={!rodando}
                   title="Pausar sessão de foco"
@@ -1212,6 +1251,7 @@ export default function Home() {
                 </Button>
               </motion.div>
               
+              {/* Botão Reset */}
               <motion.div
                 whileHover={{ scale: 1.1, rotate: -15 }}
                 whileTap={{ scale: 0.95, rotate: 180 }}
@@ -1219,10 +1259,12 @@ export default function Home() {
               >
                 <Button
                   size="lg"
-                  variant="outline"
                   onClick={resetar}
-                  className="w-14 h-14 rounded-full border-[#F9F9F9]/30 text-[#F9F9F9] hover:bg-[#F9F9F9]/10 hover:border-[#F9F9F9]/50 transition-all duration-300 ease-in-out relative z-10"
-                  style={{ pointerEvents: 'auto' }}
+                  className="w-14 h-14 rounded-full bg-gray-700 hover:bg-gray-600 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10"
+                  style={{ 
+                    pointerEvents: 'auto',
+                    boxShadow: '0 4px 14px rgba(55, 65, 81, 0.4)'
+                  }}
                   aria-label="Resetar timer"
                   title="Resetar timer e limpar sessão"
                 >
