@@ -26,6 +26,8 @@ import { motion } from "framer-motion";
 import { analisarPadrao, calcularScoreProdutividade, detectarMelhorHorario } from "@/lib/adaptiveEngine";
 import { ajustarAmbiente, detectarTendenciaCansaco, calcularVelocidadeMandala } from "@/lib/environmentFeedback";
 import { faseDaLua } from "@/lib/lua";
+import { tocarSomInicio, tocarSomCiclo, tocarSomFim, setVolume } from "@/lib/somSincronizado";
+import { determinarElemento } from "@/components/ui/CicloVital";
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -91,7 +93,7 @@ export default function Home() {
   const [mandalaActive, setMandalaActive] = useState(false); // Estado da mandala
   const [mandalaMood, setMandalaMood] = useState<"foco" | "criatividade" | "relaxamento" | "energia">("foco");
   const [iaSugestao, setIaSugestao] = useState<{ sugestao: string; descricao: string } | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<Id<"user_sessions"> | null>(null);
   const [interacoes, setInteracoes] = useState({ botaoPlay: 0, botaoPause: 0, botaoReset: 0 });
   const [numeroPausas, setNumeroPausas] = useState(0);
   const [ajustesAdaptativos, setAjustesAdaptativos] = useState({
@@ -121,6 +123,8 @@ export default function Home() {
     intensidadeLuz: 0.7,
   });
   const [modoMeditacaoAtivo, setModoMeditacaoAtivo] = useState(false);
+  const [ultimoMinutoTocado, setUltimoMinutoTocado] = useState<number | null>(null); // Para som de ciclo
+  const [volumeSom, setVolumeSom] = useState(0.5); // Volume dos sons (0 a 1)
 
   // Convex hooks
   const presetsQuery = useQuery(api.presets.listar);
@@ -442,6 +446,11 @@ export default function Home() {
     // Emoção de alegria ao iniciar foco
     setEmocaoMandala('alegria');
     
+    // Tocar som de início baseado no elemento atual
+    const elementoAtual = determinarElemento(ciclosQuery?.totalCiclos || 0);
+    tocarSomInicio(elementoAtual);
+    setUltimoMinutoTocado(null); // Resetar contador de minutos
+    
     setTimeout(() => {
       setMandalaState("running");
       setRodando(true);
@@ -538,6 +547,7 @@ export default function Home() {
     setRewardTriggered(false); // Reset flag de recompensa
     setMandalaActive(false); // Fechar mandala se estiver aberta
     setMandalaState("idle"); // Voltar ao estado inicial
+    setUltimoMinutoTocado(null); // Resetar contador de minutos para sons
     
     // Emoção neutra ao resetar
     setEmocaoMandala('neutra');
@@ -577,6 +587,7 @@ export default function Home() {
     setPresetAtivo(null); // Reset preset ativo para presets estáticos
     setMandalaActive(false); // Fechar mandala ao mudar preset
     setRewardTriggered(false); // Permitir nova mandala
+    setUltimoMinutoTocado(null); // Resetar contador de minutos
   };
 
   // Função para validar entrada manual
@@ -611,6 +622,7 @@ export default function Home() {
     setPresetAtivo(null); // Reset preset ativo para entrada manual
     setMandalaActive(false); // Fechar mandala ao aplicar tempo manual
     setRewardTriggered(false); // Permitir nova mandala
+    setUltimoMinutoTocado(null); // Resetar contador de minutos
   };
 
   // Função para lidar com Enter no input
@@ -670,6 +682,7 @@ export default function Home() {
     setErroInput("");
     setMandalaActive(false); // Fechar mandala ao aplicar preset
     setRewardTriggered(false); // Permitir nova mandala
+    setUltimoMinutoTocado(null); // Resetar contador de minutos
   };
 
   // useEffect para decrementar o tempo quando rodando for true
@@ -679,11 +692,26 @@ export default function Home() {
     if (rodando && tempoRestante > 0) {
       interval = setInterval(() => {
         setTempoRestante((tempoAtual) => {
-          if (tempoAtual <= 1) {
-            setRodando(false);
-            return 0;
+          const novoTempo = tempoAtual <= 1 ? 0 : tempoAtual - 1;
+          
+          // Tocar som de ciclo a cada minuto completo (exceto no início e no fim)
+          if (novoTempo > 0 && novoTempo % 60 === 0 && novoTempo !== tempoInicial) {
+            const minutoAtual = Math.floor(novoTempo / 60);
+            if (ultimoMinutoTocado !== minutoAtual) {
+              const elementoAtual = determinarElemento(ciclosQuery?.totalCiclos || 0);
+              tocarSomCiclo(elementoAtual);
+              setUltimoMinutoTocado(minutoAtual);
+            }
           }
-          return tempoAtual - 1;
+          
+          // Tocar som de fim quando chegar a zero
+          if (novoTempo === 0 && tempoAtual > 0) {
+            const elementoAtual = determinarElemento(ciclosQuery?.totalCiclos || 0);
+            tocarSomFim(elementoAtual);
+            setRodando(false);
+          }
+          
+          return novoTempo;
         });
       }, 1000);
     }
@@ -693,7 +721,7 @@ export default function Home() {
         clearInterval(interval);
       }
     };
-  }, [rodando, tempoRestante]);
+  }, [rodando, tempoRestante, ultimoMinutoTocado, tempoInicial, ciclosQuery]);
   
   // useEffect para ajustar emoção baseada no progresso
   useEffect(() => {
@@ -872,7 +900,7 @@ export default function Home() {
           console.log("[Tracking] Sessão concluída com sucesso");
           
           const preset = presets.find(p => p._id === presetAtivo);
-          const tempoMinutos = preset?.tempoMinutos || 25;
+          const tempoMinutos = preset?.minutos || 25;
           detectarEmocaoSessao(tempoMinutos, numeroPausas);
           
           // Incrementar contador de sessões para IA adaptativa
@@ -895,6 +923,12 @@ export default function Home() {
   useEffect(() => {
     setTempo(tempoRestante);
   }, [tempoRestante]);
+
+  // Inicializar volume dos sons
+  useEffect(() => {
+    setVolume(volumeSom);
+    console.info(`[Som Sincronizado] 🎵 Volume inicializado: ${Math.round(volumeSom * 100)}%`);
+  }, [volumeSom]);
 
   // Buscar ajustes adaptativos ao carregar o app
   useEffect(() => {
@@ -942,10 +976,9 @@ export default function Home() {
 
   return (
     <main 
-      className="min-h-screen flex items-center justify-center p-4 gap-4"
+      className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden"
       style={{ 
-        backgroundColor: ambienteAdaptativo.corFundo,
-        transition: `background-color ${ambienteAdaptativo.transicao}`,
+        background: 'radial-gradient(ellipse at center, rgba(46, 204, 113, 0.08) 0%, rgba(255, 215, 0, 0.05) 50%, #1A1A1A 100%)',
       }}
       role="application"
       aria-label="Timer X2 - Aplicativo de foco e produtividade"
@@ -967,327 +1000,9 @@ export default function Home() {
         }}
       />
       
-      <div className="flex items-center justify-center gap-4 w-full">
-      {/* General Statistics Panel */}
-      {estatisticasGerais && (
-        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#2ECC71]" />
-              Estatísticas
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Tempo Total Focado */}
-            <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4 text-center">
-              <div className="text-2xl mb-2">⏱️</div>
-              <div className="text-xs text-[#F9F9F9]/70 mb-2">Tempo total focado</div>
-              <div className="text-xl font-bold text-[#2ECC71]">
-                {formatarTempoTotal(estatisticasGerais.tempoTotalFocado)}
-              </div>
-            </div>
-
-            {/* Sessões Concluídas */}
-            <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-xl p-4 text-center">
-              <div className="text-2xl mb-2">🧘</div>
-              <div className="text-xs text-[#F9F9F9]/70 mb-2">Sessões concluídas</div>
-              <div className="text-xl font-bold text-[#FFD700]">
-                {estatisticasGerais.sessoesCompletas}
-              </div>
-            </div>
-
-            {/* Média por Sessão */}
-            <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4 text-center">
-              <div className="text-2xl mb-2">📊</div>
-              <div className="text-xs text-[#F9F9F9]/70 mb-2">Média por sessão</div>
-              <div className="text-xl font-bold text-[#2ECC71]">
-                {estatisticasGerais.mediaPorSessao} min
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Statistics Card with Tabs */}
-      {estatisticasPorPeriodo && (
-        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
-          <div className="text-center mb-4">
-            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#FFD700]" />
-              Estatísticas
-            </h2>
-          </div>
-
-          {/* Tabs para períodos */}
-          <Tabs value={periodoSelecionado} onValueChange={(value) => setPeriodoSelecionado(value as "hoje" | "semana" | "mes")} className="w-full mb-4">
-            <TabsList className="grid w-full grid-cols-3 bg-[#2ECC71]/10 border border-[#2ECC71]/20">
-              <TabsTrigger 
-                value="hoje" 
-                className="text-[#F9F9F9]/70 data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white"
-              >
-                Hoje
-              </TabsTrigger>
-              <TabsTrigger 
-                value="semana" 
-                className="text-[#F9F9F9]/70 data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white"
-              >
-                Semana
-              </TabsTrigger>
-              <TabsTrigger 
-                value="mes" 
-                className="text-[#F9F9F9]/70 data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white"
-              >
-                Mês
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          <div className="space-y-4">
-            {/* Total de minutos focados */}
-            <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4">
-              <div className="text-sm text-[#F9F9F9]/70 mb-1">Total de minutos focados</div>
-              <div className="text-3xl font-bold text-[#2ECC71]">
-                {estatisticasPorPeriodo.totalMinutosFocados}
-              </div>
-              <div className="text-xs text-[#F9F9F9]/50 mt-1">minutos</div>
-            </div>
-
-            {/* Preset mais usado */}
-            <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-xl p-4">
-              <div className="text-sm text-[#F9F9F9]/70 mb-1">Preset mais usado</div>
-              <div className="text-xl font-bold text-[#FFD700]">
-                {estatisticasPorPeriodo.presetMaisUsado}
-              </div>
-            </div>
-
-            {/* Total de sessões */}
-            <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4">
-              <div className="text-sm text-[#F9F9F9]/70 mb-1">Total de sessões</div>
-              <div className="text-3xl font-bold text-[#2ECC71]">
-                {estatisticasPorPeriodo.totalSessoes}
-              </div>
-              <div className="text-xs text-[#F9F9F9]/50 mt-1">sessões</div>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Daily Evolution Chart Card */}
-      {estatisticasPorDia && estatisticasPorDia.length > 0 && (
-        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
-              <LineChartIcon className="w-5 h-5 text-[#2ECC71]" />
-              Evolução Diária
-            </h2>
-          </div>
-
-          <div className="w-full h-64 overflow-x-auto">
-            <ResponsiveContainer width="100%" height="100%" minWidth={estatisticasPorDia.length * 50}>
-              <LineChart
-                data={estatisticasPorDia.map(item => ({
-                  ...item,
-                  dataFormatada: formatarDataCurta(item.data),
-                }))}
-                margin={{ top: 20, right: 10, left: -20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#2ECC71" opacity={0.1} />
-                <XAxis 
-                  dataKey="dataFormatada" 
-                  stroke="#F9F9F9"
-                  opacity={0.7}
-                  fontSize={11}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis 
-                  stroke="#F9F9F9"
-                  opacity={0.7}
-                  fontSize={12}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1C1C1C',
-                    border: '1px solid #2ECC71',
-                    borderRadius: '8px',
-                    color: '#F9F9F9',
-                  }}
-                  labelStyle={{ color: '#2ECC71' }}
-                  formatter={(value: number) => [`${value} min`, 'Minutos']}
-                  labelFormatter={(label) => `Dia: ${label}`}
-                />
-                <Line 
-                  type="monotone"
-                  dataKey="minutos" 
-                  stroke="#2ECC71"
-                  strokeWidth={3}
-                  dot={{ fill: '#2ECC71', r: 4 }}
-                  activeDot={{ r: 6, fill: '#FFD700' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      )}
-
-      {/* Weekly Chart Card */}
-      {estatisticasSemanais && (
-        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
-              <TrendingUp className="w-5 h-5 text-[#2ECC71]" />
-              Evolução Semanal
-            </h2>
-          </div>
-
-          <div className="w-full h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={estatisticasSemanais.map(item => ({
-                  ...item,
-                  diaSemana: formatarDiaSemana(item.dia),
-                }))}
-                margin={{ top: 20, right: 10, left: -20, bottom: 5 }}
-              >
-                <XAxis 
-                  dataKey="diaSemana" 
-                  stroke="#F9F9F9"
-                  opacity={0.7}
-                  fontSize={12}
-                />
-                <YAxis 
-                  stroke="#F9F9F9"
-                  opacity={0.7}
-                  fontSize={12}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1C1C1C',
-                    border: '1px solid #2ECC71',
-                    borderRadius: '8px',
-                    color: '#F9F9F9',
-                  }}
-                  labelStyle={{ color: '#2ECC71' }}
-                  formatter={(value: number) => [`${value} min`, 'Minutos focados']}
-                />
-                <Bar 
-                  dataKey="totalMinutosFocados" 
-                  fill="#2ECC71"
-                  radius={[8, 8, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      )}
-
-      {/* Top Presets Ranking Card */}
-      {rankingPresets && (
-        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
-              <Trophy className="w-5 h-5 text-[#FFD700]" />
-              Top Presets
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {rankingPresets.length === 0 ? (
-              <p className="text-center text-[#F9F9F9]/50 text-sm py-8">
-                Nenhum preset usado ainda
-              </p>
-            ) : (
-              rankingPresets.map((item, index) => {
-                const medals = ['🥇', '🥈', '🥉'];
-                const colors = [
-                  { text: '#FFD700', bg: 'bg-[#FFD700]/10', border: 'border-[#FFD700]/30' }, // Ouro
-                  { text: '#C0C0C0', bg: 'bg-[#C0C0C0]/10', border: 'border-[#C0C0C0]/30' }, // Prata
-                  { text: '#CD7F32', bg: 'bg-[#CD7F32]/10', border: 'border-[#CD7F32]/30' }, // Bronze
-                ];
-                const color = colors[index];
-
-                return (
-                  <div key={item.presetId}>
-                    <div className={`${color.bg} border ${color.border} rounded-xl p-4 transition-all duration-200 hover:scale-[1.02]`}>
-                      <div className="flex items-center gap-3">
-                        <div className="text-3xl">{medals[index]}</div>
-                        <div className="flex-1">
-                          <div className="text-sm font-bold text-[#F9F9F9] mb-1">
-                            {item.nomePreset}
-                          </div>
-                          <div className="text-xs text-[#F9F9F9]/70">
-                            {item.totalUsos} {item.totalUsos === 1 ? 'uso' : 'usos'}
-                          </div>
-                        </div>
-                        <div className="text-2xl font-bold" style={{ color: color.text }}>
-                          {index + 1}º
-                        </div>
-                      </div>
-                    </div>
-                    {index < rankingPresets.length - 1 && (
-                      <Separator className="my-3 bg-[#2ECC71]/10" />
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* Detailed History Card */}
-      {historicoDetalhado && (
-        <Card className="w-full max-w-xs bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl p-6">
-          <div className="text-center mb-4">
-            <h2 className="text-xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2">
-              <History className="w-5 h-5 text-[#FFD700]" />
-              Histórico
-            </h2>
-          </div>
-
-          <ScrollArea className="h-80 w-full pr-4">
-            <div className="space-y-3">
-              {historicoDetalhado.length === 0 ? (
-                <p className="text-center text-[#F9F9F9]/50 text-sm py-8">
-                  Nenhuma sessão registrada ainda
-                </p>
-              ) : (
-                historicoDetalhado.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-[#2ECC71]/5 border border-[#2ECC71]/20 rounded-lg p-3 transition-all duration-200 hover:bg-[#2ECC71]/10"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="text-xs text-[#F9F9F9]/50 mb-1">
-                          {item.data}
-                        </div>
-                        <div className="text-sm font-medium text-[#F9F9F9]">
-                          {item.nomePreset}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-[#2ECC71]">
-                          {item.minutosFocados}
-                        </div>
-                        <div className="text-xs text-[#F9F9F9]/50">
-                          min
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </ScrollArea>
-        </Card>
-      )}
-
-      {/* Phone Frame com ajustes adaptativos, emocionais, tema e ambiente */}
+      {/* Timer Frame centralizado */}
       <motion.div 
-        className="w-full max-w-sm mx-auto"
+        className="w-full max-w-md mx-auto"
         animate={{ 
           opacity: mandalaActive ? 0.3 : 1,
           scale: ajustesAdaptativos.tendencia === "baixa" ? 0.98 : 1,
@@ -1295,260 +1010,34 @@ export default function Home() {
         transition={{ duration: 0.5 }}
       >
         <Card 
-          className="rounded-3xl overflow-hidden shadow-2xl"
+          className="rounded-3xl overflow-hidden shadow-2xl border-2"
           style={{
-            backgroundColor: ambienteAdaptativo.corFundo,
-            borderWidth: '2px',
-            borderColor: `${ambienteAdaptativo.corMandala}33`,
-            transition: `all ${ambienteAdaptativo.transicao}`,
-            boxShadow: `0 0 ${18 * mandalaAdaptiveIntensity * ambienteAdaptativo.intensidadeLuz}px ${ambienteAdaptativo.corAccent}40`,
+            backgroundColor: '#1A1A1A',
+            borderColor: 'rgba(46, 204, 113, 0.2)',
+            boxShadow: `0 0 ${30}px rgba(46, 204, 113, 0.15), 0 10px 40px rgba(0, 0, 0, 0.3)`,
           }}
         >
-          {/* Header */}
-          <div className="p-6 text-center border-b border-[#2ECC71]/10">
-            {/* Ciclo Vital - discreto no topo */}
-            <div className="flex justify-center mb-3">
-              {ciclosQuery && (
-                <CicloVital
-                  totalCiclos={ciclosQuery.totalCiclos}
-                  mostrarDetalhes={false}
-                />
-              )}
-            </div>
-            
-            <h1 className="text-2xl font-bold text-[#F9F9F9] flex items-center justify-center gap-2 mb-2">
-              <Leaf className="w-6 h-6 text-[#2ECC71]" />
+          {/* Header Minimalista */}
+          <div className="p-6 pt-8 text-center">
+            <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-2">
               Timer X2
             </h1>
             
-            {/* Botão Modo Meditação */}
-            <div className="flex justify-center mb-4">
-              <motion.button
-                onClick={() => setModoMeditacaoAtivo(true)}
-                disabled={tempo === 0}
-                className="text-xs px-4 py-1.5 rounded-full bg-gradient-to-r from-[#2ECC71]/20 to-[#FFD700]/20 border border-[#FFD700]/30 text-[#FFD700] hover:from-[#2ECC71]/30 hover:to-[#FFD700]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                title="Experiência imersiva com a Mandala"
-              >
-                <span>🌙</span>
-                <span>Modo Meditação Dinâmica</span>
-              </motion.button>
-            </div>
-            
-            {/* Preset Selector */}
-            <div className="flex justify-center mb-4">
-              <Select value={tempoInicial.toString()} onValueChange={handlePresetChange}>
-                <SelectTrigger className="w-32 bg-[#2ECC71]/10 border-[#2ECC71]/30 text-[#F9F9F9] focus:ring-[#2ECC71]/50">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1C1C1C] border-[#2ECC71]/30">
-                  {presetsEstaticos.map((preset) => (
-                    <SelectItem 
-                      key={preset.value} 
-                      value={preset.value.toString()}
-                      className="text-[#F9F9F9] focus:bg-[#2ECC71]/20 focus:text-[#F9F9F9]"
-                    >
-                      {preset.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Conteúdo das Abas */}
-            {abaAtiva === "presets" ? (
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-[#F9F9F9]/70">Presets Salvos</h3>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => setMandalaActive(true)}
-                      size="sm"
-                      variant="outline"
-                      className="h-8 px-2 border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/10"
-                      title="Testar Mandala"
-                    >
-                      ✨
-                    </Button>
-                  <Button
-                    onClick={handleAdicionarPreset}
-                    size="sm"
-                    className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Adicionar
-                  </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {presets.length === 0 ? (
-                    <p className="text-xs text-[#F9F9F9]/50 text-center py-2">
-                      Nenhum preset salvo
-                    </p>
-                  ) : (
-                    presets.map((preset) => {
-                      const isAtivo = presetAtivo === preset._id;
-                      return (
-                        <div
-                          key={preset._id}
-                          onClick={() => aplicarPreset(preset)}
-                          className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-                            isAtivo
-                              ? "bg-[#2ECC71]/20 border-[#2ECC71] shadow-lg shadow-[#2ECC71]/20"
-                              : "bg-[#2ECC71]/5 border-[#2ECC71]/20 hover:bg-[#2ECC71]/10 hover:border-[#2ECC71]/40"
-                          }`}
-                        >
-                          <div className="flex-1">
-                            <div className={`text-sm font-medium ${
-                              isAtivo ? "text-[#2ECC71]" : "text-[#F9F9F9]"
-                            }`}>
-                              {preset.nome}
-                              {isAtivo && " ✓"}
-                            </div>
-                            <div className={`text-xs ${
-                              isAtivo ? "text-[#2ECC71]/80" : "text-[#F9F9F9]/70"
-                            }`}>
-                              {preset.minutos} min
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoverPreset(preset._id);
-                              }}
-                              size="sm"
-                              variant="outline"
-                              className="h-6 px-2 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })
+            {/* Indicador de Modo Atual e Elemento */}
+            <div className="flex items-center justify-center gap-3 text-sm text-[#F9F9F9]/70 tracking-wide">
+              {ciclosQuery && (
+                <>
+                  <span>{determinarElemento(ciclosQuery.totalCiclos) === 'terra' ? '🌍' : determinarElemento(ciclosQuery.totalCiclos) === 'agua' ? '🌊' : determinarElemento(ciclosQuery.totalCiclos) === 'fogo' ? '🔥' : determinarElemento(ciclosQuery.totalCiclos) === 'ar' ? '🌬️' : '✨'}</span>
+                  <span>Foco Dinâmico</span>
+                </>
                   )}
                 </div>
-              </div>
-            ) : abaAtiva === "historico" ? (
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-[#F9F9F9]/70">Histórico de Uso</h3>
-                  <span className="text-xs text-[#F9F9F9]/50">
-                    {historico.length} registros
-                  </span>
                 </div>
                 
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {historico.length === 0 ? (
-                    <p className="text-xs text-[#F9F9F9]/50 text-center py-2">
-                      Nenhum uso registrado
-                    </p>
-                  ) : (
-                    historico.map((item) => {
-                      const preset = presets.find(p => p._id === item.presetId);
-                      return (
-                        <div
-                          key={item._id}
-                          className="flex items-center justify-between p-2 bg-[#2ECC71]/5 rounded-lg border border-[#2ECC71]/20"
-                        >
-                          <div className="flex-1">
-                            <div className="text-sm font-medium text-[#F9F9F9]">
-                              {preset?.nome || "Preset removido"}
-                            </div>
-                            <div className="text-xs text-[#F9F9F9]/70">
-                              {formatarDataHora(item.usadoEm)} • {formatarTempo(item.duracao)}
-                            </div>
-                          </div>
-                          <div className="text-xs text-[#2ECC71]/80">
-                            {preset?.minutos}min
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            ) : abaAtiva === "memoria" ? (
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-[#FFD700]">🌍💧🔥🌬️✨ Memória Elemental</h3>
-                </div>
-                
-                <div className="bg-[#1C1C1C]/50 rounded-lg p-2 border border-[#FFD700]/20">
-                  <MemoriaElemental usuarioId="guest" />
-                </div>
-              </div>
-            ) : abaAtiva === "mandala" ? (
-              <div className="mb-4">
-                <div className="flex items-center justify-center mb-2">
-                  <h3 className="text-sm font-medium text-center bg-gradient-to-r from-[#8B5E3C] via-[#00C2FF] via-[#FF4500] via-[#C0E6E9] to-[#FFD700] bg-clip-text text-transparent">
-                    Mandala Elemental
-                  </h3>
-                </div>
-                
-                <div className="bg-[#111111]/80 rounded-lg p-4 border border-[#FFD700]/10 flex items-center justify-center min-h-[450px]">
-                  <MandalaElemental usuarioId="guest" tamanho={380} />
-                </div>
-              </div>
-            ) : null}
-
-            {/* Input Manual */}
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex gap-2 items-center">
-                <Input
-                  type="number"
-                  placeholder="Minutos"
-                  value={inputManual}
-                  onChange={(e) => {
-                    setInputManual(e.target.value);
-                    setErroInput("");
-                  }}
-                  onKeyPress={handleKeyPress}
-                  className="w-24 h-8 text-center bg-[#2ECC71]/10 border-[#2ECC71]/30 text-[#F9F9F9] placeholder:text-[#F9F9F9]/50 focus:ring-[#2ECC71]/50"
-                  min="1"
-                  max="180"
-                />
-                <Button
-                  onClick={aplicarTempoManual}
-                  size="sm"
-                  className="h-8 px-3 bg-[#2ECC71] hover:bg-[#2ECC71]/80 text-white"
-                >
-                  <Check className="w-4 h-4" />
-                </Button>
-              </div>
-              {erroInput && (
-                <p className="text-xs text-red-400">{erroInput}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="p-6 space-y-8">
-            {/* 🌕 Marcador Lunar (topo) */}
-            <motion.div 
-              className="absolute top-4 right-4 text-xs text-gray-400 select-none z-50"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 0.7, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-              <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2.5 py-1.5 rounded-lg border border-white/10">
-                <span className="text-base" role="img" aria-label="Fase lunar">
-                  {faseDaLua() === 'cheia' && '🌕'}
-                  {faseDaLua() === 'nova' && '🌑'}
-                  {faseDaLua() === 'crescente' && '🌓'}
-                  {faseDaLua() === 'minguante' && '🌗'}
-                </span>
-                <span className="text-[10px] font-medium tracking-wide capitalize opacity-80">
-                  {faseDaLua()}
-                </span>
-              </div>
-            </motion.div>
-            
-            {/* Timer Circle com estados visuais reativos */}
-            <div className="flex justify-center relative">
+          {/* Main Content - Timer Centralizado */}
+          <div className="px-6 pb-6 space-y-6 flex flex-col items-center" style={{ minHeight: '60vh' }}>
+            {/* Timer Circle com estados visuais reativos (60% viewport) */}
+            <div className="flex justify-center items-center relative flex-1 w-full">
               {/* Partículas de conclusão (apenas no estado completing) */}
               {mandalaState === "completing" && (
                 <>
@@ -1577,47 +1066,28 @@ export default function Home() {
               )}
 
               <motion.div 
-                className="w-48 h-48 rounded-full border-4 flex items-center justify-center shadow-lg relative"
+                className="w-64 h-64 sm:w-80 sm:h-80 rounded-full border-4 flex items-center justify-center shadow-lg relative"
                 style={{
                   borderColor: mandalaState === "starting" 
-                    ? ambienteAdaptativo.corAccent
-                    : `${ambienteAdaptativo.corMandala}66`,
+                    ? '#FFD700'
+                    : 'rgba(46, 204, 113, 0.4)',
                   background: mandalaState === "starting"
-                    ? `linear-gradient(135deg, ${ambienteAdaptativo.corAccent}1A, ${ambienteAdaptativo.corAccent}30)`
-                    : `linear-gradient(135deg, ${ambienteAdaptativo.corMandala}1A, ${ambienteAdaptativo.corAccent}10)`,
-                  transition: `all ${ambienteAdaptativo.transicao}`,
+                    ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.2))'
+                    : 'linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(255, 215, 0, 0.05))',
+                  transition: 'all 1.5s ease-in-out',
                   boxShadow: mandalaState === "starting"
-                    ? `0 0 ${40 * ambienteAdaptativo.intensidadeLuz}px ${ambienteAdaptativo.corAccent}80`
-                    : `0 0 ${28 * mandalaAdaptiveIntensity * ambienteAdaptativo.intensidadeLuz}px ${ambienteAdaptativo.corAccent}60`,
+                    ? '0 0 40px rgba(255, 215, 0, 0.5)'
+                    : '0 0 30px rgba(46, 204, 113, 0.3)',
                 }}
                 animate={{
                   scale: mandalaState === "starting"
-                    ? [1, 1.15, 1.05]
+                    ? [1, 1.1, 1.05]
                     : mandalaState === "completing"
-                    ? [1, 1.2, 0.95]
+                    ? [1, 1.15, 1]
                     : rodando 
-                    ? [1, 1.03, 1] 
-                    : [1, 1 + (0.02 * mandalaAdaptiveIntensity), 1],
-                  opacity: mandalaState === "completing" ? [1, 1, 0.7] : 1,
-                  boxShadow: mandalaState === "starting"
-                    ? [
-                        '0 0 30px #FFD70060',
-                        '0 0 50px #FFD700A0',
-                        '0 0 35px #FFD70070',
-                      ]
-                    : mandalaState === "completing"
-                    ? [
-                        `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
-                        `0 0 60px #2ECC71A0`,
-                        `0 0 80px #2ECC7160`,
-                      ]
-                    : rodando
-                    ? [
-                        `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
-                        `0 0 ${35 * mandalaAdaptiveIntensity}px ${adaptiveAccent}80`,
-                        `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
-                      ]
-                    : `0 0 ${28 * mandalaAdaptiveIntensity}px ${adaptiveAccent}60`,
+                    ? [1, 1.02, 1] 
+                    : 1,
+                  opacity: mandalaState === "completing" ? [1, 1, 0.8] : 1,
                 }}
                 transition={{
                   duration: mandalaState === "starting"
@@ -1625,9 +1095,9 @@ export default function Home() {
                     : mandalaState === "completing"
                     ? 1.5
                     : rodando 
-                    ? 1 
-                    : (estadoEmocional.emocao === "disperso" ? 1.5 : 3),
-                  repeat: mandalaState === "starting" || mandalaState === "completing" ? 0 : Infinity,
+                    ? 2
+                    : 0,
+                  repeat: (mandalaState === "starting" || mandalaState === "completing") ? 0 : (rodando ? Infinity : 0),
                   ease: "easeInOut",
                 }}
               >
@@ -1651,10 +1121,13 @@ export default function Home() {
                 {/* Conteúdo do timer sobre a mandala */}
                 <div className="text-center relative z-10">
                   <motion.div 
-                    className="text-3xl font-mono font-bold text-[#F9F9F9] mb-2"
-                    style={{ textShadow: '0 0 20px rgba(0,0,0,0.8)' }}
+                    className="text-5xl sm:text-6xl font-light text-[#F9F9F9] tracking-wider mb-3"
+                    style={{ 
+                      textShadow: '0 0 20px rgba(0,0,0,0.8)',
+                      fontVariantNumeric: 'tabular-nums'
+                    }}
                     animate={{
-                      opacity: [1, 0.85, 1],
+                      opacity: [1, 0.9, 1],
                     }}
                     transition={{
                       duration: 2,
@@ -1664,15 +1137,15 @@ export default function Home() {
                   >
                     {formatarTempo(tempo)}
                   </motion.div>
-                  <div className="text-sm text-[#F9F9F9]/70" style={{ textShadow: '0 0 10px rgba(0,0,0,0.8)' }}>
-                    {rodando ? "Running..." : tempo === 0 ? "Time's up!" : "Ready to begin"}
+                  <div className="text-sm font-light text-[#F9F9F9]/60 tracking-wide" style={{ textShadow: '0 0 10px rgba(0,0,0,0.8)' }}>
+                    {rodando ? "Em foco" : tempo === 0 ? "Sessão concluída" : "Pronto para começar"}
                   </div>
                 </div>
               </motion.div>
             </div>
 
             {/* Control Buttons com animações suaves e acessibilidade */}
-            <div className="flex justify-center gap-4 relative z-10" role="group" aria-label="Controles do timer">
+            <div className="flex justify-center gap-6 relative z-10" role="group" aria-label="Controles do timer">
               <motion.div
                 whileHover={{ scale: rodando || tempo === 0 ? 1 : 1.1 }}
                 whileTap={{ scale: rodando || tempo === 0 ? 1 : 0.95 }}
@@ -1735,90 +1208,68 @@ export default function Home() {
                 </Button>
               </motion.div>
             </div>
-
-            {/* 🜂 Painel Alquímico - Conversão simbólica de métricas */}
-            {rodando && (
-              <AlquimiaPanel
-                energia={mandalaAdaptiveIntensity} // Usa intensidade da mandala como proxy de energia
-                foco={tempo > 0 ? 1 - (tempo / tempoInicial) : 1} // Progresso do foco
-                emocao={emocaoMandala}
-                fase={faseDaLua()}
-              />
-            )}
-          </div>
-
-          {/* Bottom Navigation com animações suaves */}
-          <div className="bg-[#2ECC71]/5 border-t border-[#2ECC71]/10 p-4">
-            <div className="flex justify-around">
-              <motion.button 
-                onClick={() => setAbaAtiva("presets")}
-                className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ease-in-out rounded-lg hover:bg-[#2ECC71]/10 ${
-                  abaAtiva === "presets" 
-                    ? "text-[#2ECC71]" 
-                    : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
-                }`}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Leaf className="w-5 h-5" />
-                <span className="text-xs font-medium">Presets</span>
-              </motion.button>
-              
-              <motion.button 
-                onClick={() => setAbaAtiva("historico")}
-                className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ease-in-out rounded-lg hover:bg-[#2ECC71]/10 ${
-                  abaAtiva === "historico" 
-                    ? "text-[#2ECC71]" 
-                    : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
-                }`}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Clock className="w-5 h-5" />
-                <span className="text-xs font-medium">Histórico</span>
-              </motion.button>
-
-              <motion.button 
-                onClick={() => setAbaAtiva("memoria")}
-                className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ease-in-out rounded-lg hover:bg-[#2ECC71]/10 ${
-                  abaAtiva === "memoria" 
-                    ? "text-[#FFD700]" 
-                    : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
-                }`}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <History className="w-5 h-5" />
-                <span className="text-xs font-medium">Memória</span>
-              </motion.button>
-
-              <motion.button
-                onClick={() => setAbaAtiva("mandala")}
-                className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ease-in-out rounded-lg hover:bg-[#2ECC71]/10 ${
-                  abaAtiva === "mandala" 
-                    ? "text-[#FFD700]" 
-                    : "text-[#F9F9F9]/70 hover:text-[#F9F9F9]"
-                }`}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Sparkles className="w-5 h-5" />
-                <span className="text-xs font-medium">Mandala</span>
-              </motion.button>
-              
-              <motion.button 
-                className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-all duration-300 ease-in-out rounded-lg hover:bg-[#F9F9F9]/10"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Settings className="w-5 h-5" />
-                <span className="text-xs font-medium">Config</span>
-              </motion.button>
-            </div>
           </div>
         </Card>
       </motion.div>
-      </div>
+      
+      {/* Barra de Navegação Inferior Fixa */}
+      <motion.nav 
+        className="fixed bottom-0 left-0 right-0 bg-[#1A1A1A]/95 backdrop-blur-lg border-t border-[#2ECC71]/20 px-6 py-4 z-50"
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        role="navigation"
+        aria-label="Navegação principal"
+      >
+        <div className="max-w-md mx-auto flex justify-around items-center">
+          <motion.a
+            href="/stats"
+            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#2ECC71] transition-colors"
+            whileHover={{ scale: 1.1, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+            aria-label="Ver estatísticas"
+          >
+            <TrendingUp className="w-6 h-6" />
+            <span className="text-xs font-light tracking-wide">Stats</span>
+          </motion.a>
+
+              <motion.button 
+            className="flex flex-col items-center gap-1 p-3 text-[#2ECC71] relative"
+            aria-label="Timer - página atual"
+            aria-current="page"
+          >
+            <motion.div
+              className="absolute -top-1 w-12 h-12 rounded-full bg-[#2ECC71]/10 border border-[#2ECC71]/30"
+              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.7, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <Clock className="w-6 h-6 relative z-10" />
+            <span className="text-xs font-medium tracking-wide relative z-10">Timer</span>
+              </motion.button>
+
+              <motion.button
+            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#FFD700] transition-colors"
+            whileHover={{ scale: 1.1, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+            onClick={() => toast.info("IA em breve!")}
+            aria-label="Inteligência Artificial"
+              >
+            <Sparkles className="w-6 h-6" />
+            <span className="text-xs font-light tracking-wide">IA</span>
+              </motion.button>
+              
+              <motion.button 
+            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-colors"
+            whileHover={{ scale: 1.1, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+            onClick={() => toast.info("Configurações em breve!")}
+            aria-label="Configurações"
+              >
+            <Settings className="w-6 h-6" />
+            <span className="text-xs font-light tracking-wide">Config</span>
+              </motion.button>
+            </div>
+      </motion.nav>
       
       {/* Modo Meditação Dinâmica */}
       <ModoMeditacao

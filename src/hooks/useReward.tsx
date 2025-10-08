@@ -22,17 +22,23 @@ export function useReward() {
     setShowReward(false);
   }, []);
 
-  const RewardComponent = () => (
-    <AnimatePresence>
-      {showReward && (
-        <MandalaReward 
-          onComplete={handleComplete}
-          intensity={rewardOptions.intensity}
-          colors={rewardOptions.colors}
-        />
-      )}
-    </AnimatePresence>
-  );
+  const RewardComponent = () => {
+    // Converter intensidade de string para number
+    const intensityValue = rewardOptions.intensity === 'high' ? 1.5 
+      : rewardOptions.intensity === 'low' ? 0.7 
+      : undefined;
+
+    return (
+      <AnimatePresence>
+        {showReward && (
+          <MandalaReward 
+            visible={showReward}
+            intensity={intensityValue}
+          />
+        )}
+      </AnimatePresence>
+    );
+  };
 
   return {
     triggerReward,

@@ -6,15 +6,36 @@ import { api } from "../../../convex/_generated/api";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
-import { ArrowLeft, TrendingUp, Trophy, BarChart3, LineChart as LineChartIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { TrendingUp, Trophy, Clock, Sparkles, Settings, History, Calendar } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+// Skeleton Loader Component
+function SkeletonCard() {
+  return (
+    <div className="bg-[#1A1A1A] border-2 border-[#2ECC71]/20 rounded-3xl p-6 shadow-xl animate-pulse">
+      <div className="h-6 bg-[#2ECC71]/10 rounded-lg w-32 mb-4"></div>
+      <div className="space-y-3">
+        <div className="h-8 bg-[#2ECC71]/10 rounded-lg w-full"></div>
+        <div className="h-6 bg-[#2ECC71]/10 rounded-lg w-3/4"></div>
+      </div>
+    </div>
+  );
+}
 
 export default function StatsPage() {
-  const router = useRouter();
-  const [chartType, setChartType] = useState<"bar" | "line">("bar");
+  const [chartType, setChartType] = useState<"bar" | "line">("line");
+  const [periodo, setPeriodo] = useState<"hoje" | "semana" | "mes">("semana");
+  
   const estatisticasSemanais = useQuery(api.historico.estatisticasSemanais);
   const estatisticas = useQuery(api.historico.estatisticas);
+  const estatisticasGerais = useQuery(api.historico.estatisticasGerais);
+  const estatisticasPorDia = useQuery(api.historico.estatisticasPorDia);
+  const estatisticasPorPeriodo = useQuery(api.historico.estatisticasPorPeriodo, { periodo });
+  const rankingPresets = useQuery(api.historico.rankingPresets);
+  const historicoDetalhado = useQuery(api.historico.historicoDetalhado);
 
   // Função para formatar dia da semana abreviado
   const formatarDiaSemana = (dataStr: string) => {
@@ -23,66 +44,253 @@ export default function StatsPage() {
     return dias[data.getDay()];
   };
 
+  // Função para formatar tempo total
+  const formatarTempoTotal = (minutos: number) => {
+    const horas = Math.floor(minutos / 60);
+    const minutosRestantes = minutos % 60;
+    if (horas === 0) {
+      return `${minutosRestantes}min`;
+    }
+    return `${horas}h ${minutosRestantes}min`;
+  };
+
+  // Função para formatar data curta
+  const formatarDataCurta = (dataStr: string) => {
+    const [, mes, dia] = dataStr.split('-');
+    return `${dia}/${mes}`;
+  };
+
   // Encontrar o dia com mais minutos
   const maxMinutos = estatisticasSemanais 
     ? Math.max(...estatisticasSemanais.map(d => d.totalMinutosFocados))
     : 0;
 
   return (
-    <div className="min-h-screen bg-[#1C1C1C] flex items-center justify-center p-4">
-      {/* Phone Frame */}
-      <div className="w-full max-w-sm mx-auto">
-        <Card className="bg-[#1C1C1C] border-2 border-[#2ECC71]/20 rounded-3xl overflow-hidden shadow-2xl">
-          {/* Header */}
-          <div className="p-6 border-b border-[#2ECC71]/10">
-            <div className="flex items-center gap-4 mb-4">
-              <Button
-                onClick={() => router.push('/')}
-                variant="ghost"
-                size="icon"
-                className="text-[#F9F9F9] hover:bg-[#2ECC71]/10"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <h1 className="text-2xl font-bold text-[#F9F9F9] flex items-center gap-2 flex-1">
-                <TrendingUp className="w-6 h-6 text-[#2ECC71]" />
-                Estatísticas
-              </h1>
-            </div>
-          </div>
+    <>
+      <main 
+        className="min-h-screen flex flex-col p-4 pb-24 relative overflow-x-hidden"
+        style={{ 
+          background: 'radial-gradient(ellipse at center, rgba(46, 204, 113, 0.08) 0%, rgba(255, 215, 0, 0.05) 50%, #1A1A1A 100%)',
+        }}
+        role="main"
+        aria-label="Estatísticas do Timer X2"
+      >
+        {/* Header Minimalista */}
+        <div className="max-w-4xl mx-auto w-full mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center py-6"
+          >
+            <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-2">
+              Estatísticas
+            </h1>
+            <p className="text-sm font-light text-[#F9F9F9]/60 tracking-wide mb-4">
+              Evolução do seu tempo
+            </p>
 
-          {/* Content */}
-          <div className="p-6 space-y-6">
-            {/* Gráfico - Últimos 7 dias */}
-            {estatisticasSemanais && (
-              <div>
+            {/* Tabs de Período */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
+              <Tabs value={periodo} onValueChange={(value) => setPeriodo(value as "hoje" | "semana" | "mes")}>
+                <TabsList className="bg-[#2ECC71]/10 border border-[#2ECC71]/20">
+                  <TabsTrigger 
+                    value="hoje" 
+                    className="data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white text-[#F9F9F9]/70 text-sm"
+                    aria-label="Estatísticas de hoje"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Hoje
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="semana" 
+                    className="data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white text-[#F9F9F9]/70 text-sm"
+                    aria-label="Estatísticas da semana"
+                  >
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Semana
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="mes" 
+                    className="data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white text-[#F9F9F9]/70 text-sm"
+                    aria-label="Estatísticas do mês"
+                  >
+                    <History className="w-4 h-4 mr-2" />
+                    Mês
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Cards Grid */}
+        <div className="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+          {/* Resumo do Período Selecionado */}
+          <AnimatePresence mode="wait">
+            {estatisticasPorPeriodo === undefined ? (
+              <motion.div
+                key="loading-periodo"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <SkeletonCard />
+              </motion.div>
+            ) : estatisticasPorPeriodo ? (
+              <motion.div
+                key={`periodo-${periodo}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card 
+                  className="bg-[#1A1A1A] border-2 rounded-3xl p-6 shadow-xl relative overflow-hidden"
+                  style={{
+                    borderColor: estatisticasPorPeriodo.totalMinutosFocados > 120 ? '#FFD700' : 'rgba(46, 204, 113, 0.2)',
+                  }}
+                >
+                  {/* Glow dourado para recordes */}
+                  {estatisticasPorPeriodo.totalMinutosFocados > 120 && (
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-radial from-[#FFD700]/10 to-transparent"
+                      animate={{
+                        opacity: [0.3, 0.6, 0.3],
+                        scale: [1, 1.05, 1],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    />
+                  )}
+                  <div className="relative z-10">
+                    <h2 className="text-lg font-light text-[#F9F9F9] tracking-wide mb-4 flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-[#2ECC71]" />
+                      {periodo === "hoje" ? "Hoje" : periodo === "semana" ? "Esta Semana" : "Este Mês"}
+                    </h2>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-xs text-[#F9F9F9]/60 mb-1">Tempo Focado</p>
+                        <p className="text-3xl font-light text-[#2ECC71] tracking-wide">
+                          {formatarTempoTotal(estatisticasPorPeriodo.totalMinutosFocados)}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-[#F9F9F9]/60 mb-1">Sessões</p>
+                          <p className="text-2xl font-light text-[#FFD700]">
+                            {estatisticasPorPeriodo.totalSessoes}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-[#F9F9F9]/60 mb-1">Preset +</p>
+                          <p className="text-sm font-light text-[#FFD700] truncate">
+                            {estatisticasPorPeriodo.presetMaisUsado}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+
+          {/* Estatísticas Gerais */}
+          {estatisticasGerais === undefined ? (
+            <SkeletonCard />
+          ) : estatisticasGerais && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Card className="bg-[#1A1A1A] border-2 border-[#FFD700]/20 rounded-3xl p-6 shadow-xl">
+                <h2 className="text-lg font-light text-[#F9F9F9] tracking-wide mb-4 flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-[#FFD700]" />
+                  Resumo Geral
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs text-[#F9F9F9]/60 mb-1">Tempo Total Focado</p>
+                    <p className="text-2xl font-light text-[#2ECC71] tracking-wide">
+                      {formatarTempoTotal(estatisticasGerais.tempoTotalFocado)}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-[#F9F9F9]/60 mb-1">Sessões</p>
+                      <p className="text-xl font-light text-[#FFD700]">
+                        {estatisticasGerais.sessoesCompletas}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-[#F9F9F9]/60 mb-1">Média</p>
+                      <p className="text-xl font-light text-[#FFD700]">
+                        {estatisticasGerais.mediaPorSessao} min
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Gráfico Semanal */}
+          {estatisticasSemanais === undefined ? (
+            <div className="md:col-span-2">
+              <SkeletonCard />
+            </div>
+          ) : estatisticasSemanais && estatisticasSemanais.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="md:col-span-2"
+            >
+              <Card className="bg-[#1A1A1A] border-2 border-[#2ECC71]/20 rounded-3xl p-6 shadow-xl">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-[#F9F9F9]">
-                    Últimos 7 dias
+                  <h2 id="grafico-semanal-titulo" className="text-lg font-light text-[#F9F9F9] tracking-wide flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-[#2ECC71]" />
+                    Últimos 7 Dias
                   </h2>
-                  
-                  {/* Toggle entre Barras e Linha */}
                   <Tabs value={chartType} onValueChange={(value) => setChartType(value as "bar" | "line")}>
-                    <TabsList className="bg-[#2ECC71]/10 border border-[#2ECC71]/20">
+                    <TabsList className="bg-[#2ECC71]/10 border border-[#2ECC71]/20" aria-label="Tipo de gráfico">
                       <TabsTrigger 
                         value="bar" 
-                        className="data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white text-[#F9F9F9]/70"
+                        className="data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white text-[#F9F9F9]/70 text-xs"
+                        aria-label="Gráfico de barras"
                       >
-                        <BarChart3 className="w-4 h-4 mr-1" />
                         Barras
                       </TabsTrigger>
                       <TabsTrigger 
                         value="line" 
-                        className="data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white text-[#F9F9F9]/70"
+                        className="data-[state=active]:bg-[#2ECC71] data-[state=active]:text-white text-[#F9F9F9]/70 text-xs"
+                        aria-label="Gráfico de linha"
                       >
-                        <LineChartIcon className="w-4 h-4 mr-1" />
                         Linha
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
 
-                <div className="w-full h-64 bg-[#2ECC71]/5 rounded-xl p-4 border border-[#2ECC71]/20">
+                <div 
+                  className="w-full h-64"
+                  role="img"
+                  aria-labelledby="grafico-semanal-titulo"
+                  aria-describedby="grafico-semanal-desc"
+                >
+                  <span id="grafico-semanal-desc" className="sr-only">
+                    Gráfico mostrando minutos focados nos últimos 7 dias. 
+                    Dia com mais foco: {formatarDiaSemana(estatisticasSemanais.find(d => d.totalMinutosFocados === maxMinutos)?.dia || '')} com {maxMinutos} minutos.
+                  </span>
                   <ResponsiveContainer width="100%" height="100%">
                     {chartType === "bar" ? (
                       <BarChart
@@ -102,18 +310,12 @@ export default function StatsPage() {
                           stroke="#F9F9F9"
                           opacity={0.7}
                           fontSize={12}
-                          label={{ 
-                            value: 'Minutos', 
-                            angle: -90, 
-                            position: 'insideLeft',
-                            style: { fill: '#F9F9F9', opacity: 0.7, fontSize: 11 }
-                          }}
                         />
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: '#1C1C1C',
+                            backgroundColor: '#1A1A1A',
                             border: '1px solid #2ECC71',
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             color: '#F9F9F9',
                           }}
                           labelStyle={{ color: '#2ECC71' }}
@@ -127,10 +329,7 @@ export default function StatsPage() {
                             <Cell 
                               key={`cell-${index}`}
                               fill="#2ECC71"
-                              opacity={entry.totalMinutosFocados === maxMinutos && maxMinutos > 0 
-                                ? 1 
-                                : 0.5
-                              }
+                              opacity={entry.totalMinutosFocados === maxMinutos && maxMinutos > 0 ? 1 : 0.6}
                             />
                           ))}
                         </Bar>
@@ -154,18 +353,12 @@ export default function StatsPage() {
                           stroke="#F9F9F9"
                           opacity={0.7}
                           fontSize={12}
-                          label={{ 
-                            value: 'Minutos', 
-                            angle: -90, 
-                            position: 'insideLeft',
-                            style: { fill: '#F9F9F9', opacity: 0.7, fontSize: 11 }
-                          }}
                         />
                         <Tooltip
                           contentStyle={{
-                            backgroundColor: '#1C1C1C',
+                            backgroundColor: '#1A1A1A',
                             border: '1px solid #2ECC71',
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             color: '#F9F9F9',
                           }}
                           labelStyle={{ color: '#2ECC71' }}
@@ -183,56 +376,182 @@ export default function StatsPage() {
                     )}
                   </ResponsiveContainer>
                 </div>
-              </div>
-            )}
+              </Card>
+            </motion.div>
+          )}
 
-            {/* Preset Mais Usado */}
-            {estatisticas && (
-              <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-xl p-6 text-center">
-                <div className="flex items-center justify-center gap-2 mb-3">
+          {/* Top Presets */}
+          {rankingPresets === undefined ? (
+            <SkeletonCard />
+          ) : rankingPresets && rankingPresets.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="lg:col-span-1"
+            >
+              <Card className="bg-[#1A1A1A] border-2 border-[#FFD700]/20 rounded-3xl p-6 shadow-xl">
+                <h2 className="text-lg font-light text-[#F9F9F9] tracking-wide mb-4 flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-[#FFD700]" />
-                  <h3 className="text-sm font-medium text-[#F9F9F9]/70">
-                    Preset mais usado
-                  </h3>
+                  Top Presets
+                </h2>
+                <div className="space-y-3" role="list" aria-label="Presets mais usados">
+                  {rankingPresets.slice(0, 3).map((item, index) => {
+                    const medals = ['🥇', '🥈', '🥉'];
+                    return (
+                      <div
+                        key={item.presetId}
+                        className="flex items-center gap-3 p-3 bg-[#FFD700]/10 border border-[#FFD700]/20 rounded-xl"
+                        role="listitem"
+                      >
+                        <span className="text-2xl" aria-hidden="true">{medals[index]}</span>
+                        <div className="flex-1">
+                          <p className="text-sm font-light text-[#F9F9F9]">{item.nomePreset}</p>
+                          <p className="text-xs text-[#F9F9F9]/60">{item.totalUsos} {item.totalUsos === 1 ? 'uso' : 'usos'}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <p className="text-2xl font-bold text-[#FFD700]">
-                  {estatisticas.presetMaisUsado}
-                </p>
-              </div>
-            )}
+              </Card>
+            </motion.div>
+          )}
 
-            {/* Informações Adicionais */}
-            {estatisticas && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4 text-center">
-                  <div className="text-xs text-[#F9F9F9]/70 mb-2">Total de minutos</div>
-                  <div className="text-xl font-bold text-[#2ECC71]">
-                    {estatisticas.totalMinutosFocados}
+          {/* Histórico Detalhado de Sessões */}
+          {historicoDetalhado === undefined ? (
+            <div className="col-span-full">
+              <SkeletonCard />
+            </div>
+          ) : historicoDetalhado && historicoDetalhado.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="col-span-full"
+            >
+              <Card className="bg-[#1A1A1A] border-2 border-[#2ECC71]/20 rounded-3xl p-6 shadow-xl">
+                <h2 className="text-lg font-light text-[#F9F9F9] tracking-wide mb-4 flex items-center gap-2">
+                  <History className="w-5 h-5 text-[#2ECC71]" />
+                  Histórico de Sessões
+                </h2>
+                <ScrollArea className="h-80 w-full pr-4">
+                  <div className="space-y-3" role="list" aria-label="Histórico de sessões concluídas">
+                    {historicoDetalhado.slice(0, 20).map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.03 }}
+                        className="bg-[#2ECC71]/5 border border-[#2ECC71]/20 rounded-xl p-4 hover:bg-[#2ECC71]/10 transition-colors"
+                        role="listitem"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm font-light text-[#F9F9F9] mb-1">
+                              {item.nomePreset}
+                            </p>
+                            <p className="text-xs text-[#F9F9F9]/50">
+                              {item.data}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-light text-[#2ECC71]">
+                              {item.minutosFocados}
+                            </p>
+                            <p className="text-xs text-[#F9F9F9]/50">
+                              minutos
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                </div>
-                <div className="bg-[#2ECC71]/10 border border-[#2ECC71]/30 rounded-xl p-4 text-center">
-                  <div className="text-xs text-[#F9F9F9]/70 mb-2">Total de sessões</div>
-                  <div className="text-xl font-bold text-[#2ECC71]">
-                    {estatisticas.totalSessoes}
-                  </div>
-                </div>
-              </div>
-            )}
+                </ScrollArea>
+              </Card>
+            </motion.div>
+          )}
 
-            {/* Estado vazio */}
-            {(!estatisticasSemanais || estatisticasSemanais.length === 0) && (
-              <div className="text-center py-12">
-                <p className="text-[#F9F9F9]/50 text-sm">
+          {/* Estado Vazio */}
+          {(!estatisticasGerais || estatisticasGerais.sessoesCompletas === 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="col-span-full"
+            >
+              <Card className="bg-[#1A1A1A] border-2 border-[#2ECC71]/20 rounded-3xl p-12 text-center shadow-xl">
+                <p className="text-[#F9F9F9]/50 text-sm font-light tracking-wide">
                   Nenhuma estatística disponível ainda.
                   <br />
                   Comece a usar o timer para ver seus dados aqui!
                 </p>
-              </div>
-            )}
-          </div>
-        </Card>
-      </div>
-    </div>
+              </Card>
+            </motion.div>
+          )}
+        </div>
+      </main>
+
+      {/* Barra de Navegação Inferior Fixa */}
+      <motion.nav 
+        className="fixed bottom-0 left-0 right-0 bg-[#1A1A1A]/95 backdrop-blur-lg border-t border-[#2ECC71]/20 px-6 py-4 z-50"
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        role="navigation"
+        aria-label="Navegação principal"
+      >
+        <div className="max-w-md mx-auto flex justify-around items-center">
+          <motion.button
+            className="flex flex-col items-center gap-1 p-3 text-[#2ECC71] relative"
+            aria-label="Estatísticas - página atual"
+            aria-current="page"
+          >
+            <motion.div
+              className="absolute -top-1 w-12 h-12 rounded-full bg-[#2ECC71]/10 border border-[#2ECC71]/30"
+              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.7, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <TrendingUp className="w-6 h-6 relative z-10" />
+            <span className="text-xs font-medium tracking-wide relative z-10">Stats</span>
+          </motion.button>
+          
+          <motion.a 
+            href="/"
+            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#2ECC71] transition-colors"
+            whileHover={{ scale: 1.1, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Voltar para o Timer"
+          >
+            <Clock className="w-6 h-6" />
+            <span className="text-xs font-light tracking-wide">Timer</span>
+          </motion.a>
+
+          <motion.button 
+            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#FFD700] transition-colors"
+            whileHover={{ scale: 1.1, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => toast.info("IA em breve!")}
+            aria-label="Inteligência Artificial"
+          >
+            <Sparkles className="w-6 h-6" />
+            <span className="text-xs font-light tracking-wide">IA</span>
+          </motion.button>
+          
+          <motion.button 
+            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-colors"
+            whileHover={{ scale: 1.1, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => toast.info("Configurações em breve!")}
+            aria-label="Configurações"
+          >
+            <Settings className="w-6 h-6" />
+            <span className="text-xs font-light tracking-wide">Config</span>
+          </motion.button>
+        </div>
+      </motion.nav>
+
+      <Toaster position="top-center" richColors theme="dark" />
+    </>
   );
 }
 

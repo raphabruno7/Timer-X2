@@ -13,7 +13,11 @@
 export async function tocarSomRespiracao(fase: 'inspirar' | 'expirar'): Promise<void> {
   try {
     // Criar contexto de áudio (com fallback para Safari)
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioContextClass = window.AudioContext || (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) {
+      throw new Error('AudioContext não suportado');
+    }
+    const audioCtx = new AudioContextClass();
     
     // Criar oscilador (gerador de frequência)
     const osc = audioCtx.createOscillator();
@@ -66,7 +70,11 @@ export async function tocarSomRespiracao(fase: 'inspirar' | 'expirar'): Promise<
  */
 export async function tocarSomBinaural(frequenciaBase: number = 432, diferenca: number = 4): Promise<void> {
   try {
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const AudioContextClass = window.AudioContext || (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) {
+      throw new Error('AudioContext não suportado');
+    }
+    const audioCtx = new AudioContextClass();
     
     // Criar dois osciladores (um para cada ouvido)
     const oscLeft = audioCtx.createOscillator();
@@ -119,6 +127,6 @@ export async function tocarSomBinaural(frequenciaBase: number = 432, diferenca: 
  * Verifica se o navegador suporta Web Audio API
  */
 export function suportaSomTerapeutico(): boolean {
-  return !!(window.AudioContext || (window as any).webkitAudioContext);
+  return !!(window.AudioContext || (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext);
 }
 

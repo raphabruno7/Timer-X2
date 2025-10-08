@@ -98,8 +98,8 @@ function calcularCor(
   
   // Calcular HSL final
   let h = baseEmocao.h + ajusteFase.hShift;
-  let s = Math.max(0, Math.min(100, baseEmocao.s + ajusteFase.sShift * ajusteIntensidade.saturacao));
-  let l = Math.max(0, Math.min(100, baseEmocao.l + ajusteFase.lShift + (progresso * 5))); // Progresso ilumina
+  const s = Math.max(0, Math.min(100, baseEmocao.s + ajusteFase.sShift * ajusteIntensidade.saturacao));
+  const l = Math.max(0, Math.min(100, baseEmocao.l + ajusteFase.lShift + (progresso * 5))); // Progresso ilumina
   
   // Normalizar matiz (0-360)
   h = ((h % 360) + 360) % 360;
@@ -118,7 +118,7 @@ function calcularCor(
  * Hook personalizado para guia de respiração
  * Ciclo simplificado: inspirar → expirar (contínuo)
  */
-function usarRespiracao(ativo: boolean, duracaoCiclo: number) {
+function useRespiracao(ativo: boolean, duracaoCiclo: number) {
   const [faseRespiracao, setFaseRespiracao] = useState<'inspirar' | 'segurar' | 'expirar'>('inspirar');
   const [cicloAtual, setCicloAtual] = useState(0);
   
@@ -231,7 +231,7 @@ export function Mandala({
   }, [ativo, emocao, progresso, intensidade, modoRespiracao, configCerebralLunar]);
   
   // Guia de respiração
-  const { faseRespiracao } = usarRespiracao(modoRespiracao, ciclo);
+  const { faseRespiracao } = useRespiracao(modoRespiracao, ciclo);
   
   // Sincronização sonora com respiração
   useEffect(() => {
@@ -271,6 +271,13 @@ export function Mandala({
     },
   }[intensidade];
 
+  // Velocidade de animação baseada em emoção
+  const velocidadeEmocional = emocao === 'alegria' 
+    ? 0.7  // Mais rápido
+    : emocao === 'cansaço'
+    ? 1.8  // Muito mais lento
+    : corAdaptativa.velocidade;
+
   // Ajustar velocidade quando pausado, inativo ou por emoção
   const velocidadeRotacao = (pausado || !ativo)
     ? 0 // Parar rotação quando pausado/inativo
@@ -309,13 +316,6 @@ export function Mandala({
   const brilhoRespiracao = modoRespiracao
     ? (faseRespiracao === 'inspirar' ? 0.9 : faseRespiracao === 'segurar' ? 1.0 : 0.6)
     : corAdaptativa.brilho;
-  
-  // Velocidade de animação baseada em emoção
-  const velocidadeEmocional = emocao === 'alegria' 
-    ? 0.7  // Mais rápido
-    : emocao === 'cansaço'
-    ? 1.8  // Muito mais lento
-    : corAdaptativa.velocidade;
 
   // Calcular circunferência para o anel de progresso
   const radius = 80;
