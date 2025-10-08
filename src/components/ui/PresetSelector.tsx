@@ -93,7 +93,7 @@ export function PresetSelector() {
         {/* Chip de Preset */}
         <motion.button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="rounded-full bg-emerald-900/40 text-emerald-300 px-4 py-2 text-sm flex items-center gap-2 hover:bg-emerald-900/60 transition-colors border border-emerald-700/30"
+          className="rounded-full bg-emerald-950/60 text-emerald-300 px-4 py-2 text-sm flex items-center gap-2 hover:bg-emerald-900/60 transition-colors border border-emerald-500/20"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           aria-label="Selecionar preset"
@@ -105,7 +105,7 @@ export function PresetSelector() {
         {/* Botão Adicionar */}
         <motion.button
           onClick={() => setDialogOpen(true)}
-          className="bg-emerald-700 hover:bg-emerald-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors"
+          className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors shadow-[0_0_10px_rgba(46,204,113,0.4)]"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           aria-label="Criar novo preset"

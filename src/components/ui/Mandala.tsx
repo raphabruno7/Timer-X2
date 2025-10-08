@@ -375,11 +375,11 @@ export function Mandala({
             <stop offset="100%" stopColor="transparent" stopOpacity="0" />
           </radialGradient>
 
-          {/* Gradiente para o centro */}
+          {/* Gradiente para o centro - harmonia verde/dourado */}
           <radialGradient id="centerGradient" cx="50%" cy="50%">
-            <stop offset="0%" stopColor="#FFD700" stopOpacity="0.9" />
-            <stop offset="70%" stopColor="#FFA500" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#FF8C00" stopOpacity="0.3" />
+            <stop offset="0%" stopColor="#2ECC71" stopOpacity="0.1" />
+            <stop offset="50%" stopColor="#FFD700" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="transparent" stopOpacity="0" />
           </radialGradient>
 
           {/* Filtro de glow */}
@@ -480,7 +480,7 @@ export function Mandala({
         <motion.circle
           cx="96"
           cy="96"
-          r="62"
+          r="68"
           fill={modoRespiracao 
             ? (faseRespiracao === 'inspirar' ? '#FFD700' : '#2ECC71') // Transição dourado → verde
             : "url(#centerGradient)"
@@ -532,11 +532,11 @@ export function Mandala({
           }}
         />
 
-        {/* Círculo interno - borda (ajustada para r=62) */}
+        {/* Círculo interno - borda (ajustada para r=68) */}
         <circle
           cx="96"
           cy="96"
-          r="62"
+          r="68"
           fill="none"
           stroke="#FFD700"
           strokeWidth="2"

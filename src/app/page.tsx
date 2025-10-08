@@ -1036,20 +1036,20 @@ export default function Home() {
 
   return (
     <PageTransition>
-      <main 
+    <main 
         className="min-h-screen flex flex-col items-center justify-between p-4 pb-24 relative overflow-hidden"
-        style={{ 
+      style={{ 
           background: 'radial-gradient(ellipse at center, rgba(46, 204, 113, 0.08) 0%, rgba(255, 215, 0, 0.05) 50%, #1A1A1A 100%)',
           paddingTop: 'max(1rem, env(safe-area-inset-top))',
           paddingBottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 6rem))',
           paddingLeft: 'max(1rem, env(safe-area-inset-left))',
           paddingRight: 'max(1rem, env(safe-area-inset-right))',
-        }}
-        role="application"
-        aria-label="Timer X2 - Aplicativo de foco e produtividade"
-      >
-        {/* Mandala de Recompensa com feedback emocional */}
-        <MandalaReward 
+      }}
+      role="application"
+      aria-label="Timer X2 - Aplicativo de foco e produtividade"
+    >
+      {/* Mandala de Recompensa com feedback emocional */}
+      <MandalaReward 
         visible={mandalaActive}
         mood={mandalaMood}
         intensity={mandalaAdaptiveIntensity}
@@ -1089,10 +1089,10 @@ export default function Home() {
             </h1>
             
             {/* Preset Selector */}
-            <div className="mb-4">
+              <div className="mb-4">
               <PresetSelector />
-            </div>
-            
+                </div>
+                
             {/* Indicador de Modo Atual e Elemento */}
             <div className="flex items-center justify-center gap-3 text-sm text-[#F9F9F9]/70 tracking-wide">
               {ciclosQuery && (
@@ -1100,9 +1100,9 @@ export default function Home() {
                   <span>{determinarElemento(ciclosQuery.totalCiclos) === 'terra' ? '🌍' : determinarElemento(ciclosQuery.totalCiclos) === 'agua' ? '🌊' : determinarElemento(ciclosQuery.totalCiclos) === 'fogo' ? '🔥' : determinarElemento(ciclosQuery.totalCiclos) === 'ar' ? '🌬️' : '✨'}</span>
                   <span>Elemento Ativo</span>
                 </>
-              )}
-            </div>
-          </div>
+                  )}
+                </div>
+                </div>
                 
           {/* Main Content - Timer Centralizado */}
           <div className="px-6 pb-6 mt-6 space-y-8 flex flex-col items-center justify-center" style={{ minHeight: '60vh' }}>
@@ -1297,7 +1297,7 @@ export default function Home() {
                   size="lg"
                   onClick={iniciar}
                   disabled={rodando || tempo === 0}
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 focus:outline-none"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 focus:outline-none"
                   style={{ 
                     pointerEvents: 'auto',
                     boxShadow: (rodando || tempo === 0) ? 'none' : '0 4px 14px rgba(16, 185, 129, 0.4)'
@@ -1326,7 +1326,7 @@ export default function Home() {
                   size="lg"
                   onClick={pausar}
                   disabled={!rodando}
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1 focus:outline-none"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 shadow-[0_0_20px_rgba(255,215,0,0.4)] transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1 focus:outline-none"
                   style={{ 
                     pointerEvents: 'auto',
                     boxShadow: !rodando ? 'none' : '0 4px 14px rgba(250, 204, 21, 0.5)'
@@ -1349,7 +1349,7 @@ export default function Home() {
                 <Button
                   size="lg"
                   onClick={resetar}
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gray-700 hover:bg-gray-600 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10 focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 focus:outline-none"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gray-800 hover:bg-gray-700 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all duration-300 ease-in-out relative z-10 focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 focus:outline-none"
                   style={{ 
                     pointerEvents: 'auto',
                     boxShadow: '0 4px 14px rgba(55, 65, 81, 0.4)'
