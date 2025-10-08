@@ -318,7 +318,7 @@ export function Mandala({
     : corAdaptativa.brilho;
 
   // Calcular circunferência para o anel de progresso
-  const radius = 80;
+  const radius = 75; // Reduzido de 80 para 75 (melhor proporção)
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progresso * circumference);
 
@@ -332,7 +332,11 @@ export function Mandala({
 
   return (
     <motion.div 
-      className="relative w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] flex items-center justify-center"
+      className="relative flex items-center justify-center"
+      style={{
+        width: 'clamp(200px, 60vw, 280px)',
+        height: 'clamp(200px, 60vw, 280px)',
+      }}
       animate={modoRespiracao ? {
         scale: scaleRespiracao,
       } : ativo ? {
@@ -358,9 +362,10 @@ export function Mandala({
       }}
     >
       <svg
-        width="192"
-        height="192"
+        width="100%"
+        height="100%"
         viewBox="0 0 192 192"
+        preserveAspectRatio="xMidYMid meet"
         className="absolute inset-0 transition-all duration-700 ease-in-out rounded-full drop-shadow-md"
         style={{ filter: 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.3))' }}
       >
@@ -473,11 +478,11 @@ export function Mandala({
           />
         </motion.g>
 
-        {/* Círculo interno (centro da energia ou guia de respiração) */}
+        {/* Círculo interno (centro da energia ou guia de respiração) - aumentado para 62px (83% do anel médio) */}
         <motion.circle
           cx="96"
           cy="96"
-          r="45"
+          r="62"
           fill={modoRespiracao 
             ? (faseRespiracao === 'inspirar' ? '#FFD700' : '#2ECC71') // Transição dourado → verde
             : "url(#centerGradient)"
@@ -529,11 +534,11 @@ export function Mandala({
           }}
         />
 
-        {/* Círculo interno - borda */}
+        {/* Círculo interno - borda (ajustada para r=62) */}
         <circle
           cx="96"
           cy="96"
-          r="45"
+          r="62"
           fill="none"
           stroke="#FFD700"
           strokeWidth="2"
