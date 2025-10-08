@@ -336,6 +336,10 @@ export function Mandala({
       style={{
         width: 'clamp(200px, 60vw, 280px)',
         height: 'clamp(200px, 60vw, 280px)',
+        filter: modoRespiracao
+          ? `brightness(${brightnessRespiracao}) saturate(0.9) ${shadowRespiracao}`
+          : `brightness(${brilhoRespiracao}) saturate(${corAdaptativa.saturacao})`,
+        transition: 'filter 2s ease-in-out, opacity 2s ease-in-out',
       }}
       animate={modoRespiracao ? {
         scale: scaleRespiracao,
@@ -353,12 +357,6 @@ export function Mandala({
       } : {
         duration: 2,
         ease: "easeInOut",
-      }}
-      style={{
-        filter: modoRespiracao
-          ? `brightness(${brightnessRespiracao}) saturate(0.9) ${shadowRespiracao}`
-          : `brightness(${brilhoRespiracao}) saturate(${corAdaptativa.saturacao})`,
-        transition: 'filter 2s ease-in-out, opacity 2s ease-in-out',
       }}
     >
       <svg
