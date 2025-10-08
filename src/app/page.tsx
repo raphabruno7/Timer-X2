@@ -31,6 +31,7 @@ import { ajustarAmbiente, detectarTendenciaCansaco, calcularVelocidadeMandala } 
 import { faseDaLua } from "@/lib/lua";
 import { tocarSomInicio, tocarSomCiclo, tocarSomFim, setVolume } from "@/lib/somSincronizado";
 import { determinarElemento } from "@/components/ui/CicloVital";
+import { vibrate, HapticPatterns } from "@/lib/haptics";
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -446,6 +447,9 @@ export default function Home() {
 
   // Função para iniciar o timer
   const iniciar = async () => {
+    // Feedback háptico
+    vibrate(HapticPatterns.medium);
+    
     // Transição visual de início
     setMandalaState("starting");
     
@@ -546,6 +550,9 @@ export default function Home() {
 
   // Função para resetar o timer
   const resetar = async () => {
+    // Feedback háptico
+    vibrate(HapticPatterns.light);
+    
     setRodando(false);
     setTempo(tempoInicial);
     setTempoRestante(tempoInicial);
@@ -947,6 +954,41 @@ export default function Home() {
     }
   }, [storeMinutes]);
 
+  // Atalhos de teclado para controles do timer
+  useEffect(() => {
+    const handleKeyboard = (e: KeyboardEvent) => {
+      // Ignorar se estiver digitando em input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Spacebar ou Enter: Play/Pause toggle
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        if (!rodando && tempo > 0) {
+          iniciar();
+        } else if (rodando) {
+          pausar();
+        }
+      }
+
+      // R: Reset
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        resetar();
+      }
+
+      // Esc: Fechar modais
+      if (e.key === 'Escape') {
+        setMandalaActive(false);
+        setModoMeditacaoAtivo(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyboard);
+    return () => window.removeEventListener('keydown', handleKeyboard);
+  }, [rodando, tempo, tempoInicial]);
+
   // Buscar ajustes adaptativos ao carregar o app
   useEffect(() => {
     const buscarAjustes = async () => {
@@ -993,9 +1035,13 @@ export default function Home() {
 
   return (
     <main 
-      className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden"
+      className="min-h-screen flex flex-col items-center justify-between p-4 pb-24 relative overflow-hidden"
       style={{ 
         background: 'radial-gradient(ellipse at center, rgba(46, 204, 113, 0.08) 0%, rgba(255, 215, 0, 0.05) 50%, #1A1A1A 100%)',
+        paddingTop: 'max(1rem, env(safe-area-inset-top))',
+        paddingBottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 6rem))',
+        paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+        paddingRight: 'max(1rem, env(safe-area-inset-right))',
       }}
       role="application"
       aria-label="Timer X2 - Aplicativo de foco e produtividade"
@@ -1112,10 +1158,15 @@ export default function Home() {
                 </>
               )}
 
-              {/* Container do Timer com dimensões fixas */}
+              {/* Container do Timer com dimensões responsivas */}
               <motion.div 
-                className="relative w-64 h-64 sm:w-80 sm:h-80 mx-auto rounded-full"
+                className="relative mx-auto rounded-full"
                 style={{
+                  width: 'clamp(240px, 70vw, 320px)',
+                  height: 'clamp(240px, 70vw, 320px)',
+                  maxWidth: 'min(80vw, 400px)',
+                  maxHeight: 'min(70vh, 400px)',
+                  aspectRatio: '1 / 1',
                   boxShadow: mandalaState === "starting"
                     ? '0 0 40px rgba(255, 215, 0, 0.4), 0 0 20px rgba(46, 204, 113, 0.2)'
                     : '0 0 30px rgba(46, 204, 113, 0.3)',
@@ -1175,7 +1226,7 @@ export default function Home() {
                 {/* Conteúdo do timer sobre a mandala - Absolutamente centralizado */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                   <motion.div 
-                    className="text-5xl sm:text-6xl font-light text-[#F9F9F9] tracking-wider mb-3"
+                    className="text-4xl sm:text-5xl md:text-6xl font-light text-[#F9F9F9] tracking-wider mb-3"
                     style={{ 
                       textShadow: '0 2px 10px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.5)',
                       fontVariantNumeric: 'tabular-nums'
@@ -1188,11 +1239,21 @@ export default function Home() {
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
+                    role="timer"
+                    aria-label={`Tempo restante ${formatarTempo(tempo)}`}
                   >
                     {formatarTempo(tempo)}
                   </motion.div>
-                  <div className="text-sm font-light text-[#F9F9F9]/70 tracking-wide" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}>
+                  <div className="text-xs sm:text-sm font-light text-[#F9F9F9]/70 tracking-wide" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}>
                     {rodando ? "Em foco" : tempo === 0 ? "Sessão concluída" : "Pronto para começar"}
+                  </div>
+                  
+                  {/* Região aria-live para anunciar apenas mudanças de estado */}
+                  <div className="sr-only" aria-live="polite" aria-atomic="true">
+                    {rodando && "Timer iniciado"}
+                    {!rodando && tempo > 0 && tempo < tempoInicial && "Timer pausado"}
+                    {tempo === 0 && "Sessão concluída"}
+                    {tempo > 0 && tempo % 60 === 0 && `, ${Math.floor(tempo / 60)} minutos restantes`}
                   </div>
                 </div>
               </motion.div>
@@ -1202,73 +1263,76 @@ export default function Home() {
             <div className="flex justify-center gap-6 relative z-10 mt-8" role="group" aria-label="Controles do timer">
               {/* Botão Play */}
               <motion.div
-                whileHover={{ scale: rodando || tempo === 0 ? 1 : 1.1 }}
-                whileTap={{ scale: rodando || tempo === 0 ? 1 : 0.95 }}
+                whileHover={{ scale: rodando || tempo === 0 ? 1 : 1.08 }}
+                whileTap={{ scale: rodando || tempo === 0 ? 1 : 0.92 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
                 <Button
                   size="lg"
                   onClick={iniciar}
                   disabled={rodando || tempo === 0}
-                  className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 focus:outline-none"
                   style={{ 
                     pointerEvents: 'auto',
                     boxShadow: (rodando || tempo === 0) ? 'none' : '0 4px 14px rgba(16, 185, 129, 0.4)'
                   }}
-                  aria-label="Iniciar timer"
+                  aria-label="Iniciar sessão de foco"
                   aria-disabled={rodando || tempo === 0}
-                  title="Iniciar sessão de foco"
+                  role="button"
+                  tabIndex={0}
                 >
                   <motion.div
                     animate={!rodando && tempo > 0 ? { scale: [1, 1.15, 1] } : {}}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <Play className="w-6 h-6 ml-0.5" aria-hidden="true" />
+                    <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5" aria-hidden="true" />
                   </motion.div>
                 </Button>
               </motion.div>
               
               {/* Botão Pause */}
               <motion.div
-                whileHover={{ scale: !rodando ? 1 : 1.1 }}
-                whileTap={{ scale: !rodando ? 1 : 0.95 }}
+                whileHover={{ scale: !rodando ? 1 : 1.08 }}
+                whileTap={{ scale: !rodando ? 1 : 0.92 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
                 <Button
                   size="lg"
                   onClick={pausar}
                   disabled={!rodando}
-                  className="w-14 h-14 rounded-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 shadow-lg transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1 focus:outline-none"
                   style={{ 
                     pointerEvents: 'auto',
                     boxShadow: !rodando ? 'none' : '0 4px 14px rgba(250, 204, 21, 0.5)'
                   }}
-                  aria-label="Pausar timer"
+                  aria-label="Pausar sessão de foco"
                   aria-disabled={!rodando}
-                  title="Pausar sessão de foco"
+                  role="button"
+                  tabIndex={0}
                 >
-                  <Pause className="w-6 h-6" aria-hidden="true" />
+                  <Pause className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
                 </Button>
               </motion.div>
               
               {/* Botão Reset */}
               <motion.div
-                whileHover={{ scale: 1.1, rotate: -15 }}
-                whileTap={{ scale: 0.95, rotate: 180 }}
+                whileHover={{ scale: 1.08, rotate: -15 }}
+                whileTap={{ scale: 0.92, rotate: 180 }}
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
                 <Button
                   size="lg"
                   onClick={resetar}
-                  className="w-14 h-14 rounded-full bg-gray-700 hover:bg-gray-600 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gray-700 hover:bg-gray-600 text-white shadow-lg transition-all duration-300 ease-in-out relative z-10 focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 focus:outline-none"
                   style={{ 
                     pointerEvents: 'auto',
                     boxShadow: '0 4px 14px rgba(55, 65, 81, 0.4)'
                   }}
-                  aria-label="Resetar timer"
-                  title="Resetar timer e limpar sessão"
+                  aria-label="Reiniciar timer e limpar sessão"
+                  role="button"
+                  tabIndex={0}
                 >
-                  <RotateCcw className="w-6 h-6" aria-hidden="true" />
+                  <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
                 </Button>
               </motion.div>
             </div>
