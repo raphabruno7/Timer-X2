@@ -5,8 +5,17 @@ export default defineSchema({
   presets: defineTable({
     nome: v.string(),
     minutos: v.number(),
+    categoria: v.optional(v.union(
+      v.literal("breathwork"),
+      v.literal("foco"),
+      v.literal("criatividade"),
+      v.literal("neural"),
+      v.literal("sound"),
+      v.literal("binaural")
+    )),
+    uses: v.optional(v.number()), // contagem de usos
     createdAt: v.number(), // timestamp
-  }),
+  }).index("by_categoria", ["categoria"]).index("by_uses", ["uses"]),
   historico: defineTable({
     presetId: v.id("presets"),
     usadoEm: v.number(), // timestamp em ms

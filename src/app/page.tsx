@@ -13,6 +13,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Play, Pause, RotateCcw, Leaf, Check, Plus, Trash2 } from "lucide-react";
 import { BottomNav } from "@/components/ui/BottomNav";
+import { PresetSelector } from "@/components/ui/PresetSelector";
+import { useTimerStore } from "@/store/useTimerStore";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { MandalaReward } from "@/components/ui/MandalaReward";
 import { Mandala } from "@/components/ui/Mandala";
@@ -70,6 +72,9 @@ function useAutoDarkMode() {
 export default function Home() {
   // Hook de tema automático
   const isDarkMode = useAutoDarkMode();
+  
+  // Zustand store para presets
+  const { minutes: storeMinutes } = useTimerStore();
   
   // Cores do tema baseadas no modo
   const themeColors = useMemo(() => ({
@@ -931,6 +936,17 @@ export default function Home() {
     console.info(`[Som Sincronizado] 🎵 Volume inicializado: ${Math.round(volumeSom * 100)}%`);
   }, [volumeSom]);
 
+  // Sincronizar store Zustand com estados locais do timer
+  useEffect(() => {
+    if (storeMinutes > 0) {
+      const segundos = storeMinutes * 60;
+      setTempoInicial(segundos);
+      setTempo(segundos);
+      setTempoRestante(segundos);
+      console.info(`[Preset Store] Timer atualizado: ${storeMinutes} minutos`);
+    }
+  }, [storeMinutes]);
+
   // Buscar ajustes adaptativos ao carregar o app
   useEffect(() => {
     const buscarAjustes = async () => {
@@ -1019,21 +1035,26 @@ export default function Home() {
           }}
         >
           {/* Header Minimalista */}
-          <div className="p-6 pt-8 text-center">
-            <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-2">
+          <div className="p-6 pt-8 text-center relative">
+            <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-4">
               Timer X2
             </h1>
+            
+            {/* Preset Selector */}
+            <div className="mb-4">
+              <PresetSelector />
+            </div>
             
             {/* Indicador de Modo Atual e Elemento */}
             <div className="flex items-center justify-center gap-3 text-sm text-[#F9F9F9]/70 tracking-wide">
               {ciclosQuery && (
                 <>
                   <span>{determinarElemento(ciclosQuery.totalCiclos) === 'terra' ? '🌍' : determinarElemento(ciclosQuery.totalCiclos) === 'agua' ? '🌊' : determinarElemento(ciclosQuery.totalCiclos) === 'fogo' ? '🔥' : determinarElemento(ciclosQuery.totalCiclos) === 'ar' ? '🌬️' : '✨'}</span>
-                  <span>Foco Dinâmico</span>
+                  <span>Elemento Ativo</span>
                 </>
-                  )}
-                </div>
-                </div>
+              )}
+            </div>
+          </div>
                 
           {/* Main Content - Timer Centralizado */}
           <div className="px-6 pb-6 space-y-6 flex flex-col items-center" style={{ minHeight: '60vh' }}>
