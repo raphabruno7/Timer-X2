@@ -5,10 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Sparkles, Brain, Zap, Target, TrendingUp } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/ui/BottomNav";
+import { PageTransition } from "@/components/PageTransition";
 
 export default function AIPage() {
   return (
-    <>
+    <PageTransition>
       <main 
         className="min-h-screen flex flex-col p-4 pb-24 relative overflow-x-hidden"
         style={{ 
@@ -161,6 +162,6 @@ export default function AIPage() {
       <BottomNav />
 
       <Toaster position="top-center" richColors theme="dark" />
-    </>
+    </PageTransition>
   );
 }

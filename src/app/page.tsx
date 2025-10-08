@@ -15,6 +15,7 @@ import { Play, Pause, RotateCcw, Leaf, Check, Plus, Trash2 } from "lucide-react"
 import { BottomNav } from "@/components/ui/BottomNav";
 import { PresetSelector } from "@/components/ui/PresetSelector";
 import { useTimerStore } from "@/store/useTimerStore";
+import { PageTransition } from "@/components/PageTransition";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { MandalaReward } from "@/components/ui/MandalaReward";
 import { Mandala } from "@/components/ui/Mandala";
@@ -1034,20 +1035,21 @@ export default function Home() {
   }, [mandalaActive, rewardTriggered]);
 
   return (
-    <main 
-      className="min-h-screen flex flex-col items-center justify-between p-4 pb-24 relative overflow-hidden"
-      style={{ 
-        background: 'radial-gradient(ellipse at center, rgba(46, 204, 113, 0.08) 0%, rgba(255, 215, 0, 0.05) 50%, #1A1A1A 100%)',
-        paddingTop: 'max(1rem, env(safe-area-inset-top))',
-        paddingBottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 6rem))',
-        paddingLeft: 'max(1rem, env(safe-area-inset-left))',
-        paddingRight: 'max(1rem, env(safe-area-inset-right))',
-      }}
-      role="application"
-      aria-label="Timer X2 - Aplicativo de foco e produtividade"
-    >
-      {/* Mandala de Recompensa com feedback emocional */}
-      <MandalaReward 
+    <PageTransition>
+      <main 
+        className="min-h-screen flex flex-col items-center justify-between p-4 pb-24 relative overflow-hidden"
+        style={{ 
+          background: 'radial-gradient(ellipse at center, rgba(46, 204, 113, 0.08) 0%, rgba(255, 215, 0, 0.05) 50%, #1A1A1A 100%)',
+          paddingTop: 'max(1rem, env(safe-area-inset-top))',
+          paddingBottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 6rem))',
+          paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right))',
+        }}
+        role="application"
+        aria-label="Timer X2 - Aplicativo de foco e produtividade"
+      >
+        {/* Mandala de Recompensa com feedback emocional */}
+        <MandalaReward 
         visible={mandalaActive}
         mood={mandalaMood}
         intensity={mandalaAdaptiveIntensity}
@@ -1193,8 +1195,8 @@ export default function Home() {
                   ease: "easeInOut",
                 }}
               >
-                {/* Anel de borda com gradiente */}
-                <div 
+                {/* Anel de borda com animação respiratória */}
+                <motion.div 
                   className="absolute inset-0 rounded-full border-4"
                   style={{
                     borderColor: mandalaState === "starting" 
@@ -1203,6 +1205,20 @@ export default function Home() {
                     background: mandalaState === "starting"
                       ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 215, 0, 0.15))'
                       : 'linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(255, 215, 0, 0.03))',
+                  }}
+                  animate={!rodando && tempo > 0 && tempo < tempoInicial ? {
+                    scale: [1, 1.015, 1],
+                    opacity: [0.4, 0.65, 0.4],
+                    borderColor: [
+                      'rgba(46, 204, 113, 0.4)', 
+                      'rgba(255, 215, 0, 0.35)', 
+                      'rgba(46, 204, 113, 0.4)'
+                    ],
+                  } : undefined}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
                   }}
                 />
 
@@ -1261,11 +1277,21 @@ export default function Home() {
 
             {/* Control Buttons com animações suaves e acessibilidade */}
             <div className="flex justify-center gap-6 relative z-10 mt-8" role="group" aria-label="Controles do timer">
-              {/* Botão Play */}
+              {/* Botão Play com glow pulsante quando idle */}
               <motion.div
                 whileHover={{ scale: rodando || tempo === 0 ? 1 : 1.08 }}
                 whileTap={{ scale: rodando || tempo === 0 ? 1 : 0.92 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                animate={!rodando && tempo > 0 ? {
+                  boxShadow: [
+                    '0 4px 14px rgba(16, 185, 129, 0.3)',
+                    '0 4px 20px rgba(16, 185, 129, 0.7)',
+                    '0 4px 14px rgba(16, 185, 129, 0.3)',
+                  ]
+                } : undefined}
+                transition={{ 
+                  boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+                  scale: { type: "spring", stiffness: 400, damping: 17 }
+                }}
               >
                 <Button
                   size="lg"
@@ -1362,5 +1388,6 @@ export default function Home() {
         theme={isDarkMode ? "dark" : "light"}
       />
     </main>
+    </PageTransition>
   );
 }

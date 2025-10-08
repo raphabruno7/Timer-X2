@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Toaster } from "@/components/ui/sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BottomNav } from "@/components/ui/BottomNav";
+import { PageTransition } from "@/components/PageTransition";
 
 // Skeleton Loader Component
 function SkeletonCard() {
@@ -66,7 +67,7 @@ export default function StatsPage() {
     : 0;
 
   return (
-    <>
+    <PageTransition>
       <main 
         className="min-h-screen flex flex-col p-4 pb-24 relative overflow-x-hidden"
         style={{ 
@@ -495,7 +496,7 @@ export default function StatsPage() {
       <BottomNav />
 
       <Toaster position="top-center" richColors theme="dark" />
-    </>
+    </PageTransition>
   );
 }
 

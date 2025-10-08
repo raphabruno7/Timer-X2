@@ -133,7 +133,7 @@ export function PresetSelector() {
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
             >
               {/* Search */}
               <div className="p-4 border-b border-emerald-700/20">
@@ -158,9 +158,22 @@ export function PresetSelector() {
                       Recentes
                     </p>
                     <div className="space-y-1">
-                      {topPresets.map((preset) => (
-                        <button
+                      {topPresets.map((preset, index) => (
+                        <motion.button
                           key={preset._id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 10 }}
+                          transition={{ 
+                            delay: index * 0.04,
+                            duration: 0.25,
+                            ease: "easeOut"
+                          }}
+                          whileHover={{ 
+                            scale: 1.02, 
+                            x: 4,
+                            transition: { duration: 0.15 }
+                          }}
                           onClick={() => handleSelectPreset(preset._id, preset.nome, preset.minutos)}
                           className="w-full flex items-center justify-between p-3 hover:bg-emerald-900/30 rounded-xl transition-colors text-left group"
                         >
@@ -182,7 +195,7 @@ export function PresetSelector() {
                               {preset.uses}× usado
                             </span>
                           )}
-                        </button>
+                        </motion.button>
                       ))}
                     </div>
                   </div>
@@ -197,9 +210,22 @@ export function PresetSelector() {
                       {categoriaConfig[categoria as Categoria].label}
                     </p>
                     <div className="space-y-1">
-                      {catPresets.map((preset) => (
-                        <button
+                      {catPresets.map((preset, index) => (
+                        <motion.button
                           key={preset._id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 10 }}
+                          transition={{ 
+                            delay: (topPresets?.length || 0) * 0.04 + index * 0.04,
+                            duration: 0.25,
+                            ease: "easeOut"
+                          }}
+                          whileHover={{ 
+                            scale: 1.02, 
+                            x: 4,
+                            transition: { duration: 0.15 }
+                          }}
                           onClick={() => handleSelectPreset(preset._id, preset.nome, preset.minutos)}
                           className="w-full flex items-center justify-between p-3 hover:bg-emerald-900/30 rounded-xl transition-colors text-left group"
                         >
@@ -216,7 +242,7 @@ export function PresetSelector() {
                               {preset.uses}×
                             </span>
                           )}
-                        </button>
+                        </motion.button>
                       ))}
                     </div>
                   </div>

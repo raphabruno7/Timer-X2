@@ -7,6 +7,7 @@ import { Settings, Volume2, Moon, Bell, Palette, Sparkles } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { BottomNav } from "@/components/ui/BottomNav";
+import { PageTransition } from "@/components/PageTransition";
 
 export default function SettingsPage() {
   const [volumeSom, setVolumeSom] = useState(50);
@@ -14,7 +15,7 @@ export default function SettingsPage() {
   const [temaEscuro, setTemaEscuro] = useState(true);
 
   return (
-    <>
+    <PageTransition>
       <main 
         className="min-h-screen flex flex-col p-4 pb-24 relative overflow-x-hidden"
         style={{ 
@@ -228,6 +229,6 @@ export default function SettingsPage() {
       <BottomNav />
 
       <Toaster position="top-center" richColors theme="dark" />
-    </>
+    </PageTransition>
   );
 }

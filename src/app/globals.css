@@ -118,6 +118,31 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Transições controladas e performáticas - NÃO usar 'transition: all' */
+  button:not([disabled]),
+  a:not([disabled]),
+  [role="button"]:not([disabled]) {
+    transition-property: background-color, color, border-color, opacity, transform;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Cards e containers */
+  [data-slot="card"],
+  [data-card] {
+    transition-property: box-shadow, border-color, background-color;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-in-out;
+  }
+
+  /* Textos (apenas cor) */
+  h1, h2, h3, h4, h5, h6, p {
+    transition-property: color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in-out;
+  }
+  
   button {
     cursor: pointer;
     pointer-events: auto;
@@ -146,5 +171,17 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border-width: 0;
+  }
+
+  /* WCAG 2.3.3 - Respeitar preferências de movimento reduzido */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
