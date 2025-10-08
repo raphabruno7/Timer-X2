@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Play, Pause, RotateCcw, Clock, Sparkles, Settings, Leaf, Check, Plus, Trash2, TrendingUp, History, Trophy, LineChart as LineChartIcon } from "lucide-react";
+import { Play, Pause, RotateCcw, Leaf, Check, Plus, Trash2 } from "lucide-react";
+import { BottomNav } from "@/components/ui/BottomNav";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { MandalaReward } from "@/components/ui/MandalaReward";
 import { Mandala } from "@/components/ui/Mandala";
@@ -1213,63 +1214,7 @@ export default function Home() {
       </motion.div>
       
       {/* Barra de Navegação Inferior Fixa */}
-      <motion.nav 
-        className="fixed bottom-0 left-0 right-0 bg-[#1A1A1A]/95 backdrop-blur-lg border-t border-[#2ECC71]/20 px-6 py-4 z-50"
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        role="navigation"
-        aria-label="Navegação principal"
-      >
-        <div className="max-w-md mx-auto flex justify-around items-center">
-          <motion.a
-            href="/stats"
-            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#2ECC71] transition-colors"
-            whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-            aria-label="Ver estatísticas"
-          >
-            <TrendingUp className="w-6 h-6" />
-            <span className="text-xs font-light tracking-wide">Stats</span>
-          </motion.a>
-
-              <motion.button 
-            className="flex flex-col items-center gap-1 p-3 text-[#2ECC71] relative"
-            aria-label="Timer - página atual"
-            aria-current="page"
-          >
-            <motion.div
-              className="absolute -top-1 w-12 h-12 rounded-full bg-[#2ECC71]/10 border border-[#2ECC71]/30"
-              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.7, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <Clock className="w-6 h-6 relative z-10" />
-            <span className="text-xs font-medium tracking-wide relative z-10">Timer</span>
-              </motion.button>
-
-              <motion.button
-            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#FFD700] transition-colors"
-            whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-            onClick={() => toast.info("IA em breve!")}
-            aria-label="Inteligência Artificial"
-              >
-            <Sparkles className="w-6 h-6" />
-            <span className="text-xs font-light tracking-wide">IA</span>
-              </motion.button>
-              
-              <motion.button 
-            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-colors"
-            whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-            onClick={() => toast.info("Configurações em breve!")}
-            aria-label="Configurações"
-              >
-            <Settings className="w-6 h-6" />
-            <span className="text-xs font-light tracking-wide">Config</span>
-              </motion.button>
-            </div>
-      </motion.nav>
+      <BottomNav />
       
       {/* Modo Meditação Dinâmica */}
       <ModoMeditacao

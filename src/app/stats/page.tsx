@@ -6,11 +6,11 @@ import { api } from "../../../convex/_generated/api";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
-import { TrendingUp, Trophy, Clock, Sparkles, Settings, History, Calendar } from "lucide-react";
+import { TrendingUp, Trophy, History, Calendar } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { BottomNav } from "@/components/ui/BottomNav";
 
 // Skeleton Loader Component
 function SkeletonCard() {
@@ -84,8 +84,8 @@ export default function StatsPage() {
             className="text-center py-6"
           >
             <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-2">
-              Estatísticas
-            </h1>
+                Estatísticas
+              </h1>
             <p className="text-sm font-light text-[#F9F9F9]/60 tracking-wide mb-4">
               Evolução do seu tempo
             </p>
@@ -196,8 +196,8 @@ export default function StatsPage() {
                           </p>
                         </div>
                       </div>
-                    </div>
-                  </div>
+            </div>
+          </div>
                 </Card>
               </motion.div>
             ) : null}
@@ -231,7 +231,7 @@ export default function StatsPage() {
                         {estatisticasGerais.sessoesCompletas}
                       </p>
                     </div>
-                    <div>
+              <div>
                       <p className="text-xs text-[#F9F9F9]/60 mb-1">Média</p>
                       <p className="text-xl font-light text-[#FFD700]">
                         {estatisticasGerais.mediaPorSessao} min
@@ -452,8 +452,8 @@ export default function StatsPage() {
                             </p>
                             <p className="text-xs text-[#F9F9F9]/50">
                               {item.data}
-                            </p>
-                          </div>
+                </p>
+              </div>
                           <div className="text-right">
                             <p className="text-2xl font-light text-[#2ECC71]">
                               {item.minutosFocados}
@@ -461,8 +461,8 @@ export default function StatsPage() {
                             <p className="text-xs text-[#F9F9F9]/50">
                               minutos
                             </p>
-                          </div>
-                        </div>
+                  </div>
+                </div>
                       </motion.div>
                     ))}
                   </div>
@@ -487,68 +487,12 @@ export default function StatsPage() {
                 </p>
               </Card>
             </motion.div>
-          )}
-        </div>
+            )}
+          </div>
       </main>
 
       {/* Barra de Navegação Inferior Fixa */}
-      <motion.nav 
-        className="fixed bottom-0 left-0 right-0 bg-[#1A1A1A]/95 backdrop-blur-lg border-t border-[#2ECC71]/20 px-6 py-4 z-50"
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        role="navigation"
-        aria-label="Navegação principal"
-      >
-        <div className="max-w-md mx-auto flex justify-around items-center">
-          <motion.button
-            className="flex flex-col items-center gap-1 p-3 text-[#2ECC71] relative"
-            aria-label="Estatísticas - página atual"
-            aria-current="page"
-          >
-            <motion.div
-              className="absolute -top-1 w-12 h-12 rounded-full bg-[#2ECC71]/10 border border-[#2ECC71]/30"
-              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.7, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <TrendingUp className="w-6 h-6 relative z-10" />
-            <span className="text-xs font-medium tracking-wide relative z-10">Stats</span>
-          </motion.button>
-          
-          <motion.a 
-            href="/"
-            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#2ECC71] transition-colors"
-            whileHover={{ scale: 1.1, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Voltar para o Timer"
-          >
-            <Clock className="w-6 h-6" />
-            <span className="text-xs font-light tracking-wide">Timer</span>
-          </motion.a>
-
-          <motion.button 
-            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#FFD700] transition-colors"
-            whileHover={{ scale: 1.1, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => toast.info("IA em breve!")}
-            aria-label="Inteligência Artificial"
-          >
-            <Sparkles className="w-6 h-6" />
-            <span className="text-xs font-light tracking-wide">IA</span>
-          </motion.button>
-          
-          <motion.button 
-            className="flex flex-col items-center gap-1 p-2 text-[#F9F9F9]/70 hover:text-[#F9F9F9] transition-colors"
-            whileHover={{ scale: 1.1, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => toast.info("Configurações em breve!")}
-            aria-label="Configurações"
-          >
-            <Settings className="w-6 h-6" />
-            <span className="text-xs font-light tracking-wide">Config</span>
-          </motion.button>
-        </div>
-      </motion.nav>
+      <BottomNav />
 
       <Toaster position="top-center" richColors theme="dark" />
     </>
