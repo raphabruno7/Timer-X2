@@ -33,6 +33,7 @@ import { faseDaLua } from "@/lib/lua";
 import { tocarSomInicio, tocarSomCiclo, tocarSomFim, setVolume } from "@/lib/somSincronizado";
 import { determinarElemento } from "@/components/ui/CicloVital";
 import { vibrate, HapticPatterns } from "@/lib/haptics";
+import { useRessonanciaEmocional } from "@/hooks/useRessonanciaEmocional";
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -185,6 +186,26 @@ export default function Home() {
   useEffect(() => {
     console.info('[Sinestesia Adaptativa] 🎨 Estado visual:', estadoVisualMandala);
   }, [estadoVisualMandala]);
+
+  // Ressonância Emocional (Prompt 19): Preparar dados de sessões
+  const dadosSessoesParaRessonancia = useMemo(() => {
+    if (!sessoesRegistradas) return [];
+    
+    return sessoesRegistradas
+      .slice(-10) // Últimas 10 sessões
+      .map(sessao => ({
+        duracao: sessao.duracao || 0,
+        timestamp: sessao.timestamp || Date.now(),
+      }));
+  }, [sessoesRegistradas]);
+
+  // Hook de Ressonância Emocional
+  const { estado: estadoEmocionalRessonancia, config: configEmocional } = useRessonanciaEmocional(dadosSessoesParaRessonancia);
+
+  // Log de mudança de estado emocional (debug)
+  useEffect(() => {
+    console.info('[Ressonância Emocional] 🎭 Estado emocional:', estadoEmocionalRessonancia, configEmocional);
+  }, [estadoEmocionalRessonancia, configEmocional]);
 
 
   // Função para aplicar ajustes adaptativos da IA
@@ -1274,6 +1295,12 @@ export default function Home() {
                     ciclo={8}
                     emocao={emocaoMandala}
                     estadoVisual={estadoVisualMandala}
+                    ressonanciaEmocional={{
+                      cor: configEmocional.cor,
+                      velocidadeModifier: configEmocional.velocidadeModifier,
+                      intensidadeModifier: configEmocional.intensidadeModifier,
+                      saturacao: configEmocional.saturacao,
+                    }}
                   />
                 </div>
 

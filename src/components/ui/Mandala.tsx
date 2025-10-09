@@ -15,6 +15,12 @@ interface MandalaProps {
   ciclo?: number; // Duração completa de uma respiração (em segundos), padrão: 8s
   emocao?: 'neutra' | 'alegria' | 'calma' | 'cansaço'; // Estado emocional do usuário
   estadoVisual?: 'foco-ativo' | 'reflexao' | 'conclusao' | 'idle'; // Estado visual adaptativo (Prompt 18)
+  ressonanciaEmocional?: { // Ressonância Emocional (Prompt 19)
+    cor?: string;
+    velocidadeModifier?: number;
+    intensidadeModifier?: number;
+    saturacao?: number;
+  };
 }
 
 /**
@@ -159,7 +165,8 @@ export function Mandala({
   modoRespiracao = false, 
   ciclo = 8,
   emocao = 'neutra',
-  estadoVisual = 'idle'
+  estadoVisual = 'idle',
+  ressonanciaEmocional
 }: MandalaProps) {
   // Estado da fase lunar
   const [faseLunar, setFaseLunar] = useState<FaseLunar>('cheia');
@@ -361,7 +368,7 @@ export function Mandala({
         ease: "easeInOut",
       }}
     >
-      {/* Gradiente dinâmico de fundo - Sinestesia Adaptativa (Prompt 18) */}
+      {/* Gradiente dinâmico de fundo - Sinestesia Adaptativa (Prompt 18) + Ressonância Emocional (Prompt 19) */}
       <motion.div
         className="absolute inset-0 rounded-full bg-gradient-radial blur-3xl"
         animate={
@@ -373,8 +380,12 @@ export function Mandala({
                   "radial-gradient(circle at center, rgba(46, 204, 113, 0.15), transparent)",
                   "radial-gradient(circle at center, rgba(46, 204, 113, 0.2), transparent)",
                 ],
-                opacity: [0.8, 0.6, 0.8],
-                scale: [1, 1.01, 1],
+                opacity: [
+                  0.8 * (ressonanciaEmocional?.intensidadeModifier || 1),
+                  0.6 * (ressonanciaEmocional?.intensidadeModifier || 1),
+                  0.8 * (ressonanciaEmocional?.intensidadeModifier || 1)
+                ],
+                scale: [1, 1.01 * (ressonanciaEmocional?.intensidadeModifier || 1), 1],
               }
             : estadoVisual === 'conclusao'
               ? {
@@ -391,24 +402,31 @@ export function Mandala({
                       "radial-gradient(circle at center, rgba(255, 215, 0, 0.15), rgba(46, 204, 113, 0.1), transparent)",
                       "radial-gradient(circle at center, rgba(46, 204, 113, 0.12), rgba(255, 215, 0, 0.08), transparent)",
                     ],
-                    opacity: [0.4, 0.7, 0.4],
+                    opacity: [
+                      0.4 * (ressonanciaEmocional?.intensidadeModifier || 1),
+                      0.7 * (ressonanciaEmocional?.intensidadeModifier || 1),
+                      0.4 * (ressonanciaEmocional?.intensidadeModifier || 1)
+                    ],
                   }
                 : {
                     // Idle: Estado padrão sutil
                     background: "radial-gradient(circle at center, rgba(46, 204, 113, 0.08), transparent)",
-                    opacity: 0.3,
+                    opacity: 0.3 * (ressonanciaEmocional?.intensidadeModifier || 1),
                   }
         }
         transition={{ 
-          duration: estadoVisual === 'foco-ativo' 
+          duration: (estadoVisual === 'foco-ativo' 
             ? 1.5 
             : estadoVisual === 'conclusao' 
               ? 4 
               : estadoVisual === 'reflexao' 
                 ? 3 
-                : 2,
+                : 2) * (ressonanciaEmocional?.velocidadeModifier || 1),
           repeat: estadoVisual === 'conclusao' ? 0 : Infinity, 
           ease: "easeInOut" 
+        }}
+        style={{
+          filter: `saturate(${ressonanciaEmocional?.saturacao || 1})`,
         }}
       />
       <svg
