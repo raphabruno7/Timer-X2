@@ -173,6 +173,19 @@ export default function Home() {
     1.4
   );
 
+  // Estado visual da mandala (Prompt 18 - Sinestesia Adaptativa)
+  const estadoVisualMandala = useMemo(() => {
+    if (rodando) return 'foco-ativo';
+    if (!rodando && tempo > 0 && tempo < tempoInicial) return 'reflexao';
+    if (tempo === 0 && !rodando) return 'conclusao';
+    return 'idle';
+  }, [rodando, tempo, tempoInicial]) as 'foco-ativo' | 'reflexao' | 'conclusao' | 'idle';
+
+  // Log de mudança de estado visual (debug)
+  useEffect(() => {
+    console.info('[Sinestesia Adaptativa] 🎨 Estado visual:', estadoVisualMandala);
+  }, [estadoVisualMandala]);
+
 
   // Função para aplicar ajustes adaptativos da IA
   const applyAdaptiveAdjustments = useCallback((adjustments: Record<string, unknown>) => {
@@ -1195,20 +1208,24 @@ export default function Home() {
                   ease: "easeInOut",
                 }}
               >
-                {/* Anel de borda com animação respiratória */}
+                {/* Anel de borda com animação respiratória e brilho contextual */}
                 <motion.div 
                   className="absolute inset-0 rounded-full border-4"
                   style={{
                     borderColor: mandalaState === "starting" 
                       ? '#FFD700'
-                      : 'rgba(46, 204, 113, 0.4)',
+                      : tempo === 0 
+                        ? 'rgba(255, 215, 0, 0.6)' // Brilho dourado de conclusão
+                        : 'rgba(46, 204, 113, 0.4)',
                     background: mandalaState === "starting"
                       ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 215, 0, 0.15))'
-                      : 'linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(255, 215, 0, 0.03))',
+                      : tempo === 0
+                        ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 215, 0, 0.06))' // Brilho de conclusão
+                        : 'linear-gradient(135deg, rgba(46, 204, 113, 0.08), rgba(255, 215, 0, 0.03))',
                   }}
                   animate={!rodando && tempo > 0 && tempo < tempoInicial ? {
                     scale: [1, 1.015, 1],
-                    opacity: [0.4, 0.65, 0.4],
+                    opacity: [0.5, 0.75, 0.5],
                     borderColor: [
                       'rgba(46, 204, 113, 0.4)', 
                       'rgba(255, 215, 0, 0.35)', 
@@ -1219,6 +1236,26 @@ export default function Home() {
                     duration: 3,
                     repeat: Infinity,
                     ease: "easeInOut",
+                  }}
+                />
+
+                {/* Brilho contextual por estado */}
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  animate={
+                    rodando
+                      ? { opacity: 0.3, filter: "brightness(1.2)" } // Brilho suave esverdeado quando ativo
+                      : tempo === 0
+                        ? { opacity: 0.6, filter: "brightness(1.5)" } // Brilho dourado de conclusão
+                        : { opacity: 0.2, filter: "brightness(0.8)" } // Brilho ameno quando pausado
+                  }
+                  transition={{ duration: 1.5, ease: "easeInOut" }}
+                  style={{
+                    background: rodando
+                      ? "radial-gradient(circle at center, rgba(46, 204, 113, 0.15), transparent)"
+                      : tempo === 0
+                        ? "radial-gradient(circle at center, rgba(255, 215, 0, 0.2), transparent)"
+                        : "radial-gradient(circle at center, rgba(46, 204, 113, 0.08), transparent)"
                   }}
                 />
 
@@ -1236,6 +1273,7 @@ export default function Home() {
                     modoRespiracao={!rodando && tempo === 0}
                     ciclo={8}
                     emocao={emocaoMandala}
+                    estadoVisual={estadoVisualMandala}
                   />
                 </div>
 

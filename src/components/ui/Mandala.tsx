@@ -14,6 +14,7 @@ interface MandalaProps {
   modoRespiracao?: boolean; // Ativa guia de respiração visual
   ciclo?: number; // Duração completa de uma respiração (em segundos), padrão: 8s
   emocao?: 'neutra' | 'alegria' | 'calma' | 'cansaço'; // Estado emocional do usuário
+  estadoVisual?: 'foco-ativo' | 'reflexao' | 'conclusao' | 'idle'; // Estado visual adaptativo (Prompt 18)
 }
 
 /**
@@ -157,7 +158,8 @@ export function Mandala({
   ativo, 
   modoRespiracao = false, 
   ciclo = 8,
-  emocao = 'neutra'
+  emocao = 'neutra',
+  estadoVisual = 'idle'
 }: MandalaProps) {
   // Estado da fase lunar
   const [faseLunar, setFaseLunar] = useState<FaseLunar>('cheia');
@@ -359,6 +361,56 @@ export function Mandala({
         ease: "easeInOut",
       }}
     >
+      {/* Gradiente dinâmico de fundo - Sinestesia Adaptativa (Prompt 18) */}
+      <motion.div
+        className="absolute inset-0 rounded-full bg-gradient-radial blur-3xl"
+        animate={
+          estadoVisual === 'foco-ativo'
+            ? {
+                // Foco Ativo: Verde intenso → suave, pulso ritmado
+                background: [
+                  "radial-gradient(circle at center, rgba(46, 204, 113, 0.2), transparent)",
+                  "radial-gradient(circle at center, rgba(46, 204, 113, 0.15), transparent)",
+                  "radial-gradient(circle at center, rgba(46, 204, 113, 0.2), transparent)",
+                ],
+                opacity: [0.8, 0.6, 0.8],
+                scale: [1, 1.01, 1],
+              }
+            : estadoVisual === 'conclusao'
+              ? {
+                  // Conclusão: Brilho dourado intenso → fade out lento
+                  background: "radial-gradient(circle at center, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.1), transparent)",
+                  opacity: [1, 0],
+                  scale: [1, 0.97, 1],
+                }
+              : estadoVisual === 'reflexao'
+                ? {
+                    // Reflexão: Dourado + verde, hue shift lento, pulso respiratório
+                    background: [
+                      "radial-gradient(circle at center, rgba(46, 204, 113, 0.12), rgba(255, 215, 0, 0.08), transparent)",
+                      "radial-gradient(circle at center, rgba(255, 215, 0, 0.15), rgba(46, 204, 113, 0.1), transparent)",
+                      "radial-gradient(circle at center, rgba(46, 204, 113, 0.12), rgba(255, 215, 0, 0.08), transparent)",
+                    ],
+                    opacity: [0.4, 0.7, 0.4],
+                  }
+                : {
+                    // Idle: Estado padrão sutil
+                    background: "radial-gradient(circle at center, rgba(46, 204, 113, 0.08), transparent)",
+                    opacity: 0.3,
+                  }
+        }
+        transition={{ 
+          duration: estadoVisual === 'foco-ativo' 
+            ? 1.5 
+            : estadoVisual === 'conclusao' 
+              ? 4 
+              : estadoVisual === 'reflexao' 
+                ? 3 
+                : 2,
+          repeat: estadoVisual === 'conclusao' ? 0 : Infinity, 
+          ease: "easeInOut" 
+        }}
+      />
       <svg
         width="100%"
         height="100%"
