@@ -17,20 +17,13 @@ export function useReducedMotion(): boolean {
     setPrefersReduced(mediaQuery.matches);
 
     // Listen for changes
-    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+    const handleChange = (e: MediaQueryListEvent) => {
       setPrefersReduced(e.matches);
     };
 
-    // Modern API
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", handleChange);
-      return () => mediaQuery.removeEventListener("change", handleChange);
-    } 
-    // Legacy API fallback
-    else {
-      mediaQuery.addListener(handleChange as any);
-      return () => mediaQuery.removeListener(handleChange as any);
-    }
+    // Modern API (suportado por todos navegadores modernos)
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   return prefersReduced;

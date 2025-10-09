@@ -36,7 +36,7 @@ export function PresetSelector() {
   const presets = useQuery(api.presets.listar);
   const topPresets = useQuery(api.presets.topUsados);
   const createQuick = useMutation(api.presets.createQuick);
-  const usePreset = useMutation(api.presets.use);
+  const registrarUsoPreset = useMutation(api.presets.use);
 
   const filteredPresets = presets?.filter((preset) =>
     preset.nome.toLowerCase().includes(searchTerm.toLowerCase())
@@ -56,7 +56,7 @@ export function PresetSelector() {
     
     // Registrar uso
     try {
-      await usePreset({ id: presetId });
+      await registrarUsoPreset({ id: presetId });
     } catch (error) {
       console.error("Erro ao registrar uso:", error);
     }
