@@ -359,7 +359,7 @@ export function PresetSelector() {
             <Button
               variant="outline"
               onClick={() => setDialogOpen(false)}
-              className="border-emerald-700/30 text-[#F9F9F9] hover:bg-emerald-900/20"
+              className="border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent"
             >
               Cancelar
             </Button>
