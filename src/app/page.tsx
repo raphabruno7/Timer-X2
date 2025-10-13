@@ -1305,12 +1305,18 @@ export default function Home() {
                 </div>
 
                 {/* Conteúdo do timer sobre a mandala - Absolutamente centralizado */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 text-center">
                   <motion.div 
                     className="text-3xl sm:text-4xl md:text-5xl font-light text-[#F9F9F9] tracking-wider mb-3"
                     style={{ 
                       textShadow: '0 2px 10px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.5)',
-                      fontVariantNumeric: 'tabular-nums'
+                      fontVariantNumeric: 'tabular-nums',
+                      textAlign: 'center',
+                      lineHeight: '1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '100%'
                     }}
                     animate={{
                       opacity: [1, 0.92, 1],
@@ -1325,7 +1331,14 @@ export default function Home() {
                   >
                     {formatarTempo(tempo)}
                   </motion.div>
-                  <div className="text-xs sm:text-sm font-light text-[#F9F9F9]/70 tracking-wide" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.6)' }}>
+                  <div 
+                    className="text-xs sm:text-sm font-light text-[#F9F9F9]/70 tracking-wide" 
+                    style={{ 
+                      textShadow: '0 1px 8px rgba(0,0,0,0.6)',
+                      textAlign: 'center',
+                      width: '100%'
+                    }}
+                  >
                     {rodando ? "Em foco" : tempo === 0 ? "Sessão concluída" : "Pronto para começar"}
                   </div>
                   
