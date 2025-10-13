@@ -98,7 +98,7 @@ export function PresetSelector() {
           whileTap={{ scale: 0.98 }}
           aria-label="Selecionar preset"
         >
-          <span className="font-light tracking-wide">Preset: {presetName}</span>
+          <span className="font-light tracking-wide">{presetName}</span>
           <ChevronDown className="w-4 h-4" />
         </motion.button>
 

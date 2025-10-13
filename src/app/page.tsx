@@ -1126,16 +1126,6 @@ export default function Home() {
               <div className="mb-4">
               <PresetSelector />
                 </div>
-                
-            {/* Indicador de Modo Atual e Elemento */}
-            <div className="flex items-center justify-center gap-3 text-sm text-[#F9F9F9]/80 tracking-wide font-semibold">
-              {ciclosQuery && (
-                <>
-                  <span>{determinarElemento(ciclosQuery.totalCiclos) === 'terra' ? '🌍' : determinarElemento(ciclosQuery.totalCiclos) === 'agua' ? '🌊' : determinarElemento(ciclosQuery.totalCiclos) === 'fogo' ? '🔥' : determinarElemento(ciclosQuery.totalCiclos) === 'ar' ? '🌬️' : '✨'}</span>
-                  <span className="uppercase">Elemento Ativo</span>
-                </>
-                  )}
-                </div>
                 </div>
                 
           {/* Main Content - Timer Centralizado */}
@@ -1340,7 +1330,7 @@ export default function Home() {
                       width: '100%'
                     }}
                   >
-                    {rodando ? "EM FOCO" : tempo === 0 ? "SESSÃO CONCLUÍDA" : "PRONTO PARA COMEÇAR"}
+                    {rodando ? "EM FOCO" : tempo === 0 ? "SESSÃO CONCLUÍDA" : ""}
                   </div>
                   
                   {/* Região aria-live para anunciar apenas mudanças de estado */}
@@ -1356,19 +1346,11 @@ export default function Home() {
 
             {/* Control Buttons com animações suaves e acessibilidade */}
             <div className="flex justify-center gap-6 relative z-10 mt-8" role="group" aria-label="Controles do timer">
-              {/* Botão Play com glow pulsante quando idle */}
+              {/* Botão Play */}
               <motion.div
                 whileHover={{ scale: rodando || tempo === 0 ? 1 : 1.08 }}
                 whileTap={{ scale: rodando || tempo === 0 ? 1 : 0.92 }}
-                animate={!rodando && tempo > 0 ? {
-                  boxShadow: [
-                    '0 4px 14px rgba(16, 185, 129, 0.3)',
-                    '0 4px 20px rgba(16, 185, 129, 0.7)',
-                    '0 4px 14px rgba(16, 185, 129, 0.3)',
-                  ]
-                } : undefined}
                 transition={{ 
-                  boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" },
                   scale: { type: "spring", stiffness: 400, damping: 17 }
                 }}
               >
@@ -1376,10 +1358,10 @@ export default function Home() {
                   size="lg"
                   onClick={iniciar}
                   disabled={rodando || tempo === 0}
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 focus:outline-none"
+                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 focus:outline-none"
                   style={{ 
                     pointerEvents: 'auto',
-                    boxShadow: (rodando || tempo === 0) ? 'none' : '0 4px 14px rgba(16, 185, 129, 0.4)'
+                    boxShadow: 'none'
                   }}
                   aria-label="Iniciar sessão de foco"
                   aria-disabled={rodando || tempo === 0}
