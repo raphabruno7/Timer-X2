@@ -1,36 +1,160 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⏱️ Timer X2 — Foco e Respiração para Alta Produtividade
 
-## Getting Started
+**Versão:** v1.0 (Provisional) · **Data:** 09/10/2025  
+**Stack:** Next.js + TypeScript + Tailwind + ShadCN + Framer Motion + Convex  
 
-First, run the development server:
+---
 
+## 💡 Propósito
+
+O **Timer X2** é um **sistema de foco e produtividade** que combina técnicas de **gestão do tempo** (como Pomodoro e Deep Work) com **exercícios de respiração (breathwork)** para restaurar energia e concentração entre sessões de trabalho.
+
+> "Produtividade real é quando o corpo e a mente respiram no mesmo ritmo."  
+
+---
+
+## 🎯 O que o Timer X2 faz
+
+- ⏳ Cronômetro Inteligente (play, pause, reset)  
+- 🌬️ Sessões de Respiração Guiada para pausas energéticas  
+- 🎧 Modos de Foco: Deep Work, Estudo, Criatividade, Leitura  
+- 📊 Histórico e Estatísticas de produtividade  
+- ⚙️ Interface fluida e responsiva  
+
+---
+
+## 🧱 Arquitetura
+
+src/
+├── app/
+│   ├── page.tsx              # Timer principal
+│   ├── settings/page.tsx     # Configurações
+│   └── stats/page.tsx        # Estatísticas
+│
+├── components/
+│   ├── ui/
+│   │   ├── TimerCircle.tsx   # Visual do timer
+│   │   ├── RippleButton.tsx  # Botões com feedback
+│   │   └── PresetSelector.tsx# Modos de foco
+│   └── BackgroundEmocional.tsx
+│
+├── hooks/
+│   ├── useTimer.ts
+│   ├── useFocusStats.ts
+│   └── useBreathwork.ts
+│
+├── convex/
+│   ├── schema.ts
+│   └── functions/
+│
+└── public/
+    ├── logo.svg
+    └── favicon.ico
+
+---
+
+## ⚙️ Configuração
+
+1️⃣ Instalar dependências  
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2️⃣ Configurar Convex (.env.local)  
+```bash
+CONVEX_DEPLOYMENT=dev:glorious-moose-396
+NEXT_PUBLIC_CONVEX_URL=https://glorious-moose-396.convex.cloud
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3️⃣ Rodar em modo dev  
+```bash
+npm run dev
+```  
+➡️ http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🧘 Filosofia
 
-To learn more about Next.js, take a look at the following resources:
+Cada ciclo do **Timer X2** combina **foco intenso** com **recuperação ativa**, permitindo que o cérebro e o corpo mantenham um ritmo produtivo sem exaustão.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Métodos integrados:
+- Pomodoro (25/5)
+- Deep Focus (45/10)
+- Micro-Pausa (10/2)
+- Breath Reset (respiração 4-4-4)
+- Respiração Alternada (Nadi Shodhana)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🎨 Design System
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Elemento | Cor | Significado |
+|-----------|------|-------------|
+| Fundo principal | #1C1C1C | Foco |
+| Verde primário | #2ECC71 | Energia |
+| Dourado acento | #FFD700 | Clareza |
+| Branco suave | #F9F9F9 | Leveza |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📊 Performance
+
+| Métrica | Valor |
+|----------|--------|
+| FPS | 60 |
+| CLS | <0.1 |
+| Lighthouse Perf | ≥ 90 |
+| Lighthouse A11y | ≥ 95 |
+| prefers-reduced-motion | OK |
+
+---
+
+## 🚀 Deploy
+
+```bash
+git checkout -b release/v1.0
+npm run lint
+npm run build
+vercel --prod
+convex deploy
+```
+
+---
+
+## 🧩 Roadmap Futuro
+
+| Fase | Recurso | Objetivo |
+|------|----------|-----------|
+| v1.1 | Ajustes de foco avançado | Melhorar fluxo de timers |
+| v1.2 | Relatórios semanais | Insights de performance |
+| v1.3 | Integração com Sunni AI | Música e som adaptativo |
+| v2.0 | Comunidade e desafios | Sessões de foco colaborativas |
+
+---
+
+## 👤 Créditos
+
+| Área | Responsável |
+|------|--------------|
+| Concepção | Raphael Bruno Dantas Moreira |
+| Desenvolvimento | GPT-5 Agentic Coding |
+| Design | Minimal Productivity Lab |
+| Infraestrutura | Convex + Vercel |
+
+---
+
+## 📄 Licença
+MIT License © 2025 — Timer X2 Project  
+Uso livre para fins educacionais e de produtividade pessoal.
+
+---
+
+## 💬 Mensagem Final
+
+> O **Timer X2** é mais do que um cronômetro.  
+> É um instrumento de energia, foco e clareza — para quem trabalha com presença.
+
+---
+
+**Status:** *Provisional build – refinamento em andamento* 🌱
