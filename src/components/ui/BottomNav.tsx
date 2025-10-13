@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { TrendingUp, Clock, Sparkles, Settings } from "lucide-react";
+import { TrendingUp, Clock, Sparkles, Timer } from "lucide-react";
 
 interface NavItem {
   href: string;
@@ -34,9 +34,9 @@ export function BottomNav() {
       color: "#FFD700",
     },
     {
-      href: "/settings",
-      label: "Config",
-      icon: <Settings className="w-6 h-6" />,
+      href: "/manual",
+      label: "Manual",
+      icon: <Timer className="w-6 h-6" />,
       color: "#2ECC71",
     },
   ];
