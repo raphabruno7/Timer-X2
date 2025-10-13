@@ -1358,10 +1358,11 @@ export default function Home() {
                   size="lg"
                   onClick={iniciar}
                   disabled={rodando || tempo === 0}
-                  className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 focus:outline-none"
+                  className="play-button-no-shadow w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white transition-all duration-300 ease-in-out relative z-10 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 focus:outline-none shadow-none"
                   style={{ 
                     pointerEvents: 'auto',
-                    boxShadow: 'none'
+                    boxShadow: 'none !important',
+                    filter: 'none'
                   }}
                   aria-label="Iniciar sessão de foco"
                   aria-disabled={rodando || tempo === 0}

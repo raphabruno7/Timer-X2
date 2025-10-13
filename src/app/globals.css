@@ -184,4 +184,12 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /* Remover sombras específicas do botão play */
+  .play-button-no-shadow {
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+  }
 }
