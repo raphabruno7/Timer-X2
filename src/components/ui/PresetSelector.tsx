@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
@@ -37,6 +37,33 @@ export function PresetSelector() {
   const topPresets = useQuery(api.presets.topUsados);
   const createQuick = useMutation(api.presets.createQuick);
   const registrarUsoPreset = useMutation(api.presets.use);
+
+  // Criar presets padrão se não houver nenhum
+  const criarPresetsPadrao = async () => {
+    const presetsPadrao = [
+      { name: "Foco Dinâmico", minutes: 25, category: "foco" as Categoria },
+      { name: "Deep Work", minutes: 45, category: "foco" as Categoria },
+      { name: "Criatividade", minutes: 30, category: "criatividade" as Categoria },
+      { name: "Breathwork", minutes: 15, category: "breathwork" as Categoria },
+      { name: "Estudo Intenso", minutes: 50, category: "neural" as Categoria },
+      { name: "Meditação", minutes: 20, category: "breathwork" as Categoria },
+    ];
+
+    for (const preset of presetsPadrao) {
+      try {
+        await createQuick(preset);
+      } catch (error) {
+        console.error("Erro ao criar preset padrão:", error);
+      }
+    }
+  };
+
+  // Criar presets padrão quando não houver nenhum
+  React.useEffect(() => {
+    if (presets && presets.length === 0) {
+      criarPresetsPadrao();
+    }
+  }, [presets]);
 
   const filteredPresets = presets?.filter((preset) =>
     preset.nome.toLowerCase().includes(searchTerm.toLowerCase())
