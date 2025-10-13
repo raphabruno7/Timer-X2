@@ -8,34 +8,44 @@ const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 const presetsPadrao = [
   {
-    nome: "Foco Dinâmico",
+    nome: "💡 Foco",
     minutos: 25,
     categoria: "foco" as const,
   },
   {
-    nome: "Deep Work",
+    nome: "💡 Foco Profundo",
     minutos: 45,
     categoria: "foco" as const,
   },
   {
-    nome: "Criatividade",
+    nome: "🎨 Criatividade",
     minutos: 30,
     categoria: "criatividade" as const,
   },
   {
-    nome: "Breathwork",
+    nome: "🌬️ Breathwork",
     minutos: 15,
     categoria: "breathwork" as const,
   },
   {
-    nome: "Estudo Intenso",
+    nome: "🌬️ Breathwork Estendido",
+    minutos: 30,
+    categoria: "breathwork" as const,
+  },
+  {
+    nome: "⚡ Neural",
     minutos: 50,
     categoria: "neural" as const,
   },
   {
-    nome: "Meditação",
+    nome: "🔔 Sound",
     minutos: 20,
-    categoria: "breathwork" as const,
+    categoria: "sound" as const,
+  },
+  {
+    nome: "🎧 Binaural",
+    minutos: 40,
+    categoria: "binaural" as const,
   },
 ];
 
