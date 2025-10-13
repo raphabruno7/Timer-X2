@@ -1118,8 +1118,8 @@ export default function Home() {
         >
           {/* Header Minimalista */}
           <div className="p-6 pt-8 text-center relative">
-            <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-4">
-              Timer X2
+            <h1 className="text-3xl font-bold text-[#F9F9F9] tracking-wider mb-4 uppercase">
+              TIMER X<span className="text-lg align-super">²</span>
             </h1>
             
             {/* Preset Selector */}
@@ -1128,11 +1128,11 @@ export default function Home() {
                 </div>
                 
             {/* Indicador de Modo Atual e Elemento */}
-            <div className="flex items-center justify-center gap-3 text-sm text-[#F9F9F9]/70 tracking-wide">
+            <div className="flex items-center justify-center gap-3 text-sm text-[#F9F9F9]/80 tracking-wide font-semibold">
               {ciclosQuery && (
                 <>
                   <span>{determinarElemento(ciclosQuery.totalCiclos) === 'terra' ? '🌍' : determinarElemento(ciclosQuery.totalCiclos) === 'agua' ? '🌊' : determinarElemento(ciclosQuery.totalCiclos) === 'fogo' ? '🔥' : determinarElemento(ciclosQuery.totalCiclos) === 'ar' ? '🌬️' : '✨'}</span>
-                  <span>Elemento Ativo</span>
+                  <span className="uppercase">Elemento Ativo</span>
                 </>
                   )}
                 </div>
@@ -1307,7 +1307,7 @@ export default function Home() {
                 {/* Conteúdo do timer sobre a mandala - Absolutamente centralizado */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10 text-center">
                   <motion.div 
-                    className="text-3xl sm:text-4xl md:text-5xl font-light text-[#F9F9F9] tracking-wider mb-3"
+                    className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#F9F9F9] tracking-wider mb-3"
                     style={{ 
                       textShadow: '0 2px 10px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.5)',
                       fontVariantNumeric: 'tabular-nums',
@@ -1316,7 +1316,8 @@ export default function Home() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      width: '100%'
+                      width: '100%',
+                      fontWeight: '700'
                     }}
                     animate={{
                       opacity: [1, 0.92, 1],
@@ -1332,14 +1333,14 @@ export default function Home() {
                     {formatarTempo(tempo)}
                   </motion.div>
                   <div 
-                    className="text-xs sm:text-sm font-light text-[#F9F9F9]/70 tracking-wide" 
+                    className="text-xs sm:text-sm font-semibold text-[#F9F9F9]/80 tracking-wide" 
                     style={{ 
                       textShadow: '0 1px 8px rgba(0,0,0,0.6)',
                       textAlign: 'center',
                       width: '100%'
                     }}
                   >
-                    {rodando ? "Em foco" : tempo === 0 ? "Sessão concluída" : "Pronto para começar"}
+                    {rodando ? "EM FOCO" : tempo === 0 ? "SESSÃO CONCLUÍDA" : "PRONTO PARA COMEÇAR"}
                   </div>
                   
                   {/* Região aria-live para anunciar apenas mudanças de estado */}
