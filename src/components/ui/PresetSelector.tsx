@@ -31,6 +31,7 @@ export function PresetSelector() {
   const [newPresetName, setNewPresetName] = useState("");
   const [newPresetMinutes, setNewPresetMinutes] = useState("25");
   const [newPresetCategory, setNewPresetCategory] = useState<Categoria>("foco");
+  const [customMinutes, setCustomMinutes] = useState("");
 
   const { presetName, setMinutes, setPreset } = useTimerStore();
   const presets = useQuery(api.presets.listar);
@@ -116,6 +117,20 @@ export function PresetSelector() {
     }
   };
 
+  const handleApplyCustomTime = () => {
+    const minutes = parseInt(customMinutes);
+    if (!minutes || minutes < 1 || minutes > 180) {
+      toast.error("Digite um tempo entre 1 e 180 minutos");
+      return;
+    }
+
+    setMinutes(minutes);
+    setPreset(`⏱️ ${minutes} min`, null);
+    setDropdownOpen(false);
+    setCustomMinutes("");
+    toast.success(`Timer ajustado para ${minutes} minutos`);
+  };
+
   return (
     <>
       <div className="flex items-center gap-2 justify-center">
@@ -164,6 +179,38 @@ export function PresetSelector() {
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
             >
+              {/* Tempo Customizado */}
+              <div className="p-4 border-b border-emerald-700/20 bg-emerald-950/30">
+                <p className="text-xs text-emerald-300 font-semibold tracking-wide mb-3 uppercase">
+                  ⏱️ Tempo Manual
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    max="180"
+                    placeholder="Ex: 30"
+                    value={customMinutes}
+                    onChange={(e) => setCustomMinutes(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleApplyCustomTime();
+                      }
+                    }}
+                    className="flex-1 bg-emerald-900/40 border-emerald-700/40 text-[#F9F9F9] placeholder:text-[#F9F9F9]/40 focus:ring-emerald-500/50"
+                  />
+                  <Button
+                    onClick={handleApplyCustomTime}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 font-semibold"
+                  >
+                    OK
+                  </Button>
+                </div>
+                <p className="text-xs text-[#F9F9F9]/50 mt-2 font-light">
+                  Digite minutos (1-180) e pressione OK
+                </p>
+              </div>
+
               {/* Search */}
               <div className="p-4 border-b border-emerald-700/20">
                 <div className="relative">
@@ -173,7 +220,6 @@ export function PresetSelector() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 bg-emerald-900/20 border-emerald-700/30 text-[#F9F9F9] placeholder:text-[#F9F9F9]/40 focus:ring-emerald-500/50"
-                    autoFocus
                   />
                 </div>
               </div>
