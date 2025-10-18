@@ -1,185 +1,184 @@
-# 🪶 Timer X2 — CHANGELOG
+# 🪶 Timer X² — CHANGELOG
 
-**Autor:** Raphael Bruno Dantas Moreira  
-**Assistente Técnico:** GPT-5 Agentic Coding  
-**Última atualização:** 09/10/2025  
-**Versão atual:** v1.0 (Provisional)
-
----
-
-## 🧭 VISÃO GERAL
-
-O **Timer X2** evoluiu de um protótipo de contador simples para um **sistema completo de foco e respiração** com integração emocional, design responsivo, e arquitetura baseada em Convex.  
-Cada prompt marcou um avanço técnico, estético ou funcional na jornada do projeto.
+**Author:** Raphael Bruno Dantas Moreira  
+**Technical Assistant:** GPT-5 Agentic Coding  
+**Last Updated:** October 2025  
+**Current Version:** v1.0
 
 ---
 
-## 🧩 HISTÓRICO DE PROMPTS
+## 🧭 OVERVIEW
 
-### 🟢 Prompt 1–4 — Estrutura Inicial
-**Período:** Julho 2025  
-**Objetivo:** Criação do ambiente Next.js + Tailwind + ShadCN  
-**Implementações:**
-- Setup do projeto base
-- Configuração do Convex
-- Layout inicial do Timer (UI minimalista)
-- Estrutura modular com PhoneFrame e TimerCircle
+**Timer X²** evolved from a simple counter prototype to a **complete focus and breathing system** with emotional integration, responsive design, and Convex-based architecture.  
+Each prompt marked a technical, aesthetic, or functional advancement in the project's journey.
 
 ---
 
-### 🟡 Prompt 5–8 — Primeiras Funções e Interatividade
-**Objetivo:** Construção da base funcional e primeira integração de animações
-- Botões: Play / Pause / Reset
-- Slider horizontal funcional
-- Sistema de presets e contextos
-- Estrutura para integração futura com IA
+## 🧩 PROMPT HISTORY
+
+### 🟢 Prompts 1–4 — Initial Structure
+**Period:** July 2025  
+**Goal:** Next.js + Tailwind + ShadCN environment creation  
+**Implementations:**
+- Base project setup
+- Convex configuration
+- Initial Timer layout (minimalist UI)
+- Modular structure with PhoneFrame and TimerCircle
 
 ---
 
-### 🟢 Prompt 9–12 — Refinamento de UI e Integração Convex
-**Objetivo:** Conectar backend e refinar o design
-- Queries e mutations para `presets` e `stats`
-- Integração Convex funcional
-- Base de dados sincronizada
-- Início dos ajustes de UX para mobile-first
-- Aplicação de Tailwind Animate
+### 🟡 Prompts 5–8 — First Functions and Interactivity
+**Goal:** Build functional base and first animation integration
+- Buttons: Play / Pause / Reset
+- Functional horizontal slider
+- Preset and context system
+- Structure for future AI integration
 
 ---
 
-### 🟡 Prompt 13–14 — Dados e Histórico de Uso
-**Objetivo:** Criar painel de estatísticas
-- Histórico de minutos focados
-- Gráfico (Recharts)
-- Registros persistentes via Convex
-- Visualizações semanais e mensais
+### 🟢 Prompts 9–12 — UI Refinement and Convex Integration
+**Goal:** Connect backend and refine design
+- Queries and mutations for `presets` and `stats`
+- Functional Convex integration
+- Synchronized database
+- Start of mobile-first UX adjustments
+- Tailwind Animate application
+
+---
+
+### 🟡 Prompts 13–14 — Data and Usage History
+**Goal:** Create statistics panel
+- Focused minutes history
+- Charts (Recharts)
+- Persistent records via Convex
+- Weekly and monthly visualizations
 
 ---
 
 ### 🟢 Prompt 15 — UX Refinement Framework
-**Objetivo:** Redefinir a experiência visual e responsiva
-- Sistema MoSCoW aplicado (Must/Should/Could/Won't)
-- Critérios de sucesso mensuráveis
-- Responsividade completa
-- Melhorias de acessibilidade (aria-label, tab focus)
-- Introdução da Mandala Visual (primeira iteração)
+**Goal:** Redefine visual and responsive experience
+- MoSCoW system applied (Must/Should/Could/Won't)
+- Measurable success criteria
+- Complete responsiveness
+- Accessibility improvements (aria-label, tab focus)
+- Visual Mandala introduction (first iteration)
 
 ---
 
-### 🟡 Prompt 16A–C — Correção Visual e Hierarquia
-**Objetivo:** Ajustar o layout circular e o equilíbrio do timer
-- Correção dos dois círculos concêntricos
-- Centralização do contador e marcador luminoso
-- Ajuste de sombras e proporções
-- Tema natureza → verde e dourado
-- FPS ≥ 60 mantido
+### 🟡 Prompts 16A–C — Visual Correction and Hierarchy
+**Goal:** Adjust circular layout and timer balance
+- Two concentric circles correction
+- Counter and luminous marker centering
+- Shadow and proportion adjustments
+- Nature theme → green and gold
+- FPS ≥ 60 maintained
 
 ---
 
-### 🟢 Prompt 17 — Microinterações Naturais
-**Objetivo:** Tornar a interface viva sem distração
-- Transições específicas (sem transition: all)
-- Ripple nos botões (Framer Motion)
-- Glow pulsante no botão Play (idle)
-- Pulso respiratório no anel do timer
-- Stagger animation em menus
-- PageTransition e Skeletons elegantes
-- Performance auditada (Lighthouse ≥ 90)
+### 🟢 Prompt 17 — Natural Microinteractions
+**Goal:** Make interface alive without distraction
+- Specific transitions (no transition: all)
+- Button ripples (Framer Motion)
+- Pulsating glow on Play button (idle)
+- Respiratory pulse on timer ring
+- Stagger animation in menus
+- Elegant PageTransition and Skeletons
+- Performance audited (Lighthouse ≥ 90)
 
 ---
 
-### 🟡 Prompt 18 — Sinestesia Adaptativa
-**Objetivo:** Criar reatividade visual baseada no estado do timer
-- Estados: foco ativo, reflexão, conclusão, idle
-- Gradientes dinâmicos integrados ao estado
-- Reutilização da estrutura da Mandala
-- Otimização com useMemo
-- Performance preservada (FPS 60)
+### 🟡 Prompt 18 — Adaptive Synesthesia
+**Goal:** Create visual reactivity based on timer state
+- States: active focus, reflection, completion, idle
+- Dynamic gradients integrated with state
+- Mandala structure reuse
+- Optimization with useMemo
+- Performance preserved (FPS 60)
 
 ---
 
-### 🟢 Prompt 19 — Ressonância Emocional
-**Objetivo:** Mapear padrões emocionais do uso
-- Hook useRessonanciaEmocional
-- Integração com histórico de sessões
-- Emoções detectadas: tensão, foco, reintegração, realização
-- Sistema não intrusivo e adaptativo
-- Mandala reage às tendências emocionais
+### 🟢 Prompt 19 — Emotional Resonance
+**Goal:** Map emotional usage patterns
+- useRessonanciaEmocional hook
+- Session history integration
+- Detected emotions: tension, focus, reintegration, achievement
+- Non-intrusive and adaptive system
+- Mandala reacts to emotional trends
 
 ---
 
-### 🟡 Prompt 19B — Background Emocional (Extensão Opcional)
-**Objetivo:** Criar componente opcional de fundo adaptativo
-- Novo componente: \`BackgroundEmocional.tsx\`
-- Paleta coerente com o tema (verde/dourado/azul frio)
-- Transição suave (2s)
-- Sem quebra de layout
-- Performance e contraste WCAG AA garantidos
+### 🟡 Prompt 19B — Emotional Background (Optional Extension)
+**Goal:** Create optional adaptive background component
+- New component: `BackgroundEmocional.tsx`
+- Coherent palette with theme (green/gold/cool blue)
+- Smooth transition (2s)
+- No layout breaking
+- Performance and WCAG AA contrast guaranteed
 
 ---
 
-## 🚀 STATUS ATUAL — v1.0 (Provisional)
+## 🚀 CURRENT STATUS — v1.0
 
-| Categoria | Status | Observações |
-|------------|--------|-------------|
-| Timer funcional | ✅ | Ciclos completos e responsivos |
-| Respiração guiada | ✅ | Métodos básicos implementados |
-| Convex integrado | ✅ | Sincronização em tempo real |
-| Estatísticas | ✅ | Histórico funcional |
-| Emoções adaptativas | ✅ | Integrado |
-| Sunni AI | 🚧 | Previsto para v1.3 |
-| Multi-device | 🚧 | Previsto para v1.2 |
-| Design final | 🧩 | Refinamento contínuo |
+| Category | Status | Notes |
+|----------|--------|-------|
+| Functional timer | ✅ | Complete and responsive cycles |
+| Guided breathing | ✅ | Basic methods implemented |
+| Convex integrated | ✅ | Real-time synchronization |
+| Statistics | ✅ | Functional history |
+| Adaptive emotions | ✅ | Integrated |
+| Sunni AI | 🚧 | Planned for v1.3 |
+| Multi-device | 🚧 | Planned for v1.2 |
+| Final design | 🧩 | Continuous refinement |
 
 ---
 
 ## 🎨 DESIGN SYSTEM
 
-| Elemento | Cor | Significado |
-|-----------|------|-------------|
-| Fundo | #1C1C1C | Foco e silêncio |
-| Verde primário | #2ECC71 | Energia e fluidez |
-| Dourado | #FFD700 | Clareza e insight |
-| Branco suave | #F9F9F9 | Respiração e leveza |
+| Element | Color | Meaning |
+|---------|-------|---------|
+| Background | #1C1C1C | Focus and silence |
+| Primary green | #2ECC71 | Energy and flow |
+| Gold | #FFD700 | Clarity and insight |
+| Soft white | #F9F9F9 | Breathing and lightness |
 
 ---
 
-## 🧘 FILOSOFIA CENTRAL
+## 🧘 CENTRAL PHILOSOPHY
 
-> "Produtividade não é sobre correr — é sobre sustentar o foco e a energia."  
-> O Timer X2 une tecnologia, respiração e ritmo pessoal para transformar tempo em presença.
+> "Productivity is not about running — it's about sustaining focus and energy."  
+> Timer X² unites technology, breathing, and personal rhythm to transform time into presence.
 
 ---
 
-## 📦 DEPLOY ATUAL
+## 📦 CURRENT DEPLOY
 
-**Ambiente:** Vercel + Convex  
+**Environment:** Vercel + Convex  
 **URL:** https://timer-x2.vercel.app  
-**Banco:** https://glorious-moose-396.convex.cloud  
+**Database:** https://glorious-moose-396.convex.cloud  
 
 ---
 
-## 🧩 ROADMAP FUTURO
+## 🧩 FUTURE ROADMAP
 
-| Versão | Recurso | Descrição |
-|---------|----------|-----------|
-| v1.1 | Modo "Flow State" | Otimização de foco baseado em ritmo respiratório |
-| v1.2 | Multi-device sync | Sessões sincronizadas via Convex realtime |
-| v1.3 | Sunni AI Integration | Música e som generativo |
-| v2.0 | Comunidade | Sessões coletivas de produtividade consciente |
+| Version | Feature | Description |
+|---------|---------|-------------|
+| v1.1 | "Flow State" Mode | Focus optimization based on breathing rhythm |
+| v1.2 | Multi-device sync | Sessions synchronized via Convex realtime |
+| v1.3 | Sunni AI Integration | Generative music and sound |
+| v2.0 | Community | Collective conscious productivity sessions |
 
 ---
 
-## 🧾 CRÉDITOS
+## 🧾 CREDITS
 
-| Área | Responsável |
-|------|--------------|
-| Concepção & Direção | Raphael Bruno Dantas Moreira |
-| Desenvolvimento | GPT-5 (Agentic Coding) |
+| Area | Responsible |
+|------|-------------|
+| Conception & Direction | Raphael Bruno Dantas Moreira |
+| Development | GPT-5 (Agentic Coding) |
 | Design | Minimal Productivity Lab |
 | Backend | Convex |
 | Deploy | Vercel |
 
 ---
 
-**🌿✨ Timer X2 — do tempo para a presença.**
-
+**🌿✨ Timer X² — from time to presence.**

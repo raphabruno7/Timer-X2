@@ -1124,7 +1124,7 @@ export default function Home() {
               className="absolute top-8 right-6 text-[#F9F9F9]/40 hover:text-emerald-300 transition-colors"
               whileHover={{ scale: 1.1, rotate: 90 }}
               whileTap={{ scale: 0.9 }}
-              aria-label="Configurações"
+              aria-label="Settings"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -1354,22 +1354,22 @@ export default function Home() {
                       width: '100%'
                     }}
                   >
-                    {rodando ? "EM FOCO" : tempo === 0 ? "SESSÃO CONCLUÍDA" : ""}
+                    {rodando ? "IN FOCUS" : tempo === 0 ? "SESSION COMPLETED" : ""}
                   </div>
                   
-                  {/* Região aria-live para anunciar apenas mudanças de estado */}
+                  {/* Aria-live region for announcing state changes only */}
                   <div className="sr-only" aria-live="polite" aria-atomic="true">
-                    {rodando && "Timer iniciado"}
-                    {!rodando && tempo > 0 && tempo < tempoInicial && "Timer pausado"}
-                    {tempo === 0 && "Sessão concluída"}
-                    {tempo > 0 && tempo % 60 === 0 && `, ${Math.floor(tempo / 60)} minutos restantes`}
+                    {rodando && "Timer started"}
+                    {!rodando && tempo > 0 && tempo < tempoInicial && "Timer paused"}
+                    {tempo === 0 && "Session completed"}
+                    {tempo > 0 && tempo % 60 === 0 && `, ${Math.floor(tempo / 60)} minutes remaining`}
                   </div>
                 </div>
               </motion.div>
             </div>
 
-            {/* Control Buttons com animações suaves e acessibilidade */}
-            <div className="flex justify-center gap-6 relative z-10 mt-8" role="group" aria-label="Controles do timer">
+            {/* Control Buttons with smooth animations and accessibility */}
+            <div className="flex justify-center gap-6 relative z-10 mt-8" role="group" aria-label="Timer controls">
               {/* Botão Play */}
               <motion.div
                 whileHover={{ scale: rodando || tempo === 0 ? 1 : 1.08 }}
@@ -1388,7 +1388,7 @@ export default function Home() {
                     boxShadow: 'none !important',
                     filter: 'none'
                   }}
-                  aria-label="Iniciar sessão de foco"
+                  aria-label="Start focus session"
                   aria-disabled={rodando || tempo === 0}
                   role="button"
                   tabIndex={0}
@@ -1417,7 +1417,7 @@ export default function Home() {
                     pointerEvents: 'auto',
                     boxShadow: !rodando ? 'none' : '0 4px 14px rgba(250, 204, 21, 0.5)'
                   }}
-                  aria-label="Pausar sessão de foco"
+                  aria-label="Pause focus session"
                   aria-disabled={!rodando}
                   role="button"
                   tabIndex={0}
@@ -1440,7 +1440,7 @@ export default function Home() {
                     pointerEvents: 'auto',
                     boxShadow: '0 4px 14px rgba(55, 65, 81, 0.4)'
                   }}
-                  aria-label="Reiniciar timer e limpar sessão"
+                  aria-label="Reset timer and clear session"
                   role="button"
                   tabIndex={0}
                 >

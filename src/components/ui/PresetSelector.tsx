@@ -94,7 +94,7 @@ export function PresetSelector() {
   const handleCreatePreset = async () => {
     const minutes = parseInt(newPresetMinutes);
     if (!newPresetName || !minutes || minutes < 1 || minutes > 180) {
-      toast.error("Nome e minutos (1-180) são obrigatórios");
+      toast.error("Name and minutes (1-180) are required");
       return;
     }
 
@@ -105,14 +105,14 @@ export function PresetSelector() {
         category: newPresetCategory,
       });
       
-      toast.success(`Preset "${newPresetName}" criado!`);
+      toast.success(`Preset "${newPresetName}" created!`);
       setDialogOpen(false);
       setNewPresetName("");
       setNewPresetMinutes("25");
       setNewPresetCategory("foco");
     } catch (error) {
-      console.error("Erro ao criar preset:", error);
-      toast.error("Erro ao criar preset");
+      console.error("Error creating preset:", error);
+      toast.error("Error creating preset");
     }
   };
 
@@ -125,7 +125,7 @@ export function PresetSelector() {
           className="rounded-full bg-emerald-950/60 text-emerald-300 px-4 py-2 text-sm flex items-center gap-2 hover:bg-emerald-900/60 transition-colors border border-emerald-500/20"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          aria-label="Selecionar preset"
+          aria-label="Select preset"
         >
           <span className="font-light tracking-wide">{presetName}</span>
           <ChevronDown className="w-4 h-4" />
@@ -137,7 +137,7 @@ export function PresetSelector() {
           className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors shadow-[0_0_10px_rgba(46,204,113,0.4)]"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          aria-label="Criar novo preset"
+          aria-label="Create new preset"
         >
           <Plus className="w-4 h-4" />
         </motion.button>
@@ -169,7 +169,7 @@ export function PresetSelector() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400/50" />
                   <Input
-                    placeholder="Buscar presets..."
+                    placeholder="Search presets..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 bg-emerald-900/20 border-emerald-700/30 text-[#F9F9F9] placeholder:text-[#F9F9F9]/40 focus:ring-emerald-500/50"
@@ -184,7 +184,7 @@ export function PresetSelector() {
                 {topPresets && topPresets.length > 0 && (
                   <div className="mb-4">
                     <p className="text-xs text-emerald-400/70 px-3 py-2 font-light tracking-wide">
-                      Recentes
+                      Recent
                     </p>
                     <div className="space-y-1">
                       {topPresets.map((preset, index) => (
@@ -221,7 +221,7 @@ export function PresetSelector() {
                           </div>
                           {preset.uses && preset.uses > 0 && (
                             <span className="text-xs text-emerald-400/70 font-light">
-                              {preset.uses}× usado
+                              {preset.uses}× used
                             </span>
                           )}
                         </motion.button>
@@ -281,7 +281,7 @@ export function PresetSelector() {
                 {filteredPresets && filteredPresets.length === 0 && (
                   <div className="text-center py-8">
                     <p className="text-sm text-[#F9F9F9]/50 font-light">
-                      Nenhum preset encontrado
+                      No presets found
                     </p>
                   </div>
                 )}
@@ -296,20 +296,20 @@ export function PresetSelector() {
         <DialogContent className="bg-[#1A1A1A] border-2 border-emerald-700/30 text-[#F9F9F9]">
           <DialogHeader>
             <DialogTitle className="text-xl font-light text-emerald-300 tracking-wide">
-              Criar Novo Preset
+              Create New Preset
             </DialogTitle>
             <DialogDescription className="text-sm text-[#F9F9F9]/60 font-light">
-              Personalize seu tempo de foco
+              Customize your focus time
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div>
               <label className="text-sm text-[#F9F9F9]/70 font-light mb-2 block">
-                Nome do Preset
+                Preset Name
               </label>
               <Input
-                placeholder="Ex: Foco Profundo"
+                placeholder="Ex: Deep Focus"
                 value={newPresetName}
                 onChange={(e) => setNewPresetName(e.target.value)}
                 maxLength={30}
@@ -319,7 +319,7 @@ export function PresetSelector() {
 
             <div>
               <label className="text-sm text-[#F9F9F9]/70 font-light mb-2 block">
-                Minutos (1-180)
+                Minutes (1-180)
               </label>
               <Input
                 type="number"
@@ -334,7 +334,7 @@ export function PresetSelector() {
 
             <div>
               <label className="text-sm text-[#F9F9F9]/70 font-light mb-2 block">
-                Categoria
+                Category
               </label>
               <Select value={newPresetCategory} onValueChange={(value) => setNewPresetCategory(value as Categoria)}>
                 <SelectTrigger className="bg-emerald-900/20 border-emerald-700/30 text-[#F9F9F9]">
@@ -363,13 +363,13 @@ export function PresetSelector() {
               onClick={() => setDialogOpen(false)}
               className="border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent"
             >
-              Cancelar
+              Cancel
             </Button>
             <Button
               onClick={handleCreatePreset}
               className="bg-emerald-700 hover:bg-emerald-600 text-white"
             >
-              Criar Preset
+              Create Preset
             </Button>
           </div>
         </DialogContent>

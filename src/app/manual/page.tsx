@@ -29,7 +29,7 @@ export default function ManualTimerPage() {
     const totalMinutes = hours * 60 + minutes + (seconds > 0 ? 1 : 0); // Arredondar segundos para cima
     
     if (totalMinutes === 0) {
-      toast.error("Selecione pelo menos 1 minuto");
+      toast.error("Select at least 1 minute");
       return;
     }
     
@@ -40,7 +40,7 @@ export default function ManualTimerPage() {
     const timeString = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     setPreset(`⏱️ ${timeString}`, null);
     
-    toast.success(`Timer ajustado para ${timeString}`);
+    toast.success(`Timer set to ${timeString}`);
     
     // Voltar para home após 1 segundo
     setTimeout(() => {
@@ -83,7 +83,7 @@ export default function ManualTimerPage() {
             transition={{ delay: 0.2 }}
             className="text-3xl font-bold text-emerald-300 mb-4 uppercase tracking-wider"
           >
-            Tempo Manual
+            Manual Time
           </motion.h1>
 
           <motion.p
@@ -92,7 +92,7 @@ export default function ManualTimerPage() {
             transition={{ delay: 0.3 }}
             className="text-[#F9F9F9]/70 mb-8 font-light"
           >
-            Escolha qualquer duração para seu timer
+            Choose any duration for your timer
           </motion.p>
 
           {/* Tempo selecionado */}
@@ -103,7 +103,7 @@ export default function ManualTimerPage() {
             className="bg-emerald-950/40 rounded-2xl p-6 border border-emerald-700/30 mb-8"
           >
             <p className="text-sm text-[#F9F9F9]/60 mb-2 uppercase tracking-wide font-light">
-              Tempo Selecionado
+              Selected Time
             </p>
             <p
               className="text-5xl font-bold text-emerald-300 tracking-wider"
@@ -124,7 +124,7 @@ export default function ManualTimerPage() {
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-6 text-lg rounded-full"
             >
               <Play className="w-5 h-5 mr-2" />
-              Definir Tempo
+              Set Time
             </Button>
           </motion.div>
         </div>
@@ -141,4 +141,5 @@ export default function ManualTimerPage() {
     </PageTransition>
   );
 }
+
 

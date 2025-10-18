@@ -157,20 +157,20 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
               {/* Header */}
               <div className="p-6 border-b border-emerald-700/20">
                 <h2 className="text-2xl font-bold text-emerald-300 text-center tracking-wide uppercase">
-                  ⏱️ Tempo Manual
+                  ⏱️ Manual Time
                 </h2>
                 <p className="text-sm text-[#F9F9F9]/60 text-center mt-2 font-light">
-                  Escolha horas, minutos e segundos
+                  Choose hours, minutes and seconds
                 </p>
               </div>
 
               {/* Time Picker Wheels */}
               <div className="p-6 flex justify-center gap-4">
-                {renderWheel(hoursRef, hoursArray, hours, setHours, "Horas")}
+                {renderWheel(hoursRef, hoursArray, hours, setHours, "Hours")}
                 <div className="text-3xl font-bold text-emerald-300 self-start mt-20">:</div>
                 {renderWheel(minutesRef, minutesArray, minutes, setMinutes, "Min")}
                 <div className="text-3xl font-bold text-emerald-300 self-start mt-20">:</div>
-                {renderWheel(secondsRef, secondsArray, seconds, setSeconds, "Seg")}
+                {renderWheel(secondsRef, secondsArray, seconds, setSeconds, "Sec")}
               </div>
 
               {/* Display atual */}
@@ -192,14 +192,14 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
                   className="flex-1 border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Cancelar
+                  Cancel
                 </Button>
                 <Button
                   onClick={handleConfirm}
                   className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
                 >
                   <Check className="w-4 h-4 mr-2" />
-                  Confirmar
+                  Confirm
                 </Button>
               </div>
             </div>
@@ -209,4 +209,5 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
     </AnimatePresence>
   );
 }
+
 
