@@ -91,6 +91,23 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
       }
     };
   }, []);
+  
+  // Suporte para tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   const renderWheel = (
     ref: React.RefObject<HTMLDivElement | null>,
@@ -178,8 +195,15 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
               className="bg-[#1A1A1A] rounded-3xl border-2 border-emerald-700/30 max-w-md w-full shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
-              <div className="p-6 border-b border-emerald-700/20">
+              {/* Header com botão de fechar */}
+              <div className="p-6 border-b border-emerald-700/20 relative">
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 right-4 p-2 rounded-full hover:bg-[#F9F9F9]/10 transition-colors duration-200 flex items-center justify-center"
+                  aria-label="Fechar"
+                >
+                  <X className="w-5 h-5 text-[#F9F9F9]/70 hover:text-[#F9F9F9]" />
+                </button>
                 <h2 className="text-2xl font-bold text-emerald-300 text-center tracking-wide uppercase">
                   ⏱️ Manual Time
                 </h2>
