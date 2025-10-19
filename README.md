@@ -60,18 +60,30 @@ src/
 
 ## ⚙️ Setup
 
-1️⃣ Install dependencies  
+1️⃣ Clone the repository  
+```bash
+git clone https://github.com/yourusername/timer-x2.git
+cd timer-x2
+```
+
+2️⃣ Install dependencies  
 ```bash
 npm install
 ```
 
-2️⃣ Configure Convex (.env.local)  
+3️⃣ Configure environment variables  
 ```bash
-CONVEX_DEPLOYMENT=dev:glorious-moose-396
-NEXT_PUBLIC_CONVEX_URL=https://glorious-moose-396.convex.cloud
+cp .env.example .env.local
+# Edit .env.local with your actual values
 ```
 
-3️⃣ Run in dev mode  
+4️⃣ Set up Convex (if using database features)  
+```bash
+npx convex dev
+# Follow the setup instructions
+```
+
+5️⃣ Run in development mode  
 ```bash
 npm run dev
 ```  
@@ -117,12 +129,26 @@ Integrated methods:
 
 ## 🚀 Deploy
 
+### Local Development
 ```bash
-git checkout -b release/v1.0
+npm run dev
+```
+
+### Production Build
+```bash
 npm run lint
 npm run build
+npm run start
+```
+
+### Deploy to Vercel
+```bash
 vercel --prod
-convex deploy
+```
+
+### Deploy Convex Database
+```bash
+npx convex deploy
 ```
 
 ---
