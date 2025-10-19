@@ -13,7 +13,7 @@ interface TimePickerProps {
 
 export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
   const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(25);
+  const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
 
   const hoursRef = useRef<HTMLDivElement>(null);
