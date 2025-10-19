@@ -26,7 +26,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
   const secondsArray = Array.from({ length: 60 }, (_, i) => i); // 0-59
 
   const handleScroll = (
-    ref: React.RefObject<HTMLDivElement>,
+    ref: React.RefObject<HTMLDivElement | null>,
     setter: (val: number) => void,
     maxValue: number
   ) => {
@@ -69,7 +69,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
   }, [isOpen, hours, minutes, seconds]);
 
   const renderWheel = (
-    ref: React.RefObject<HTMLDivElement>,
+    ref: React.RefObject<HTMLDivElement | null>,
     values: number[],
     selected: number,
     setter: (val: number) => void,
