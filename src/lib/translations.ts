@@ -452,11 +452,11 @@ export function getTranslations(language: Language): Translations {
 export function t(language: Language, key: string): string {
   const translations = getTranslations(language);
   const keys = key.split('.');
-  let value: any = translations;
+  let value: unknown = translations;
   
   for (const k of keys) {
-    value = value?.[k];
+    value = (value as Record<string, unknown>)?.[k];
   }
   
-  return value || key;
+  return typeof value === 'string' ? value : key;
 }

@@ -81,7 +81,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
       
       return () => clearTimeout(timer);
     }
-  }, [isOpen]); // Removido hours, minutes, seconds das dependências
+  }, [isOpen, hours, minutes, seconds]); // Adicionado de volta para evitar warning
   
   // Cleanup do timeout quando componente desmonta
   useEffect(() => {
