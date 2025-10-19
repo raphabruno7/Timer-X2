@@ -46,18 +46,13 @@ export default function ManualTimerPage() {
     
     toast.success(`Timer set to ${timeString}`);
     
-    // Voltar para home após 1 segundo
-    setTimeout(() => {
-      router.push("/");
-    }, 1000);
+    // Fechar o picker e permanecer na página manual
+    setIsPickerOpen(false);
   };
 
   const handleClose = () => {
+    // Apenas fechar o picker e permanecer na página manual
     setIsPickerOpen(false);
-    // Voltar para home após um pequeno delay
-    setTimeout(() => {
-      router.push("/");
-    }, 200);
   };
 
   const formatTime = (h: number, m: number, s: number) => {
@@ -71,22 +66,6 @@ export default function ManualTimerPage() {
         <div className="absolute inset-0 bg-radial-gradient opacity-20" />
         
         <div className="relative z-10 text-center max-w-md">
-          {/* Botão de voltar */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="absolute top-0 left-0"
-          >
-            <Button
-              onClick={() => router.push("/")}
-              variant="ghost"
-              className="text-[#F9F9F9]/70 hover:text-[#F9F9F9] hover:bg-[#F9F9F9]/10 p-2 rounded-full"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          </motion.div>
-
           {/* Ícone grande */}
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
