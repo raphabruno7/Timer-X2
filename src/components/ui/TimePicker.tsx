@@ -68,7 +68,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
   // Scroll inicial para valores atuais - FORÇAR RESET PARA 00:00:00
   useEffect(() => {
     if (isOpen) {
-      // FORÇAR RESET DOS VALORES
+      // FORÇAR RESET DOS VALORES - CORREÇÃO DEFINITIVA
       setHours(0);
       setMinutes(0);
       setSeconds(0);
@@ -83,7 +83,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
         if (secondsRef.current) {
           secondsRef.current.scrollTop = 0; // FORÇAR SCROLL PARA 0
         }
-      }, 100);
+      }, 200); // Aumentar delay para garantir que funcione
       
       return () => clearTimeout(timer);
     }

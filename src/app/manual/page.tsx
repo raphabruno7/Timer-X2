@@ -10,6 +10,7 @@ import { Clock, Play, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { BottomNav } from "@/components/ui/BottomNav";
 
 export default function ManualTimerPage() {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -48,6 +49,11 @@ export default function ManualTimerPage() {
     
     // Fechar o picker e permanecer na página manual
     setIsPickerOpen(false);
+    
+    // Voltar para home após 2 segundos para iniciar o timer
+    setTimeout(() => {
+      router.push("/");
+    }, 2000);
   };
 
   const handleClose = () => {
@@ -141,6 +147,7 @@ export default function ManualTimerPage() {
         )}
 
         <Toaster position="top-center" richColors />
+        <BottomNav />
       </main>
     </PageTransition>
   );
