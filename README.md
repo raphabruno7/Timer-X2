@@ -2,6 +2,7 @@
 
 **Version:** v1.0 · **Date:** October 2025  
 **Stack:** Next.js + TypeScript + Tailwind + ShadCN + Framer Motion + Convex  
+**🌐 Live Demo:** [timer-x2.vercel.app](https://timer-x2.vercel.app)
 
 ---
 
@@ -128,6 +129,9 @@ Integrated methods:
 ---
 
 ## 🚀 Deploy
+
+### 🌐 Live Application
+**Access the app:** [timer-x2.vercel.app](https://timer-x2.vercel.app)
 
 ### Local Development
 ```bash
