@@ -50,7 +50,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
       const clampedIndex = Math.max(0, Math.min(index, maxValue));
       
       // Só atualiza se o valor mudou
-      setter(prevValue => {
+      setter((prevValue: number) => {
         if (prevValue !== clampedIndex) {
           return clampedIndex;
         }
