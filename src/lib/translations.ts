@@ -1,7 +1,7 @@
 // Sistema de traduções para Timer X²
 // Detecta automaticamente o idioma do dispositivo
 
-export type Language = 'pt-BR' | 'en-US' | 'es-ES' | 'fr-FR';
+export type Language = 'pt-BR' | 'en-US' | 'es-ES' | 'fr-FR' | 'de-DE';
 
 export interface Translations {
   // Header
@@ -349,12 +349,81 @@ const frFR: Translations = {
   },
 };
 
+// Traduções em Alemão
+const deDE: Translations = {
+  title: 'Timer X²',
+  subtitle: 'Fokus & Atmung für Höchstproduktivität',
+  
+  timer: {
+    play: 'Starten',
+    pause: 'Pause',
+    reset: 'Zurücksetzen',
+    focusMode: 'Dynamischer Fokus',
+    breathingMode: 'Tiefes Atmen',
+    breakMode: 'Kurze Pause',
+  },
+  
+  nav: {
+    stats: 'Statistiken',
+    timer: 'Timer',
+    ai: 'KI',
+    manual: 'Manuell',
+    settings: 'Einstellungen',
+  },
+  
+  ai: {
+    title: 'Künstliche Intelligenz',
+    analysis: {
+      title: 'Musteranalyse',
+      description: 'Die KI analysiert Ihre Fokusgewohnheiten und schlägt personalisierte Anpassungen vor, um Ihre Produktivität zu maximieren.',
+      energyDetection: 'Energieerkennung',
+      energyDescription: 'Identifiziert Ihre besten Zeiten',
+      adaptiveAdjustment: 'Adaptive Anpassung',
+      adaptiveDescription: 'Automatisch personalisierter Rhythmus',
+    },
+    features: {
+      title: 'Kommende Funktionen',
+      idealMode: 'Idealer Modus-Vorschlag',
+      idealDescription: 'Basierend auf Kontext, Zeit und Verlauf',
+      bestTime: 'Beste Fokuszeit',
+      bestTimeDescription: 'Produktivitätsanalyse nach Zeitraum',
+      fatiguePrediction: 'Ermüdungsvorhersage',
+      fatigueDescription: 'Präventive Warnungen und vorgeschlagene Pausen',
+    },
+  },
+  
+  manual: {
+    title: '⏱️ Manuelle Zeit',
+    subtitle: 'Wählen Sie Stunden, Minuten und Sekunden',
+    hours: 'Stunden',
+    minutes: 'Min',
+    seconds: 'Sek',
+    confirm: 'Bestätigen',
+    cancel: 'Abbrechen',
+  },
+  
+  settings: {
+    title: 'Einstellungen',
+    language: 'Sprache',
+    theme: 'Design',
+    notifications: 'Benachrichtigungen',
+  },
+  
+  stats: {
+    title: 'Statistiken',
+    totalTime: 'Gesamtzeit',
+    sessions: 'Sitzungen',
+    averageSession: 'Durchschnitt pro Sitzung',
+  },
+};
+
 // Mapa de traduções
 const translations: Record<Language, Translations> = {
   'pt-BR': ptBR,
   'en-US': enUS,
   'es-ES': esES,
   'fr-FR': frFR,
+  'de-DE': deDE,
 };
 
 // Função para detectar idioma do dispositivo
@@ -368,6 +437,7 @@ export function detectDeviceLanguage(): Language {
   if (browserLanguage.startsWith('en')) return 'en-US';
   if (browserLanguage.startsWith('es')) return 'es-ES';
   if (browserLanguage.startsWith('fr')) return 'fr-FR';
+  if (browserLanguage.startsWith('de')) return 'de-DE';
   
   // Fallback para inglês se idioma não suportado
   return 'en-US';
