@@ -6,8 +6,11 @@ import { Sparkles, Brain, Zap, Target, TrendingUp } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { PageTransition } from "@/components/PageTransition";
+import { useTranslations } from "@/hooks/useLanguage";
 
 export default function AIPage() {
+  const t = useTranslations();
+  
   return (
     <PageTransition>
       <main 
@@ -41,7 +44,7 @@ export default function AIPage() {
               <Sparkles className="w-16 h-16 text-[#FFD700]" />
             </motion.div>
             <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-2">
-              Inteligência Artificial
+              {t.ai.title}
             </h1>
             <p className="text-sm font-light text-[#F9F9F9]/60 tracking-wide">
               Insights adaptativos para otimizar seu foco
@@ -60,24 +63,24 @@ export default function AIPage() {
             <Card className="bg-[#1A1A1A] border-2 border-[#FFD700]/20 rounded-3xl p-6 shadow-xl">
               <h2 className="text-lg font-light text-[#F9F9F9] tracking-wide mb-4 flex items-center gap-2">
                 <Brain className="w-5 h-5 text-[#FFD700]" />
-                Análise de Padrões
+                {t.ai.analysis.title}
               </h2>
               <p className="text-sm font-light text-[#F9F9F9]/70 mb-4">
-                A IA analisa seus hábitos de foco e sugere ajustes personalizados para maximizar sua produtividade.
+                {t.ai.analysis.description}
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-3 bg-[#FFD700]/10 border border-[#FFD700]/20 rounded-xl">
                   <Zap className="w-5 h-5 text-[#FFD700]" />
                   <div>
-                    <p className="text-sm font-light text-[#F9F9F9]">Detecção de Energia</p>
-                    <p className="text-xs text-[#F9F9F9]/60">Identifica seus melhores horários</p>
+                    <p className="text-sm font-light text-[#F9F9F9]">{t.ai.analysis.energyDetection}</p>
+                    <p className="text-xs text-[#F9F9F9]/60">{t.ai.analysis.energyDescription}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-[#2ECC71]/10 border border-[#2ECC71]/20 rounded-xl">
                   <Target className="w-5 h-5 text-[#2ECC71]" />
                   <div>
-                    <p className="text-sm font-light text-[#F9F9F9]">Ajuste Adaptativo</p>
-                    <p className="text-xs text-[#F9F9F9]/60">Ritmo personalizado automaticamente</p>
+                    <p className="text-sm font-light text-[#F9F9F9]">{t.ai.analysis.adaptiveAdjustment}</p>
+                    <p className="text-xs text-[#F9F9F9]/60">{t.ai.analysis.adaptiveDescription}</p>
                   </div>
                 </div>
               </div>
@@ -93,31 +96,31 @@ export default function AIPage() {
             <Card className="bg-[#1A1A1A] border-2 border-[#2ECC71]/20 rounded-3xl p-6 shadow-xl">
               <h2 className="text-lg font-light text-[#F9F9F9] tracking-wide mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-[#2ECC71]" />
-                Próximas Funcionalidades
+                {t.ai.features.title}
               </h2>
               <div className="space-y-3">
                 <div className="p-4 bg-[#2ECC71]/5 border border-[#2ECC71]/20 rounded-xl">
                   <p className="text-sm font-light text-[#F9F9F9] mb-2">
-                    🧠 Sugestão de Modo Ideal
+                    🧠 {t.ai.features.idealMode}
                   </p>
                   <p className="text-xs text-[#F9F9F9]/60">
-                    Baseado em contexto, horário e histórico
+                    {t.ai.features.idealDescription}
                   </p>
                 </div>
                 <div className="p-4 bg-[#FFD700]/5 border border-[#FFD700]/20 rounded-xl">
                   <p className="text-sm font-light text-[#F9F9F9] mb-2">
-                    ⏰ Melhor Horário para Foco
+                    ⏰ {t.ai.features.bestTime}
                   </p>
                   <p className="text-xs text-[#F9F9F9]/60">
-                    Análise de produtividade por período
+                    {t.ai.features.bestTimeDescription}
                   </p>
                 </div>
                 <div className="p-4 bg-[#2ECC71]/5 border border-[#2ECC71]/20 rounded-xl">
                   <p className="text-sm font-light text-[#F9F9F9] mb-2">
-                    🎯 Previsão de Cansaço
+                    🎯 {t.ai.features.fatiguePrediction}
                   </p>
                   <p className="text-xs text-[#F9F9F9]/60">
-                    Alertas preventivos e pausas sugeridas
+                    {t.ai.features.fatigueDescription}
                   </p>
                 </div>
               </div>

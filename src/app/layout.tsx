@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ConvexClientProvider } from "@/components/convex-provider";
+import { LanguageProvider } from "@/hooks/useLanguage";
 import "./globals.css";
 
 const inter = Inter({
@@ -30,9 +31,11 @@ export default function RootLayout({
         className={`${inter.variable} font-sans antialiased tracking-wide`}
         style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif' }}
       >
-        <ConvexClientProvider>
-          {children}
-        </ConvexClientProvider>
+        <LanguageProvider>
+          <ConvexClientProvider>
+            {children}
+          </ConvexClientProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

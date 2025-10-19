@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { TrendingUp, Clock, Sparkles, Timer } from "lucide-react";
+import { useTranslations } from "@/hooks/useLanguage";
 
 interface NavItem {
   href: string;
@@ -13,29 +14,30 @@ interface NavItem {
 
 export function BottomNav() {
   const pathname = usePathname();
+  const t = useTranslations();
 
   const navItems: NavItem[] = [
     {
       href: "/stats",
-      label: "Stats",
+      label: t.nav.stats,
       icon: <TrendingUp className="w-6 h-6" />,
       color: "#2ECC71",
     },
     {
       href: "/",
-      label: "Timer",
+      label: t.nav.timer,
       icon: <Clock className="w-6 h-6" />,
       color: "#2ECC71",
     },
     {
       href: "/ai",
-      label: "IA",
+      label: t.nav.ai,
       icon: <Sparkles className="w-6 h-6" />,
       color: "#FFD700",
     },
     {
       href: "/manual",
-      label: "Manual",
+      label: t.nav.manual,
       icon: <Timer className="w-6 h-6" />,
       color: "#2ECC71",
     },
