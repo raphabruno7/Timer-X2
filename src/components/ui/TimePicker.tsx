@@ -12,6 +12,7 @@ interface TimePickerProps {
 }
 
 export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
+  // FORÇAR TEMPO INICIAL 00:00:00 - CORREÇÃO URGENTE
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -64,24 +65,29 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
     onClose();
   };
 
-  // Scroll inicial para valores atuais
+  // Scroll inicial para valores atuais - FORÇAR RESET PARA 00:00:00
   useEffect(() => {
     if (isOpen) {
+      // FORÇAR RESET DOS VALORES
+      setHours(0);
+      setMinutes(0);
+      setSeconds(0);
+      
       const timer = setTimeout(() => {
         if (hoursRef.current) {
-          hoursRef.current.scrollTop = hours * 48;
+          hoursRef.current.scrollTop = 0; // FORÇAR SCROLL PARA 0
         }
         if (minutesRef.current) {
-          minutesRef.current.scrollTop = minutes * 48;
+          minutesRef.current.scrollTop = 0; // FORÇAR SCROLL PARA 0
         }
         if (secondsRef.current) {
-          secondsRef.current.scrollTop = seconds * 48;
+          secondsRef.current.scrollTop = 0; // FORÇAR SCROLL PARA 0
         }
       }, 100);
       
       return () => clearTimeout(timer);
     }
-  }, [isOpen, hours, minutes, seconds]); // Adicionado de volta para evitar warning
+  }, [isOpen]); // Removido dependências para evitar loops
   
   // Cleanup do timeout quando componente desmonta
   useEffect(() => {
