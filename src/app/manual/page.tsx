@@ -11,12 +11,14 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/ui/BottomNav";
+import { useTranslations } from "@/hooks/useLanguage";
 
 export default function ManualTimerPage() {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const { setMinutes, setPreset } = useTimerStore();
   const router = useRouter();
+  const t = useTranslations();
 
   // Abrir picker automaticamente ao entrar na página
   useEffect(() => {
@@ -34,7 +36,7 @@ export default function ManualTimerPage() {
     const totalMinutes = hours * 60 + minutes + (seconds > 0 ? 1 : 0); // Arredondar segundos para cima
     
     if (totalMinutes === 0) {
-      toast.error("Select at least 1 minute");
+      toast.error(t.manual.selectAtLeastOneMinute);
       return;
     }
     
@@ -45,7 +47,7 @@ export default function ManualTimerPage() {
     const timeString = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     setPreset(`⏱️ ${timeString}`, null);
     
-    toast.success(`Timer set to ${timeString}`);
+    toast.success(`${t.manual.timerSetTo} ${timeString}`);
     
     // Fechar o picker e permanecer na página manual
     setIsPickerOpen(false);
@@ -91,7 +93,7 @@ export default function ManualTimerPage() {
             transition={{ delay: 0.2 }}
             className="text-3xl font-bold text-emerald-300 mb-4 uppercase tracking-wider"
           >
-            Manual Time
+            {t.manual.title}
           </motion.h1>
 
           <motion.p
@@ -100,7 +102,7 @@ export default function ManualTimerPage() {
             transition={{ delay: 0.3 }}
             className="text-[#F9F9F9]/70 mb-8 font-light"
           >
-            Choose any duration for your timer
+            {t.manual.subtitle}
           </motion.p>
 
           {/* Tempo selecionado */}
@@ -111,7 +113,7 @@ export default function ManualTimerPage() {
             className="bg-emerald-950/40 rounded-2xl p-6 border border-emerald-700/30 mb-8"
           >
             <p className="text-sm text-[#F9F9F9]/60 mb-2 uppercase tracking-wide font-light">
-              Selected Time
+              {t.manual.selectedTime}
             </p>
             <p
               className="text-5xl font-bold text-emerald-300 tracking-wider"
@@ -132,7 +134,7 @@ export default function ManualTimerPage() {
               className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-6 text-lg rounded-full"
             >
               <Play className="w-5 h-5 mr-2" />
-              Set Time
+              {t.manual.setTime}
             </Button>
           </motion.div>
         </div>

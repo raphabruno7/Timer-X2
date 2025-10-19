@@ -53,6 +53,10 @@ export interface Translations {
   manual: {
     title: string;
     subtitle: string;
+    selectedTime: string;
+    setTime: string;
+    selectAtLeastOneMinute: string;
+    timerSetTo: string;
     hours: string;
     minutes: string;
     seconds: string;
@@ -121,11 +125,15 @@ const ptBR: Translations = {
   },
   
   manual: {
-    title: '⏱️ Manual Time',
-    subtitle: 'Choose hours, minutes and seconds',
-    hours: 'Hours',
+    title: '⏱️ Tempo Manual',
+    subtitle: 'Escolha horas, minutos e segundos',
+    selectedTime: 'Tempo Selecionado',
+    setTime: 'Definir Tempo',
+    selectAtLeastOneMinute: 'Selecione pelo menos 1 minuto',
+    timerSetTo: 'Timer definido para',
+    hours: 'Horas',
     minutes: 'Min',
-    seconds: 'Sec',
+    seconds: 'Seg',
     confirm: 'Confirmar',
     cancel: 'Cancelar',
   },
@@ -191,6 +199,10 @@ const enUS: Translations = {
   manual: {
     title: '⏱️ Manual Time',
     subtitle: 'Choose hours, minutes and seconds',
+    selectedTime: 'Selected Time',
+    setTime: 'Set Time',
+    selectAtLeastOneMinute: 'Select at least 1 minute',
+    timerSetTo: 'Timer set to',
     hours: 'Hours',
     minutes: 'Min',
     seconds: 'Sec',
