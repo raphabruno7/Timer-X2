@@ -13,13 +13,17 @@ import { Toaster } from "@/components/ui/sonner";
 
 export default function ManualTimerPage() {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [selectedTime, setSelectedTime] = useState({ hours: 0, minutes: 25, seconds: 0 });
+  const [selectedTime, setSelectedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const { setMinutes, setPreset } = useTimerStore();
   const router = useRouter();
 
   // Abrir picker automaticamente ao entrar na página
   useEffect(() => {
-    setIsPickerOpen(true);
+    const timer = setTimeout(() => {
+      setIsPickerOpen(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const handleConfirm = (hours: number, minutes: number, seconds: number) => {
@@ -49,8 +53,11 @@ export default function ManualTimerPage() {
   };
 
   const handleClose = () => {
-    // Voltar para home se cancelar
-    router.push("/");
+    setIsPickerOpen(false);
+    // Voltar para home após um pequeno delay
+    setTimeout(() => {
+      router.push("/");
+    }, 200);
   };
 
   const formatTime = (h: number, m: number, s: number) => {
@@ -130,11 +137,13 @@ export default function ManualTimerPage() {
         </div>
 
         {/* TimePicker Modal */}
-        <TimePicker
-          isOpen={isPickerOpen}
-          onClose={handleClose}
-          onConfirm={handleConfirm}
-        />
+        {isPickerOpen && (
+          <TimePicker
+            isOpen={isPickerOpen}
+            onClose={handleClose}
+            onConfirm={handleConfirm}
+          />
+        )}
 
         <Toaster position="top-center" richColors />
       </main>
