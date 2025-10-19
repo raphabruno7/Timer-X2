@@ -6,7 +6,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { useTimerStore } from "@/store/useTimerStore";
 import { motion } from "framer-motion";
-import { Clock, Play } from "lucide-react";
+import { Clock, Play, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -71,6 +71,22 @@ export default function ManualTimerPage() {
         <div className="absolute inset-0 bg-radial-gradient opacity-20" />
         
         <div className="relative z-10 text-center max-w-md">
+          {/* Botão de voltar */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="absolute top-0 left-0"
+          >
+            <Button
+              onClick={() => router.push("/")}
+              variant="ghost"
+              className="text-[#F9F9F9]/70 hover:text-[#F9F9F9] hover:bg-[#F9F9F9]/10 p-2 rounded-full"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          </motion.div>
+
           {/* Ícone grande */}
           <motion.div
             initial={{ scale: 0, rotate: -180 }}

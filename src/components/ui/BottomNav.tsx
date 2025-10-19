@@ -16,6 +16,13 @@ export function BottomNav() {
   const pathname = usePathname();
   const t = useTranslations();
 
+  // Não mostrar BottomNav em páginas que têm navegação própria
+  const hideBottomNav = pathname === "/manual";
+  
+  if (hideBottomNav) {
+    return null;
+  }
+
   const navItems: NavItem[] = [
     {
       href: "/stats",
