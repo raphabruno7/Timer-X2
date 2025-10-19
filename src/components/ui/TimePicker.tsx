@@ -19,6 +19,9 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
   const hoursRef = useRef<HTMLDivElement>(null);
   const minutesRef = useRef<HTMLDivElement>(null);
   const secondsRef = useRef<HTMLDivElement>(null);
+  
+  // Debounce para evitar muitas atualizações
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Gerar arrays de números
   const hoursArray = Array.from({ length: 100 }, (_, i) => i); // 0-99
@@ -32,18 +35,28 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
   ) => {
     if (!ref.current) return;
     
-    const itemHeight = 48; // altura de cada item
-    const scrollTop = ref.current.scrollTop;
-    const index = Math.round(scrollTop / itemHeight);
-    const clampedIndex = Math.max(0, Math.min(index, maxValue));
+    // Limpar timeout anterior
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
     
-    setter(clampedIndex);
-    
-    // Snap to position
-    ref.current.scrollTo({
-      top: clampedIndex * itemHeight,
-      behavior: "smooth",
-    });
+    // Debounce para evitar muitas atualizações
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (!ref.current) return;
+      
+      const itemHeight = 48; // altura de cada item
+      const scrollTop = ref.current.scrollTop;
+      const index = Math.round(scrollTop / itemHeight);
+      const clampedIndex = Math.max(0, Math.min(index, maxValue));
+      
+      // Só atualiza se o valor mudou
+      setter(prevValue => {
+        if (prevValue !== clampedIndex) {
+          return clampedIndex;
+        }
+        return prevValue;
+      });
+    }, 50); // 50ms de debounce
   };
 
   const handleConfirm = () => {
@@ -54,7 +67,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
   // Scroll inicial para valores atuais
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         if (hoursRef.current) {
           hoursRef.current.scrollTop = hours * 48;
         }
@@ -65,8 +78,19 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
           secondsRef.current.scrollTop = seconds * 48;
         }
       }, 100);
+      
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, hours, minutes, seconds]);
+  }, [isOpen]); // Removido hours, minutes, seconds das dependências
+  
+  // Cleanup do timeout quando componente desmonta
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const renderWheel = (
     ref: React.RefObject<HTMLDivElement | null>,
