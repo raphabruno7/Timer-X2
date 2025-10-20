@@ -19,7 +19,9 @@ type ManualPageState = "configuring" | "ready" | "running" | "paused" | "complet
 
 export default function ManualTimerPage() {
   const [pageState, setPageState] = useState<ManualPageState>("configuring");
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  
+  // Estados para controle inline do tempo
+  const [selectedTime, setSelectedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   
   const { 
     timeRemaining, 
@@ -36,15 +38,6 @@ export default function ManualTimerPage() {
   
   const router = useRouter();
   const t = useTranslations();
-
-  // Abrir picker automaticamente ao entrar na página
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsPickerOpen(true);
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
 
   // Timer tick - decrementar tempo a cada segundo
   useEffect(() => {
@@ -78,6 +71,9 @@ export default function ManualTimerPage() {
   const handleConfirm = (hours: number, minutes: number, seconds: number) => {
     console.log("[Manual Page] Recebendo tempo:", { hours, minutes, seconds });
     
+    // Atualizar estado local
+    setSelectedTime({ hours, minutes, seconds });
+    
     // Converter tudo para minutos para o timer
     const totalMinutes = hours * 60 + minutes + (seconds > 0 ? 1 : 0);
     
@@ -96,13 +92,8 @@ export default function ManualTimerPage() {
     
     toast.success(`${t.manual.timerSetTo} ${timeString}`);
     
-    // Fechar o picker e ir para estado "ready"
-    setIsPickerOpen(false);
+    // Ir para estado "ready"
     setPageState("ready");
-  };
-
-  const handleClose = () => {
-    setIsPickerOpen(false);
   };
 
   const handleStart = () => {
@@ -127,7 +118,7 @@ export default function ManualTimerPage() {
   };
 
   const handleSettings = () => {
-    setIsPickerOpen(true);
+    setPageState("configuring");
   };
 
   const formatTime = (h: number, m: number, s: number) => {
@@ -175,36 +166,48 @@ export default function ManualTimerPage() {
                 {t.manual.subtitle}
               </motion.p>
 
-              {/* Tempo selecionado */}
+              {/* TimePicker Inline */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-emerald-950/40 rounded-2xl p-6 border border-emerald-700/30 mb-8"
+                className="mb-8"
               >
-                <p className="text-sm text-[#F9F9F9]/60 mb-2 uppercase tracking-wide font-light">
-                  {t.manual.selectedTime}
-                </p>
-                <p
-                  className="text-5xl font-bold text-emerald-300 tracking-wider"
-                  style={{ fontVariantNumeric: "tabular-nums" }}
-                >
-                  00:00:00
-                </p>
+                <TimePicker
+                  isOpen={true}
+                  onClose={() => {}}
+                  onConfirm={handleConfirm}
+                  inline={true}
+                />
               </motion.div>
 
-              {/* Botão abrir picker */}
+              {/* Botões de ação */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
+                className="flex gap-4 justify-center"
               >
                 <Button
-                  onClick={() => setIsPickerOpen(true)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-6 text-lg rounded-full"
+                  onClick={() => setPageState("ready")}
+                  variant="outline"
+                  className="border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent px-6 py-3"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={() => {
+                    const totalMinutes = selectedTime.hours * 60 + selectedTime.minutes + (selectedTime.seconds > 0 ? 1 : 0);
+                    if (totalMinutes === 0) {
+                      toast.error(t.manual.selectAtLeastOneMinute);
+                      return;
+                    }
+                    handleConfirm(selectedTime.hours, selectedTime.minutes, selectedTime.seconds);
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-3"
                 >
                   <Play className="w-5 h-5 mr-2" />
-                  {t.manual.setTime}
+                  Confirmar
                 </Button>
               </motion.div>
             </>
@@ -236,20 +239,12 @@ export default function ManualTimerPage() {
           )}
         </div>
 
-        {/* TimePicker Modal */}
-        {isPickerOpen && (
-          <TimePicker
-            isOpen={isPickerOpen}
-            onClose={handleClose}
-            onConfirm={handleConfirm}
-          />
-        )}
-
         <Toaster position="top-center" richColors />
         <BottomNav />
       </main>
     </PageTransition>
   );
 }
+
 
 

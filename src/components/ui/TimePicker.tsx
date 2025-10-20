@@ -9,9 +9,10 @@ interface TimePickerProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (hours: number, minutes: number, seconds: number) => void;
+  inline?: boolean; // Novo prop para modo inline
 }
 
-export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
+export function TimePicker({ isOpen, onClose, onConfirm, inline = false }: TimePickerProps) {
   // FORÇAR TEMPO INICIAL 00:00:00 - CORREÇÃO URGENTE
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
@@ -70,7 +71,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
 
   // Scroll inicial para valores atuais - FORÇAR RESET PARA 00:00:00
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen || inline) {
       // FORÇAR RESET DOS VALORES - CORREÇÃO DEFINITIVA
       setHours(0);
       setMinutes(0);
@@ -86,11 +87,11 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
         if (secondsRef.current) {
           secondsRef.current.scrollTop = 0; // FORÇAR SCROLL PARA 0
         }
-      }, 200); // Aumentar delay para garantir que funcione
+      }, inline ? 50 : 200); // Delay menor para modo inline
       
       return () => clearTimeout(timer);
     }
-  }, [isOpen]); // Removido dependências para evitar loops
+  }, [isOpen, inline]); // Adicionado inline como dependência
   
   // Cleanup do timeout quando componente desmonta
   useEffect(() => {
@@ -101,22 +102,22 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
     };
   }, []);
   
-  // Suporte para tecla Escape
+  // Suporte para tecla Escape (apenas em modo modal)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !inline) {
         onClose();
       }
     };
 
-    if (isOpen) {
+    if (isOpen && !inline) {
       document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, inline]);
 
   const renderWheel = (
     ref: React.RefObject<HTMLDivElement | null>,
@@ -179,6 +180,34 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
     </div>
   );
 
+  // Renderização inline (sem modal)
+  if (inline) {
+    return (
+      <div className="w-full max-w-md mx-auto">
+        {/* Time Picker Wheels */}
+        <div className="p-6 flex justify-center gap-4">
+          {renderWheel(hoursRef, hoursArray, hours, setHours, "Hours")}
+          <div className="text-3xl font-bold text-emerald-300 self-start mt-20">:</div>
+          {renderWheel(minutesRef, minutesArray, minutes, setMinutes, "Min")}
+          <div className="text-3xl font-bold text-emerald-300 self-start mt-20">:</div>
+          {renderWheel(secondsRef, secondsArray, seconds, setSeconds, "Sec")}
+        </div>
+
+        {/* Display atual */}
+        <div className="px-6 pb-4">
+          <div className="bg-emerald-950/40 rounded-xl p-4 border border-emerald-700/30">
+            <p className="text-center text-4xl font-bold text-emerald-300 tracking-wider" style={{ fontVariantNumeric: "tabular-nums" }}>
+              {hours.toString().padStart(2, "0")}:
+              {minutes.toString().padStart(2, "0")}:
+              {seconds.toString().padStart(2, "0")}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Renderização modal (comportamento original)
   return (
     <AnimatePresence>
       {isOpen && (
