@@ -143,18 +143,18 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   return (
     <div className="w-full max-w-lg mx-auto">
       {/* Time Picker Columns - Layout Refinado */}
-      <div className="flex justify-center items-start gap-x-8 mb-12">
+      <div className="flex justify-center items-center gap-x-8 mb-12">
         {renderTimeColumn(hoursRef, hoursArray, hours, setHours, "HORAS")}
         
         {/* Colon Separator - Refinado */}
-        <div className="flex items-center justify-center h-[150px] mt-6">
+        <div className="flex items-center justify-center">
           <div className="text-3xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
         </div>
         
         {renderTimeColumn(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
         
         {/* Colon Separator - Refinado */}
-        <div className="flex items-center justify-center h-[150px] mt-6">
+        <div className="flex items-center justify-center">
           <div className="text-3xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
         </div>
         
