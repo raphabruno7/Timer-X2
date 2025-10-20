@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PageTransition } from "@/components/PageTransition";
 import { TimePicker } from "@/components/ui/TimePicker";
+import { iPhoneTimePicker } from "@/components/ui/iPhoneTimePicker";
 import { TimerDisplay } from "@/components/ui/TimerDisplay";
 import { TimerControls } from "@/components/ui/TimerControls";
 import { useTimerStore } from "@/store/useTimerStore";
@@ -15,7 +16,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { useTranslations } from "@/hooks/useLanguage";
 
-type ManualPageState = "configuring" | "ready" | "running" | "paused" | "completed";
+type ManualPageState = "configuring" | "running" | "paused" | "completed";
 
 export default function ManualTimerPage() {
   const [pageState, setPageState] = useState<ManualPageState>("configuring");
@@ -63,8 +64,6 @@ export default function ManualTimerPage() {
       setPageState("running");
     } else if (isPaused) {
       setPageState("paused");
-    } else if (timeRemaining > 0 && !isRunning) {
-      setPageState("ready");
     }
   }, [timeRemaining, isRunning, isPaused]);
 
@@ -92,8 +91,9 @@ export default function ManualTimerPage() {
     
     toast.success(`${t.manual.timerSetTo} ${timeString}`);
     
-    // Ir para estado "ready"
-    setPageState("ready");
+    // Ir direto para estado "running" e iniciar o timer
+    setPageState("running");
+    startTimer();
   };
 
   const handleStart = () => {
@@ -113,11 +113,15 @@ export default function ManualTimerPage() {
 
   const handleReset = () => {
     resetTimer();
-    setPageState("ready");
+    setPageState("configuring");
     toast.info("🔄 Timer resetado");
   };
 
   const handleSettings = () => {
+    setPageState("configuring");
+  };
+
+  const handleCancel = () => {
     setPageState("configuring");
   };
 
@@ -184,55 +188,22 @@ export default function ManualTimerPage() {
                 </p>
               </motion.div>
 
-              {/* TimePicker Inline */}
+              {/* iPhone TimePicker */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="mb-8"
               >
-                <TimePicker
-                  isOpen={true}
-                  onClose={() => {}}
+                <iPhoneTimePicker
                   onConfirm={handleConfirm}
-                  inline={true}
+                  onCancel={handleCancel}
                 />
-              </motion.div>
-
-              {/* Botões de ação */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="flex gap-4 justify-center"
-              >
-                <Button
-                  onClick={() => setPageState("ready")}
-                  variant="outline"
-                  className="border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent px-6 py-3"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={() => {
-                    const totalMinutes = selectedTime.hours * 60 + selectedTime.minutes + (selectedTime.seconds > 0 ? 1 : 0);
-                    if (totalMinutes === 0) {
-                      toast.error(t.manual.selectAtLeastOneMinute);
-                      return;
-                    }
-                    handleConfirm(selectedTime.hours, selectedTime.minutes, selectedTime.seconds);
-                  }}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-3"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Confirmar
-                </Button>
               </motion.div>
             </>
           )}
 
-          {/* Estados: Ready, Running, Paused, Completed */}
-          {(pageState === "ready" || pageState === "running" || pageState === "paused" || pageState === "completed") && (
+          {/* Estados: Running, Paused, Completed */}
+          {(pageState === "running" || pageState === "paused" || pageState === "completed") && (
             <>
               {/* Timer Display */}
               <TimerDisplay
