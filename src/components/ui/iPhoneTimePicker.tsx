@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { X, Play } from "lucide-react";
@@ -10,7 +10,8 @@ interface iPhoneTimePickerProps {
   cancelTime: () => void;
 }
 
-export function iPhoneTimePicker({ confirmTime, cancelTime }: iPhoneTimePickerProps) {
+export const iPhoneTimePicker = forwardRef<HTMLDivElement, iPhoneTimePickerProps>(
+  ({ confirmTime, cancelTime }, ref) => {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -123,7 +124,7 @@ export function iPhoneTimePicker({ confirmTime, cancelTime }: iPhoneTimePickerPr
   );
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div ref={ref} className="w-full max-w-md mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-emerald-300 mb-2 uppercase tracking-wider">
@@ -174,4 +175,6 @@ export function iPhoneTimePicker({ confirmTime, cancelTime }: iPhoneTimePickerPr
       </div>
     </div>
   );
-}
+});
+
+iPhoneTimePicker.displayName = "iPhoneTimePicker";
