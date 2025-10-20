@@ -77,13 +77,15 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     setter: (val: number) => void,
     label: string
   ) => (
-    <div className="flex flex-col items-center">
-      {/* Label */}
-      <p className="text-xs text-[#F9F9F9]/60 mb-3 font-light uppercase tracking-wider">
-        {label}
-      </p>
+    <div className="flex flex-col items-center h-20">
+      {/* Label - Altura fixa para alinhamento */}
+      <div className="h-6 flex items-center justify-center mb-2">
+        <p className="text-xs text-[#F9F9F9]/60 font-light uppercase tracking-wider">
+          {label}
+        </p>
+      </div>
       
-      {/* Swipe Wheel Container */}
+      {/* Swipe Wheel Container - Altura fixa */}
       <div className="relative w-20 h-16 overflow-hidden rounded-lg border border-emerald-700/30 bg-emerald-950/20">
         {/* Seleção central highlight */}
         <div className="absolute inset-y-0 left-[calc(50%-30px)] w-12 bg-emerald-500/20 border-x-2 border-emerald-500/50 pointer-events-none z-10" />
@@ -135,19 +137,32 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      {/* Swipe Time Picker Wheels */}
-      <div className="flex items-end justify-center gap-6 mb-8">
-        {renderSwipeWheel(hoursRef, hoursArray, hours, setHours, "HORAS")}
+      {/* Swipe Time Picker Wheels - Estrutura Matemática Precisa */}
+      <div className="flex items-center justify-center gap-6 mb-8">
+        {/* Container para HORAS */}
+        <div className="flex flex-col items-center h-20">
+          {renderSwipeWheel(hoursRef, hoursArray, hours, setHours, "HORAS")}
+        </div>
         
-        {/* Colon Separator */}
-        <div className="text-3xl font-bold text-emerald-300 mb-3">:</div>
+        {/* Colon Separator - Centralizado matematicamente */}
+        <div className="h-20 flex items-center justify-center">
+          <div className="text-3xl font-bold text-emerald-300">:</div>
+        </div>
         
-        {renderSwipeWheel(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
+        {/* Container para MIN */}
+        <div className="flex flex-col items-center h-20">
+          {renderSwipeWheel(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
+        </div>
         
-        {/* Colon Separator */}
-        <div className="text-3xl font-bold text-emerald-300 mb-3">:</div>
+        {/* Colon Separator - Centralizado matematicamente */}
+        <div className="h-20 flex items-center justify-center">
+          <div className="text-3xl font-bold text-emerald-300">:</div>
+        </div>
         
-        {renderSwipeWheel(secondsRef, secondsArray, seconds, setSeconds, "SEG")}
+        {/* Container para SEG */}
+        <div className="flex flex-col items-center h-20">
+          {renderSwipeWheel(secondsRef, secondsArray, seconds, setSeconds, "SEG")}
+        </div>
       </div>
 
       {/* Display atual */}
