@@ -77,7 +77,7 @@ export default function Home() {
   const isDarkMode = useAutoDarkMode();
   
   // Zustand store para presets
-  const { minutes: storeMinutes, isManualTime } = useTimerStore();
+  const { minutes: storeMinutes, isManualTime, isRunning: manualTimerRunning } = useTimerStore();
   
   // Cores do tema baseadas no modo
   const themeColors = useMemo(() => ({
@@ -986,6 +986,12 @@ export default function Home() {
 
   // Sincronizar store Zustand com estados locais do timer
   useEffect(() => {
+    // Não sincronizar se o timer manual estiver rodando
+    if (manualTimerRunning) {
+      console.info("[Preset Store] Timer manual rodando, pulando sincronização");
+      return;
+    }
+    
     if (storeMinutes > 0) {
       const segundos = storeMinutes * 60;
       setTempoInicial(segundos);
@@ -993,7 +999,7 @@ export default function Home() {
       setTempoRestante(segundos);
       console.info(`[Preset Store] Timer atualizado: ${storeMinutes} minutos`);
     }
-  }, [storeMinutes]);
+  }, [storeMinutes, manualTimerRunning]);
 
   // Atalhos de teclado para controles do timer
   useEffect(() => {
