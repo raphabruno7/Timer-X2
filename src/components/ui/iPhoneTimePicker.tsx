@@ -31,8 +31,9 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     if (!ref.current) return;
     
     const itemWidth = 48; // largura de cada item (w-12 = 48px)
+    const padding = 24; // padding left (w-6 = 24px)
     const scrollLeft = ref.current.scrollLeft;
-    const index = Math.round(scrollLeft / itemWidth);
+    const index = Math.round((scrollLeft - padding) / itemWidth);
     const clampedIndex = Math.max(0, Math.min(index, maxValue));
     
     // Só atualiza se o valor mudou
@@ -52,14 +53,17 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   // Scroll inicial para valores atuais
   useEffect(() => {
     const timer = setTimeout(() => {
+      const padding = 24; // padding left
+      const itemWidth = 48; // largura do item
+      
       if (hoursRef.current) {
-        hoursRef.current.scrollLeft = hours * 48; // 48px por item
+        hoursRef.current.scrollLeft = padding + (hours * itemWidth);
       }
       if (minutesRef.current) {
-        minutesRef.current.scrollLeft = minutes * 48;
+        minutesRef.current.scrollLeft = padding + (minutes * itemWidth);
       }
       if (secondsRef.current) {
-        secondsRef.current.scrollLeft = seconds * 48;
+        secondsRef.current.scrollLeft = padding + (seconds * itemWidth);
       }
     }, 100);
     
@@ -73,14 +77,14 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     setter: (val: number) => void,
     label: string
   ) => (
-    <div className="flex flex-col items-center h-24">
+    <div className="flex flex-col items-center">
       {/* Label */}
-      <p className="text-xs text-[#F9F9F9]/60 mb-2 font-light uppercase tracking-wider h-6 flex items-center">
+      <p className="text-xs text-[#F9F9F9]/60 mb-3 font-light uppercase tracking-wider">
         {label}
       </p>
       
       {/* Swipe Wheel Container */}
-      <div className="relative w-20 h-16 overflow-hidden rounded-lg border border-emerald-700/30">
+      <div className="relative w-20 h-16 overflow-hidden rounded-lg border border-emerald-700/30 bg-emerald-950/20">
         {/* Seleção central highlight */}
         <div className="absolute inset-y-0 left-[calc(50%-30px)] w-12 bg-emerald-500/20 border-x-2 border-emerald-500/50 pointer-events-none z-10" />
         
@@ -132,16 +136,16 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Swipe Time Picker Wheels */}
-      <div className="flex items-start justify-center gap-6 mb-8">
+      <div className="flex items-end justify-center gap-6 mb-8">
         {renderSwipeWheel(hoursRef, hoursArray, hours, setHours, "HORAS")}
         
         {/* Colon Separator */}
-        <div className="text-3xl font-bold text-emerald-300 h-24 flex items-center justify-center mt-6">:</div>
+        <div className="text-3xl font-bold text-emerald-300 mb-3">:</div>
         
         {renderSwipeWheel(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
         
         {/* Colon Separator */}
-        <div className="text-3xl font-bold text-emerald-300 h-24 flex items-center justify-center mt-6">:</div>
+        <div className="text-3xl font-bold text-emerald-300 mb-3">:</div>
         
         {renderSwipeWheel(secondsRef, secondsArray, seconds, setSeconds, "SEG")}
       </div>
