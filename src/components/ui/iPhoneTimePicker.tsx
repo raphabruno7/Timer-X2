@@ -75,7 +75,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     setter: (val: number) => void,
     label: string
   ) => (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center h-[220px]">
       {/* Label */}
       <div className="h-7 flex items-center justify-center mb-4">
         <p className="text-xs text-[#F9F9F9]/70 font-medium uppercase tracking-widest">
@@ -141,14 +141,14 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
         {renderTimeColumn(hoursRef, hoursArray, hours, setHours, "HORAS")}
         
         {/* Colon Separator - Refinado */}
-        <div className="flex items-center justify-center h-[180px]">
+        <div className="flex items-center justify-center h-[220px]">
           <div className="text-4xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
         </div>
         
         {renderTimeColumn(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
         
         {/* Colon Separator - Refinado */}
-        <div className="flex items-center justify-center h-[180px]">
+        <div className="flex items-center justify-center h-[220px]">
           <div className="text-4xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
         </div>
         
