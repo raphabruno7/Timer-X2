@@ -30,7 +30,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   ) => {
     if (!ref.current) return;
     
-    const itemHeight = 56; // altura de cada item (h-14 = 56px)
+    const itemHeight = 48; // altura de cada item (h-12 = 48px)
     const scrollTop = ref.current.scrollTop;
     const index = Math.round(scrollTop / itemHeight);
     const clampedIndex = Math.max(0, Math.min(index, maxValue));
@@ -52,8 +52,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   // Scroll inicial para valores atuais - Solução robusta
   useEffect(() => {
     const timer = setTimeout(() => {
-      const itemHeight = 56; // altura do item (h-14 = 56px)
-      const paddingTop = 32; // padding top (h-8 = 32px)
+      const itemHeight = 48; // altura do item (h-12 = 48px)
       
       // Forçar scroll para posição inicial (00:00:00)
       if (hoursRef.current) {
@@ -82,22 +81,22 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     setter: (val: number) => void,
     label: string
   ) => (
-    <div className="flex flex-col items-center justify-center h-[220px]">
+    <div className="flex flex-col items-center">
       {/* Label */}
-      <div className="h-7 flex items-center justify-center mb-4">
+      <div className="h-6 flex items-center justify-center mb-3">
         <p className="text-xs text-[#F9F9F9]/70 font-medium uppercase tracking-widest">
           {label}
         </p>
       </div>
       
       {/* Time Column Container */}
-      <div className="relative w-24 h-[180px] overflow-hidden rounded-2xl border border-emerald-600/40 bg-gradient-to-b from-emerald-950/30 to-emerald-950/50 shadow-lg">
-        {/* Seleção central highlight - Posição fixa */}
-        <div className="absolute inset-x-0 top-[calc(50%-28px)] h-14 bg-gradient-to-b from-emerald-500/30 to-emerald-400/20 border-y border-emerald-400/60 pointer-events-none z-10 rounded-sm" />
+      <div className="relative w-20 h-[150px] overflow-hidden rounded-xl border border-emerald-600/40 bg-emerald-950/20 shadow-lg">
+        {/* Seleção central highlight */}
+        <div className="absolute inset-x-0 top-[calc(50%-24px)] h-12 bg-emerald-500/20 border-y border-emerald-500/50 pointer-events-none z-10" />
         
         {/* Gradientes laterais */}
-        <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-[#1A1A1A] via-[#1A1A1A]/80 to-transparent pointer-events-none z-20" />
-        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#1A1A1A] via-[#1A1A1A]/80 to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#1A1A1A] to-transparent pointer-events-none z-20" />
         
         {/* Scroll container */}
         <div
@@ -111,8 +110,8 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             scrollBehavior: "smooth",
           }}
         >
-          {/* Padding top - Altura exata para centralizar primeiro item */}
-          <div className="h-8" />
+          {/* Padding top */}
+          <div className="h-6" />
           
           {/* Items */}
           {values.map((value) => {
@@ -120,7 +119,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             return (
               <div
                 key={value}
-                className={`h-14 flex items-center justify-center text-2xl font-light transition-all duration-300 snap-center leading-none ${
+                className={`h-12 flex items-center justify-center text-2xl font-light transition-all duration-300 snap-center leading-none ${
                   isSelected
                     ? "text-emerald-300 scale-110 font-medium drop-shadow-lg"
                     : "text-[#F9F9F9]/50 scale-95"
@@ -134,8 +133,8 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             );
           })}
           
-          {/* Padding bottom - Altura exata para centralizar último item */}
-          <div className="h-8" />
+          {/* Padding bottom */}
+          <div className="h-6" />
         </div>
       </div>
     </div>
@@ -148,15 +147,15 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
         {renderTimeColumn(hoursRef, hoursArray, hours, setHours, "HORAS")}
         
         {/* Colon Separator - Refinado */}
-        <div className="flex items-center justify-center h-[220px] mt-7">
-          <div className="text-4xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
+        <div className="flex items-center justify-center h-[150px] mt-6">
+          <div className="text-3xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
         </div>
         
         {renderTimeColumn(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
         
         {/* Colon Separator - Refinado */}
-        <div className="flex items-center justify-center h-[220px] mt-7">
-          <div className="text-4xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
+        <div className="flex items-center justify-center h-[150px] mt-6">
+          <div className="text-3xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
         </div>
         
         {renderTimeColumn(secondsRef, secondsArray, seconds, setSeconds, "SEG")}
