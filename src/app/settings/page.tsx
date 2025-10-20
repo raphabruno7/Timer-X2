@@ -45,10 +45,10 @@ export default function SettingsPage() {
             >
               <Settings className="w-16 h-16 text-[#2ECC71]" />
             </motion.div>
-            <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-2">
+            <h1 className="text-4xl font-light text-[#F9F9F9] tracking-wider mb-2 uppercase">
               Configurações
             </h1>
-            <p className="text-sm font-light text-[#F9F9F9]/60 tracking-wide">
+            <p className="text-sm font-light text-[#F9F9F9]/70 tracking-wide">
               Personalize sua experiência de foco
             </p>
           </motion.div>

@@ -156,7 +156,7 @@ export default function ManualTimerPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-3xl font-bold text-emerald-300 mb-4 uppercase tracking-wider"
+                className="text-4xl font-light text-emerald-300 mb-4 uppercase tracking-wider"
               >
                 {t.manual.title}
               </motion.h1>
@@ -165,7 +165,7 @@ export default function ManualTimerPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="text-[#F9F9F9]/70 mb-8 font-light"
+                className="text-sm font-light text-[#F9F9F9]/70 mb-8 tracking-wide"
               >
                 {t.manual.subtitle}
               </motion.p>

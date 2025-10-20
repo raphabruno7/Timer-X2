@@ -84,10 +84,10 @@ export default function StatsPage() {
             transition={{ duration: 0.5 }}
             className="text-center py-6"
           >
-            <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-2">
+            <h1 className="text-4xl font-light text-[#F9F9F9] tracking-wider mb-2 uppercase">
                 Estatísticas
               </h1>
-            <p className="text-sm font-light text-[#F9F9F9]/60 tracking-wide mb-4">
+            <p className="text-sm font-light text-[#F9F9F9]/70 tracking-wide mb-4">
               Evolução do seu tempo
             </p>
 
@@ -179,14 +179,14 @@ export default function StatsPage() {
                     <div className="space-y-4">
                       <div>
                         <p className="text-xs text-[#F9F9F9]/60 mb-1">Tempo Focado</p>
-                        <p className="text-3xl font-light text-[#2ECC71] tracking-wide">
+                        <p className="text-4xl font-light text-[#2ECC71] tracking-wide">
                           {formatarTempoTotal(estatisticasPorPeriodo.totalMinutosFocados)}
                         </p>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-xs text-[#F9F9F9]/60 mb-1">Sessões</p>
-                          <p className="text-2xl font-light text-[#FFD700]">
+                          <p className="text-3xl font-light text-[#FFD700]">
                             {estatisticasPorPeriodo.totalSessoes}
                           </p>
                         </div>
@@ -221,20 +221,20 @@ export default function StatsPage() {
                 <div className="space-y-4">
                   <div>
                     <p className="text-xs text-[#F9F9F9]/60 mb-1">Tempo Total Focado</p>
-                    <p className="text-2xl font-light text-[#2ECC71] tracking-wide">
+                    <p className="text-3xl font-light text-[#2ECC71] tracking-wide">
                       {formatarTempoTotal(estatisticasGerais.tempoTotalFocado)}
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-xs text-[#F9F9F9]/60 mb-1">Sessões</p>
-                      <p className="text-xl font-light text-[#FFD700]">
+                      <p className="text-2xl font-light text-[#FFD700]">
                         {estatisticasGerais.sessoesCompletas}
                       </p>
                     </div>
               <div>
                       <p className="text-xs text-[#F9F9F9]/60 mb-1">Média</p>
-                      <p className="text-xl font-light text-[#FFD700]">
+                      <p className="text-2xl font-light text-[#FFD700]">
                         {estatisticasGerais.mediaPorSessao} min
                       </p>
                     </div>
@@ -456,7 +456,7 @@ export default function StatsPage() {
                 </p>
               </div>
                           <div className="text-right">
-                            <p className="text-2xl font-light text-[#2ECC71]">
+                            <p className="text-3xl font-light text-[#2ECC71]">
                               {item.minutosFocados}
                             </p>
                             <p className="text-xs text-[#F9F9F9]/50">

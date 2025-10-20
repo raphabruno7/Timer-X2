@@ -43,10 +43,10 @@ export default function AIPage() {
             >
               <Sparkles className="w-16 h-16 text-[#FFD700]" />
             </motion.div>
-            <h1 className="text-3xl font-light text-[#F9F9F9] tracking-wide mb-2">
+            <h1 className="text-4xl font-light text-[#F9F9F9] tracking-wider mb-2 uppercase">
               {t.ai.title}
             </h1>
-            <p className="text-sm font-light text-[#F9F9F9]/60 tracking-wide">
+            <p className="text-sm font-light text-[#F9F9F9]/70 tracking-wide">
               Insights adaptativos para otimizar seu foco
             </p>
           </motion.div>

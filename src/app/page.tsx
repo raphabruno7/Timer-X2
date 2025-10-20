@@ -1154,8 +1154,8 @@ export default function Home() {
               </svg>
             </motion.a>
 
-            <h1 className="text-3xl font-bold text-[#F9F9F9] tracking-wider mb-4 uppercase">
-              TIMER X<span className="text-lg align-super">²</span>
+            <h1 className="text-4xl font-light text-[#F9F9F9] tracking-wider mb-4 uppercase">
+              TIMER X<span className="text-xl align-super">²</span>
             </h1>
             
             {/* Preset Selector */}
@@ -1333,7 +1333,7 @@ export default function Home() {
                 {/* Conteúdo do timer sobre a mandala - Absolutamente centralizado */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10 text-center">
                   <motion.div 
-                    className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#F9F9F9] tracking-wider mb-3"
+                    className="text-4xl sm:text-5xl md:text-6xl font-light text-[#F9F9F9] tracking-wider mb-3"
                     style={{ 
                       textShadow: '0 2px 10px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.5)',
                       fontVariantNumeric: 'tabular-nums',
@@ -1359,7 +1359,7 @@ export default function Home() {
                     {formatarTempo(tempo)}
                   </motion.div>
                   <div 
-                    className="text-xs sm:text-sm font-semibold text-[#F9F9F9]/80 tracking-wide" 
+                    className="text-sm font-light text-[#F9F9F9]/80 tracking-wide" 
                     style={{ 
                       textShadow: '0 1px 8px rgba(0,0,0,0.6)',
                       textAlign: 'center',

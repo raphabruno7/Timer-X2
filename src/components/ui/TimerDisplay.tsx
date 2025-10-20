@@ -68,10 +68,10 @@ export function TimerDisplay({ timeRemaining, isRunning, isPaused, presetName }:
               ease: "easeInOut",
             }}
           >
-            <div className="text-6xl font-bold text-emerald-300 tracking-wider mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
+            <div className="text-5xl font-light text-emerald-300 tracking-wider mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
               {timeString}
             </div>
-            <div className="text-sm text-[#F9F9F9]/60 uppercase tracking-wide">
+            <div className="text-sm text-[#F9F9F9]/70 uppercase tracking-wide">
               {presetName}
             </div>
           </motion.div>
