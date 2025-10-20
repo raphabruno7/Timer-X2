@@ -73,9 +73,9 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     setter: (val: number) => void,
     label: string
   ) => (
-    <div className="flex flex-col items-center justify-center h-24">
+    <div className="flex flex-col items-center h-24">
       {/* Label */}
-      <p className="text-xs text-[#F9F9F9]/60 mb-2 font-light uppercase tracking-wider">
+      <p className="text-xs text-[#F9F9F9]/60 mb-2 font-light uppercase tracking-wider h-6 flex items-center">
         {label}
       </p>
       
@@ -132,16 +132,16 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Swipe Time Picker Wheels */}
-      <div className="flex items-center justify-center gap-6 mb-8">
+      <div className="flex items-start justify-center gap-6 mb-8">
         {renderSwipeWheel(hoursRef, hoursArray, hours, setHours, "HORAS")}
         
         {/* Colon Separator */}
-        <div className="text-3xl font-bold text-emerald-300 h-24 flex items-center">:</div>
+        <div className="text-3xl font-bold text-emerald-300 h-24 flex items-center justify-center mt-6">:</div>
         
         {renderSwipeWheel(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
         
         {/* Colon Separator */}
-        <div className="text-3xl font-bold text-emerald-300 h-24 flex items-center">:</div>
+        <div className="text-3xl font-bold text-emerald-300 h-24 flex items-center justify-center mt-6">:</div>
         
         {renderSwipeWheel(secondsRef, secondsArray, seconds, setSeconds, "SEG")}
       </div>
