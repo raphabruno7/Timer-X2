@@ -189,16 +189,12 @@ export default function ManualTimerPage() {
               </motion.div>
 
               {/* iPhone TimePicker */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-500">
                 <iPhoneTimePicker
                   confirmAction={handleConfirm}
                   cancelAction={handleCancel}
                 />
-              </motion.div>
+              </div>
             </>
           )}
 
