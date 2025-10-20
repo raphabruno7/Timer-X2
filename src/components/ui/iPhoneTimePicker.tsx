@@ -137,7 +137,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   return (
     <div className="w-full max-w-lg mx-auto">
       {/* Time Picker Columns - Layout Refinado */}
-      <div className="flex justify-center items-center gap-x-8 mb-10">
+      <div className="flex justify-center items-center gap-x-8 mb-12">
         {renderTimeColumn(hoursRef, hoursArray, hours, setHours, "HORAS")}
         
         {/* Colon Separator - Refinado */}
@@ -153,17 +153,6 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
         </div>
         
         {renderTimeColumn(secondsRef, secondsArray, seconds, setSeconds, "SEG")}
-      </div>
-
-      {/* Display atual - Refinado */}
-      <div className="mb-10">
-        <div className="bg-gradient-to-br from-emerald-950/50 to-emerald-900/30 rounded-2xl p-6 border border-emerald-600/40 shadow-xl backdrop-blur-sm">
-          <p className="text-center text-4xl font-light text-emerald-300 tracking-wider drop-shadow-sm" style={{ fontVariantNumeric: "tabular-nums" }}>
-            {hours.toString().padStart(2, "0")}:
-            {minutes.toString().padStart(2, "0")}:
-            {seconds.toString().padStart(2, "0")}
-          </p>
-        </div>
       </div>
 
       {/* Action Buttons - Refinados */}
