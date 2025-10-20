@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { X, Play } from "lucide-react";
 
 interface iPhoneTimePickerProps {
-  onConfirmTime: (hours: number, minutes: number, seconds: number) => void;
-  onCancelTime: () => void;
+  confirmTime: (hours: number, minutes: number, seconds: number) => void;
+  cancelTime: () => void;
 }
 
-export function iPhoneTimePicker({ onConfirmTime, onCancelTime }: iPhoneTimePickerProps) {
+export function iPhoneTimePicker({ confirmTime, cancelTime }: iPhoneTimePickerProps) {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -40,7 +40,7 @@ export function iPhoneTimePicker({ onConfirmTime, onCancelTime }: iPhoneTimePick
   };
 
   const handleConfirm = () => {
-    onConfirmTime(hours, minutes, seconds);
+    confirmTime(hours, minutes, seconds);
   };
 
   // Scroll inicial para valores atuais
@@ -157,7 +157,7 @@ export function iPhoneTimePicker({ onConfirmTime, onCancelTime }: iPhoneTimePick
       {/* Action Buttons */}
       <div className="flex gap-4 justify-center">
         <Button
-          onClick={onCancelTime}
+          onClick={cancelTime}
           variant="outline"
           className="border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent px-6 py-3 rounded-full"
         >
