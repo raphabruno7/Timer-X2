@@ -25,7 +25,7 @@ export function TimerDisplay({ timeRemaining, isRunning, isPaused, presetName }:
   const strokeDashoffset = circumference * (1 - progress);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
+    <div className="w-full flex flex-col items-center justify-center">
       {/* Círculo de Progresso */}
       <div className="relative mb-8">
         <svg width="280" height="280" className="transform -rotate-90">
@@ -57,32 +57,19 @@ export function TimerDisplay({ timeRemaining, isRunning, isPaused, presetName }:
         
         {/* Tempo no centro */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <motion.div
-            className="text-center"
-            animate={{
-              scale: isRunning ? [1, 1.05, 1] : 1,
-            }}
-            transition={{
-              duration: 2,
-              repeat: isRunning ? Infinity : 0,
-              ease: "easeInOut",
-            }}
-          >
-            <div className="text-5xl md:text-6xl font-light text-emerald-300 tracking-wider mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
+          <div className="text-center">
+            <div className="text-6xl font-light text-emerald-300 tracking-wider mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
               {timeString}
             </div>
             <div className="text-sm text-[#F9F9F9]/70 uppercase tracking-wide">
               {presetName}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
       {/* Status */}
-      <motion.div
-        className="text-center mb-6"
-        animate={{ opacity: isRunning ? 1 : 0.7 }}
-      >
+      <div className="text-center mb-6">
         {isRunning && !isPaused && (
           <div className="text-emerald-400 text-sm font-light tracking-wide">
             ⏱️ Rodando...
@@ -103,7 +90,7 @@ export function TimerDisplay({ timeRemaining, isRunning, isPaused, presetName }:
             ✅ Tempo concluído!
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }

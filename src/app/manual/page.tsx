@@ -131,11 +131,11 @@ export default function ManualTimerPage() {
 
   return (
     <PageTransition>
-      <main className="min-h-screen flex flex-col items-center justify-center p-4 pb-24 relative overflow-hidden bg-[#1A1A1A]">
+      <main className="min-h-screen flex flex-col items-center p-4 pb-24 relative overflow-hidden bg-[#1A1A1A]">
         {/* Background decorativo */}
         <div className="absolute inset-0 bg-radial-gradient opacity-20" />
         
-        <div className="relative z-10 text-center max-w-md w-full flex flex-col items-center justify-center min-h-[80vh]">
+        <div className="relative z-10 text-center max-w-md w-full flex flex-col items-center justify-center flex-1">
           {/* Estado: Configurando */}
           {pageState === "configuring" && (
             <>
