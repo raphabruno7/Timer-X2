@@ -77,7 +77,7 @@ export default function Home() {
   const isDarkMode = useAutoDarkMode();
   
   // Zustand store para presets
-  const { minutes: storeMinutes } = useTimerStore();
+  const { minutes: storeMinutes, isManualTime } = useTimerStore();
   
   // Cores do tema baseadas no modo
   const themeColors = useMemo(() => ({
@@ -334,6 +334,12 @@ export default function Home() {
   // Aplicar ajustes adaptativos baseados em padrões de uso
   useEffect(() => {
     if (!padrõesUsoRecentes || padrõesUsoRecentes.length < 3) return;
+    
+    // NÃO aplicar ajustes se o tempo foi definido manualmente
+    if (isManualTime) {
+      console.log("[Adaptive Engine] ⚠️ Tempo manual detectado, pulando ajustes adaptativos");
+      return;
+    }
 
     // Analisar padrões e obter ajustes
     const ajustes = analisarPadrao(padrõesUsoRecentes, tempoInicial);
@@ -377,7 +383,7 @@ export default function Home() {
     if (ajustes.recomendacao) {
       console.log(`[Adaptive Engine] 💡 ${ajustes.recomendacao}`);
     }
-  }, [padrõesUsoRecentes, rodando]);
+  }, [padrõesUsoRecentes, rodando, isManualTime]);
 
   // Ajustar ambiente visual baseado em contexto e padrões
   useEffect(() => {

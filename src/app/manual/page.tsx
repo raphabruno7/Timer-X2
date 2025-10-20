@@ -16,7 +16,7 @@ import { useTranslations } from "@/hooks/useLanguage";
 export default function ManualTimerPage() {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const { setMinutes, setPreset } = useTimerStore();
+  const { setManualTime } = useTimerStore();
   const router = useRouter();
   const t = useTranslations();
 
@@ -43,12 +43,9 @@ export default function ManualTimerPage() {
       return;
     }
     
-    // Aplicar ao timer
-    setMinutes(totalMinutes);
-    
-    // Nome formatado
+    // Aplicar ao timer usando método específico para tempo manual
     const timeString = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-    setPreset(`⏱️ ${timeString}`, null);
+    setManualTime(totalMinutes, `⏱️ ${timeString}`);
     
     console.log("[Manual Page] Timer configurado:", { totalMinutes, timeString });
     
