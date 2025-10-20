@@ -30,12 +30,19 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   ) => {
     if (!ref.current) return;
     
-    const itemWidth = 60; // largura de cada item
+    const itemWidth = 48; // largura de cada item (w-12 = 48px)
     const scrollLeft = ref.current.scrollLeft;
     const index = Math.round(scrollLeft / itemWidth);
     const clampedIndex = Math.max(0, Math.min(index, maxValue));
     
-    setter(clampedIndex);
+    // Só atualiza se o valor mudou
+    setter((prevValue) => {
+      if (prevValue !== clampedIndex) {
+        console.log(`[TimePicker] Scroll atualizado: ${clampedIndex}`);
+        return clampedIndex;
+      }
+      return prevValue;
+    });
   };
 
   const handleConfirm = () => {
@@ -46,13 +53,13 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (hoursRef.current) {
-        hoursRef.current.scrollLeft = hours * 60;
+        hoursRef.current.scrollLeft = hours * 48; // 48px por item
       }
       if (minutesRef.current) {
-        minutesRef.current.scrollLeft = minutes * 60;
+        minutesRef.current.scrollLeft = minutes * 48;
       }
       if (secondsRef.current) {
-        secondsRef.current.scrollLeft = seconds * 60;
+        secondsRef.current.scrollLeft = seconds * 48;
       }
     }, 100);
     
@@ -73,13 +80,13 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
       </p>
       
       {/* Swipe Wheel Container */}
-      <div className="relative w-20 h-16 overflow-hidden">
+      <div className="relative w-20 h-16 overflow-hidden rounded-lg border border-emerald-700/30">
         {/* Seleção central highlight */}
         <div className="absolute inset-y-0 left-[calc(50%-30px)] w-12 bg-emerald-500/20 border-x-2 border-emerald-500/50 pointer-events-none z-10" />
         
         {/* Gradientes laterais */}
-        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#1A1A1A] to-transparent pointer-events-none z-20" />
-        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-[#1A1A1A] to-transparent pointer-events-none z-20" />
         
         {/* Scroll container */}
         <div
@@ -89,10 +96,11 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
           }}
         >
           {/* Padding left */}
-          <div className="w-8 inline-block" />
+          <div className="w-6 inline-block" />
           
           {/* Items */}
           {values.map((value) => {
@@ -115,7 +123,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
           })}
           
           {/* Padding right */}
-          <div className="w-8 inline-block" />
+          <div className="w-6 inline-block" />
         </div>
       </div>
     </div>
