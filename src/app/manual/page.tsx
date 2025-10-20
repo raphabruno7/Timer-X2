@@ -30,10 +30,13 @@ export default function ManualTimerPage() {
   }, []);
 
   const handleConfirm = (hours: number, minutes: number, seconds: number) => {
+    console.log("[Manual Page] Recebendo tempo:", { hours, minutes, seconds });
     setSelectedTime({ hours, minutes, seconds });
     
     // Converter tudo para minutos para o timer
     const totalMinutes = hours * 60 + minutes + (seconds > 0 ? 1 : 0); // Arredondar segundos para cima
+    
+    console.log("[Manual Page] Total minutos calculado:", totalMinutes);
     
     if (totalMinutes === 0) {
       toast.error(t.manual.selectAtLeastOneMinute);
@@ -46,6 +49,8 @@ export default function ManualTimerPage() {
     // Nome formatado
     const timeString = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
     setPreset(`⏱️ ${timeString}`, null);
+    
+    console.log("[Manual Page] Timer configurado:", { totalMinutes, timeString });
     
     toast.success(`${t.manual.timerSetTo} ${timeString}`);
     

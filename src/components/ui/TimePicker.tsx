@@ -32,7 +32,8 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
   const handleScroll = (
     ref: React.RefObject<HTMLDivElement | null>,
     setter: (val: number) => void,
-    maxValue: number
+    maxValue: number,
+    label: string
   ) => {
     if (!ref.current) return;
     
@@ -53,6 +54,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
       // Só atualiza se o valor mudou
       setter((prevValue: number) => {
         if (prevValue !== clampedIndex) {
+          console.log(`[TimePicker] Scroll atualizado: ${label} de ${prevValue} para ${clampedIndex}`);
           return clampedIndex;
         }
         return prevValue;
@@ -61,6 +63,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
   };
 
   const handleConfirm = () => {
+    console.log("[TimePicker] Confirmando tempo:", { hours, minutes, seconds });
     onConfirm(hours, minutes, seconds);
     onClose();
   };
@@ -135,7 +138,7 @@ export function TimePicker({ isOpen, onClose, onConfirm }: TimePickerProps) {
         <div
           ref={ref}
           className="h-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
-          onScroll={() => handleScroll(ref, setter, values.length - 1)}
+          onScroll={() => handleScroll(ref, setter, values.length - 1, label)}
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
