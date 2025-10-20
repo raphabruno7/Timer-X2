@@ -30,10 +30,9 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   ) => {
     if (!ref.current) return;
     
-    const itemWidth = 48; // largura de cada item (w-12 = 48px)
-    const padding = 24; // padding left (w-6 = 24px)
-    const scrollLeft = ref.current.scrollLeft;
-    const index = Math.round((scrollLeft - padding) / itemWidth);
+    const itemHeight = 48; // altura de cada item (h-12 = 48px)
+    const scrollTop = ref.current.scrollTop;
+    const index = Math.round(scrollTop / itemHeight);
     const clampedIndex = Math.max(0, Math.min(index, maxValue));
     
     // Só atualiza se o valor mudou
@@ -53,60 +52,60 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   // Scroll inicial para valores atuais
   useEffect(() => {
     const timer = setTimeout(() => {
-      const padding = 24; // padding left
-      const itemWidth = 48; // largura do item
+      const itemHeight = 48; // altura do item
       
       if (hoursRef.current) {
-        hoursRef.current.scrollLeft = padding + (hours * itemWidth);
+        hoursRef.current.scrollTop = hours * itemHeight;
       }
       if (minutesRef.current) {
-        minutesRef.current.scrollLeft = padding + (minutes * itemWidth);
+        minutesRef.current.scrollTop = minutes * itemHeight;
       }
       if (secondsRef.current) {
-        secondsRef.current.scrollLeft = padding + (seconds * itemWidth);
+        secondsRef.current.scrollTop = seconds * itemHeight;
       }
     }, 100);
     
     return () => clearTimeout(timer);
   }, []);
 
-  const renderSwipeWheel = (
+  const renderTimeColumn = (
     ref: React.RefObject<HTMLDivElement | null>,
     values: number[],
     selected: number,
     setter: (val: number) => void,
     label: string
   ) => (
-    <div className="flex flex-col items-center h-20">
-      {/* Label - Altura fixa para alinhamento */}
-      <div className="h-6 flex items-center justify-center mb-2">
+    <div className="flex flex-col items-center">
+      {/* Label */}
+      <div className="h-6 flex items-center justify-center mb-3">
         <p className="text-xs text-[#F9F9F9]/60 font-light uppercase tracking-wider">
           {label}
         </p>
       </div>
       
-      {/* Swipe Wheel Container - Altura fixa */}
-      <div className="relative w-20 h-16 overflow-hidden rounded-lg border border-emerald-700/30 bg-emerald-950/20">
+      {/* Time Column Container */}
+      <div className="relative w-20 h-[150px] overflow-hidden rounded-lg border border-emerald-700/30 bg-emerald-950/20">
         {/* Seleção central highlight */}
-        <div className="absolute inset-y-0 left-[calc(50%-30px)] w-12 bg-emerald-500/20 border-x-2 border-emerald-500/50 pointer-events-none z-10" />
+        <div className="absolute inset-x-0 top-[calc(50%-24px)] h-12 bg-emerald-500/20 border-y-2 border-emerald-500/50 pointer-events-none z-10" />
         
         {/* Gradientes laterais */}
-        <div className="absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-[#1A1A1A] to-transparent pointer-events-none z-20" />
-        <div className="absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#1A1A1A] to-transparent pointer-events-none z-20" />
         
         {/* Scroll container */}
         <div
           ref={ref}
-          className="h-full overflow-x-scroll scrollbar-hide snap-x snap-mandatory"
+          className="h-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory scroll-smooth"
           onScroll={() => handleScroll(ref, setter, values.length - 1)}
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             WebkitOverflowScrolling: "touch",
+            scrollBehavior: "smooth",
           }}
         >
-          {/* Padding left */}
-          <div className="w-6 inline-block" />
+          {/* Padding top */}
+          <div className="h-6" />
           
           {/* Items */}
           {values.map((value) => {
@@ -114,7 +113,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             return (
               <div
                 key={value}
-                className={`w-12 h-16 inline-flex items-center justify-center text-lg font-bold transition-all snap-center ${
+                className={`h-12 flex items-center justify-center text-2xl font-light transition-all snap-center leading-tight ${
                   isSelected
                     ? "text-emerald-300 scale-110"
                     : "text-[#F9F9F9]/40 scale-90"
@@ -128,8 +127,8 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             );
           })}
           
-          {/* Padding right */}
-          <div className="w-6 inline-block" />
+          {/* Padding bottom */}
+          <div className="h-6" />
         </div>
       </div>
     </div>
@@ -137,32 +136,19 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      {/* Swipe Time Picker Wheels - Estrutura Matemática Precisa */}
-      <div className="flex items-center justify-center gap-6 mb-8">
-        {/* Container para HORAS */}
-        <div className="flex flex-col items-center h-20">
-          {renderSwipeWheel(hoursRef, hoursArray, hours, setHours, "HORAS")}
-        </div>
+      {/* Time Picker Columns - Estrutura Corrigida */}
+      <div className="flex justify-center items-center gap-x-6 mb-8">
+        {renderTimeColumn(hoursRef, hoursArray, hours, setHours, "HORAS")}
         
-        {/* Colon Separator - Centralizado matematicamente */}
-        <div className="h-20 flex items-center justify-center">
-          <div className="text-3xl font-bold text-emerald-300">:</div>
-        </div>
+        {/* Colon Separator */}
+        <div className="text-3xl font-bold text-emerald-300">:</div>
         
-        {/* Container para MIN */}
-        <div className="flex flex-col items-center h-20">
-          {renderSwipeWheel(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
-        </div>
+        {renderTimeColumn(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
         
-        {/* Colon Separator - Centralizado matematicamente */}
-        <div className="h-20 flex items-center justify-center">
-          <div className="text-3xl font-bold text-emerald-300">:</div>
-        </div>
+        {/* Colon Separator */}
+        <div className="text-3xl font-bold text-emerald-300">:</div>
         
-        {/* Container para SEG */}
-        <div className="flex flex-col items-center h-20">
-          {renderSwipeWheel(secondsRef, secondsArray, seconds, setSeconds, "SEG")}
-        </div>
+        {renderTimeColumn(secondsRef, secondsArray, seconds, setSeconds, "SEG")}
       </div>
 
       {/* Display atual */}
