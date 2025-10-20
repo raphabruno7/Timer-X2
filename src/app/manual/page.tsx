@@ -135,7 +135,7 @@ export default function ManualTimerPage() {
         {/* Background decorativo */}
         <div className="absolute inset-0 bg-radial-gradient opacity-20" />
         
-        <div className="relative z-10 text-center max-w-md w-full">
+        <div className="relative z-10 text-center max-w-md w-full flex flex-col items-center justify-center min-h-[80vh]">
           {/* Estado: Configurando */}
           {pageState === "configuring" && (
             <>
@@ -186,7 +186,7 @@ export default function ManualTimerPage() {
 
           {/* Estados: Running, Paused, Completed */}
           {(pageState === "running" || pageState === "paused" || pageState === "completed") && (
-            <>
+            <div className="flex flex-col items-center justify-center w-full space-y-8">
               {/* Timer Display */}
               <TimerDisplay
                 timeRemaining={timeRemaining}
@@ -206,7 +206,7 @@ export default function ManualTimerPage() {
                 onReset={handleReset}
                 onSettings={handleSettings}
               />
-            </>
+            </div>
           )}
         </div>
 

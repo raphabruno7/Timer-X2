@@ -25,7 +25,7 @@ export function TimerDisplay({ timeRemaining, isRunning, isPaused, presetName }:
   const strokeDashoffset = circumference * (1 - progress);
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center w-full">
       {/* Círculo de Progresso */}
       <div className="relative mb-8">
         <svg width="280" height="280" className="transform -rotate-90">
@@ -68,7 +68,7 @@ export function TimerDisplay({ timeRemaining, isRunning, isPaused, presetName }:
               ease: "easeInOut",
             }}
           >
-            <div className="text-5xl font-light text-emerald-300 tracking-wider mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
+            <div className="text-5xl md:text-6xl font-light text-emerald-300 tracking-wider mb-2" style={{ fontVariantNumeric: "tabular-nums" }}>
               {timeString}
             </div>
             <div className="text-sm text-[#F9F9F9]/70 uppercase tracking-wide">
