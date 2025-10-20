@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PageTransition } from "@/components/PageTransition";
 import { TimePicker } from "@/components/ui/TimePicker";
-import TimePicker from "@/components/ui/iPhoneTimePicker";
+import ManualTimePicker from "@/components/ui/iPhoneTimePicker";
 import { TimerDisplay } from "@/components/ui/TimerDisplay";
 import { TimerControls } from "@/components/ui/TimerControls";
 import { useTimerStore } from "@/store/useTimerStore";
@@ -190,7 +190,7 @@ export default function ManualTimerPage() {
 
               {/* iPhone TimePicker */}
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-500">
-                <TimePicker
+                <ManualTimePicker
                   confirmAction={handleConfirm}
                   cancelAction={handleCancel}
                 />
