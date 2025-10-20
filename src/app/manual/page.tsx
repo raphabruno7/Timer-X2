@@ -170,31 +170,17 @@ export default function ManualTimerPage() {
                 {t.manual.subtitle}
               </motion.p>
 
-              {/* Tempo selecionado */}
+              {/* TimePicker com Rodas Horizontais */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="bg-emerald-950/40 rounded-2xl p-6 border border-emerald-700/30 mb-8"
               >
-                <p className="text-sm text-[#F9F9F9]/60 mb-2 uppercase tracking-wide font-light">
-                  {t.manual.selectedTime}
-                </p>
-                <p
-                  className="text-5xl font-bold text-emerald-300 tracking-wider"
-                  style={{ fontVariantNumeric: "tabular-nums" }}
-                >
-                  {formatTime(selectedTime.hours, selectedTime.minutes, selectedTime.seconds)}
-                </p>
-              </motion.div>
-
-              {/* iPhone TimePicker */}
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-500">
                 <ManualTimePicker
                   confirmAction={handleConfirm}
                   cancelAction={handleCancel}
                 />
-              </div>
+              </motion.div>
             </>
           )}
 
