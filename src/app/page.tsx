@@ -377,7 +377,7 @@ export default function Home() {
     if (ajustes.recomendacao) {
       console.log(`[Adaptive Engine] 💡 ${ajustes.recomendacao}`);
     }
-  }, [padrõesUsoRecentes, rodando, tempoInicial]);
+  }, [padrõesUsoRecentes, rodando]);
 
   // Ajustar ambiente visual baseado em contexto e padrões
   useEffect(() => {
