@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { X, Play } from "lucide-react";
 
 interface iPhoneTimePickerProps {
-  onTimeSet: (hours: number, minutes: number, seconds: number) => void;
-  onTimeCancel: () => void;
+  handleTimeSet: (hours: number, minutes: number, seconds: number) => void;
+  handleTimeCancel: () => void;
 }
 
-const iPhoneTimePickerComponent = memo(function iPhoneTimePicker({ onTimeSet, onTimeCancel }: iPhoneTimePickerProps) {
+const iPhoneTimePickerComponent = memo(function iPhoneTimePicker({ handleTimeSet, handleTimeCancel }: iPhoneTimePickerProps) {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -39,7 +39,7 @@ const iPhoneTimePickerComponent = memo(function iPhoneTimePicker({ onTimeSet, on
   };
 
   const handleConfirm = () => {
-    onTimeSet(hours, minutes, seconds);
+    handleTimeSet(hours, minutes, seconds);
   };
 
   // Scroll inicial para valores atuais
@@ -156,7 +156,7 @@ const iPhoneTimePickerComponent = memo(function iPhoneTimePicker({ onTimeSet, on
       {/* Action Buttons */}
       <div className="flex gap-4 justify-center">
         <Button
-          onClick={onTimeCancel}
+          onClick={handleTimeCancel}
           variant="outline"
           className="border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent px-6 py-3 rounded-full"
         >
