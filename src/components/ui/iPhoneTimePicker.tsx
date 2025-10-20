@@ -49,21 +49,28 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     confirmAction(hours, minutes, seconds);
   };
 
-  // Scroll inicial para valores atuais
+  // Scroll inicial para valores atuais - Solução robusta
   useEffect(() => {
     const timer = setTimeout(() => {
       const itemHeight = 56; // altura do item (h-14 = 56px)
+      const paddingTop = 32; // padding top (h-8 = 32px)
       
+      // Forçar scroll para posição inicial (00:00:00)
       if (hoursRef.current) {
-        hoursRef.current.scrollTop = hours * itemHeight;
+        hoursRef.current.scrollTop = 0; // Sempre começar em 0
       }
       if (minutesRef.current) {
-        minutesRef.current.scrollTop = minutes * itemHeight;
+        minutesRef.current.scrollTop = 0; // Sempre começar em 0
       }
       if (secondsRef.current) {
-        secondsRef.current.scrollTop = seconds * itemHeight;
+        secondsRef.current.scrollTop = 0; // Sempre começar em 0
       }
-    }, 100);
+      
+      // Garantir que os valores estejam em 0
+      setHours(0);
+      setMinutes(0);
+      setSeconds(0);
+    }, 150);
     
     return () => clearTimeout(timer);
   }, []);
@@ -75,7 +82,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     setter: (val: number) => void,
     label: string
   ) => (
-    <div className="flex flex-col items-center h-[220px]">
+    <div className="flex flex-col items-center justify-center h-[220px]">
       {/* Label */}
       <div className="h-7 flex items-center justify-center mb-4">
         <p className="text-xs text-[#F9F9F9]/70 font-medium uppercase tracking-widest">
@@ -85,7 +92,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
       
       {/* Time Column Container */}
       <div className="relative w-24 h-[180px] overflow-hidden rounded-2xl border border-emerald-600/40 bg-gradient-to-b from-emerald-950/30 to-emerald-950/50 shadow-lg">
-        {/* Seleção central highlight */}
+        {/* Seleção central highlight - Posição fixa */}
         <div className="absolute inset-x-0 top-[calc(50%-28px)] h-14 bg-gradient-to-b from-emerald-500/30 to-emerald-400/20 border-y border-emerald-400/60 pointer-events-none z-10 rounded-sm" />
         
         {/* Gradientes laterais */}
@@ -104,7 +111,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             scrollBehavior: "smooth",
           }}
         >
-          {/* Padding top */}
+          {/* Padding top - Altura exata para centralizar primeiro item */}
           <div className="h-8" />
           
           {/* Items */}
@@ -127,7 +134,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             );
           })}
           
-          {/* Padding bottom */}
+          {/* Padding bottom - Altura exata para centralizar último item */}
           <div className="h-8" />
         </div>
       </div>
@@ -137,18 +144,18 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   return (
     <div className="w-full max-w-lg mx-auto">
       {/* Time Picker Columns - Layout Refinado */}
-      <div className="flex justify-center items-center gap-x-8 mb-12">
+      <div className="flex justify-center items-start gap-x-8 mb-12">
         {renderTimeColumn(hoursRef, hoursArray, hours, setHours, "HORAS")}
         
         {/* Colon Separator - Refinado */}
-        <div className="flex items-center justify-center h-[220px]">
+        <div className="flex items-center justify-center h-[220px] mt-7">
           <div className="text-4xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
         </div>
         
         {renderTimeColumn(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
         
         {/* Colon Separator - Refinado */}
-        <div className="flex items-center justify-center h-[220px]">
+        <div className="flex items-center justify-center h-[220px] mt-7">
           <div className="text-4xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
         </div>
         
