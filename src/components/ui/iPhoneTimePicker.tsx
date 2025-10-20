@@ -59,68 +59,6 @@ export default function iPhoneTimePicker({ confirmAction, cancelAction }: Props)
     return () => clearTimeout(timer);
   }, []);
 
-  const renderHorizontalWheel = (
-    ref: React.RefObject<HTMLDivElement | null>,
-    values: number[],
-    selected: number,
-    setter: (val: number) => void,
-    label: string
-  ) => (
-    <div className="flex flex-col items-center">
-      {/* Label */}
-      <p className="text-xs text-[#F9F9F9]/60 mb-2 font-light uppercase tracking-wider">
-        {label}
-      </p>
-      
-      {/* Wheel Container */}
-      <div className="relative w-20 h-16 overflow-hidden">
-        {/* Seleção central highlight */}
-        <div className="absolute inset-y-0 left-[calc(50%-30px)] w-12 bg-emerald-500/20 border-x-2 border-emerald-500/50 pointer-events-none z-10" />
-        
-        {/* Gradientes laterais */}
-        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#1A1A1A] to-transparent pointer-events-none z-20" />
-        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#1A1A1A] to-transparent pointer-events-none z-20" />
-        
-        {/* Scroll container */}
-        <div
-          ref={ref}
-          className="h-full overflow-x-scroll scrollbar-hide snap-x snap-mandatory"
-          onScroll={() => handleScroll(ref, setter, values.length - 1)}
-          style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
-        >
-          {/* Padding left */}
-          <div className="w-8 inline-block" />
-          
-          {/* Items */}
-          {values.map((value) => {
-            const isSelected = value === selected;
-            return (
-              <div
-                key={value}
-                className={`w-12 h-16 inline-flex items-center justify-center text-lg font-bold transition-all snap-center ${
-                  isSelected
-                    ? "text-emerald-300 scale-110"
-                    : "text-[#F9F9F9]/40 scale-90"
-                }`}
-                style={{
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {value.toString().padStart(2, "0")}
-              </div>
-            );
-          })}
-          
-          {/* Padding right */}
-          <div className="w-8 inline-block" />
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="w-full max-w-md mx-auto">
       {/* Header */}
@@ -135,11 +73,135 @@ export default function iPhoneTimePicker({ confirmAction, cancelAction }: Props)
 
       {/* Time Picker Wheels - Horizontal Layout */}
       <div className="flex justify-center gap-6 mb-8">
-        {renderHorizontalWheel(hoursRef, hoursArray, hours, setHours, "Horas")}
+        {/* Hours Wheel */}
+        <div className="flex flex-col items-center">
+          <p className="text-xs text-[#F9F9F9]/60 mb-2 font-light uppercase tracking-wider">
+            Horas
+          </p>
+          <div className="relative w-20 h-16 overflow-hidden">
+            <div className="absolute inset-y-0 left-[calc(50%-30px)] w-12 bg-emerald-500/20 border-x-2 border-emerald-500/50 pointer-events-none z-10" />
+            <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+            <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+            <div
+              ref={hoursRef}
+              className="h-full overflow-x-scroll scrollbar-hide snap-x snap-mandatory"
+              onScroll={() => handleScroll(hoursRef, setHours, hoursArray.length - 1)}
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              <div className="w-8 inline-block" />
+              {hoursArray.map((value) => {
+                const isSelected = value === hours;
+                return (
+                  <div
+                    key={value}
+                    className={`w-12 h-16 inline-flex items-center justify-center text-lg font-bold transition-all snap-center ${
+                      isSelected
+                        ? "text-emerald-300 scale-110"
+                        : "text-[#F9F9F9]/40 scale-90"
+                    }`}
+                    style={{
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {value.toString().padStart(2, "0")}
+                  </div>
+                );
+              })}
+              <div className="w-8 inline-block" />
+            </div>
+          </div>
+        </div>
+
         <div className="text-2xl font-bold text-emerald-300 self-end mb-6">:</div>
-        {renderHorizontalWheel(minutesRef, minutesArray, minutes, setMinutes, "Min")}
+
+        {/* Minutes Wheel */}
+        <div className="flex flex-col items-center">
+          <p className="text-xs text-[#F9F9F9]/60 mb-2 font-light uppercase tracking-wider">
+            Min
+          </p>
+          <div className="relative w-20 h-16 overflow-hidden">
+            <div className="absolute inset-y-0 left-[calc(50%-30px)] w-12 bg-emerald-500/20 border-x-2 border-emerald-500/50 pointer-events-none z-10" />
+            <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+            <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+            <div
+              ref={minutesRef}
+              className="h-full overflow-x-scroll scrollbar-hide snap-x snap-mandatory"
+              onScroll={() => handleScroll(minutesRef, setMinutes, minutesArray.length - 1)}
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              <div className="w-8 inline-block" />
+              {minutesArray.map((value) => {
+                const isSelected = value === minutes;
+                return (
+                  <div
+                    key={value}
+                    className={`w-12 h-16 inline-flex items-center justify-center text-lg font-bold transition-all snap-center ${
+                      isSelected
+                        ? "text-emerald-300 scale-110"
+                        : "text-[#F9F9F9]/40 scale-90"
+                    }`}
+                    style={{
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {value.toString().padStart(2, "0")}
+                  </div>
+                );
+              })}
+              <div className="w-8 inline-block" />
+            </div>
+          </div>
+        </div>
+
         <div className="text-2xl font-bold text-emerald-300 self-end mb-6">:</div>
-        {renderHorizontalWheel(secondsRef, secondsArray, seconds, setSeconds, "Seg")}
+
+        {/* Seconds Wheel */}
+        <div className="flex flex-col items-center">
+          <p className="text-xs text-[#F9F9F9]/60 mb-2 font-light uppercase tracking-wider">
+            Seg
+          </p>
+          <div className="relative w-20 h-16 overflow-hidden">
+            <div className="absolute inset-y-0 left-[calc(50%-30px)] w-12 bg-emerald-500/20 border-x-2 border-emerald-500/50 pointer-events-none z-10" />
+            <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+            <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+            <div
+              ref={secondsRef}
+              className="h-full overflow-x-scroll scrollbar-hide snap-x snap-mandatory"
+              onScroll={() => handleScroll(secondsRef, setSeconds, secondsArray.length - 1)}
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              <div className="w-8 inline-block" />
+              {secondsArray.map((value) => {
+                const isSelected = value === seconds;
+                return (
+                  <div
+                    key={value}
+                    className={`w-12 h-16 inline-flex items-center justify-center text-lg font-bold transition-all snap-center ${
+                      isSelected
+                        ? "text-emerald-300 scale-110"
+                        : "text-[#F9F9F9]/40 scale-90"
+                    }`}
+                    style={{
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {value.toString().padStart(2, "0")}
+                  </div>
+                );
+              })}
+              <div className="w-8 inline-block" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Display atual */}
