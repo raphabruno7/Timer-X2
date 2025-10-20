@@ -135,11 +135,42 @@ export default function ManualTimerPage() {
           {/* Estado: Ready - Rodas + Timer */}
           {pageState === "ready" && (
             <>
+              {/* Ícone grande */}
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", damping: 15, stiffness: 200 }}
+                className="mb-8"
+              >
+                <div className="w-32 h-32 mx-auto bg-emerald-500/10 rounded-full flex items-center justify-center border-2 border-emerald-500/30">
+                  <Clock className="w-16 h-16 text-emerald-400" />
+                </div>
+              </motion.div>
+
+              {/* Título */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-3xl font-bold text-emerald-300 mb-4 uppercase tracking-wider"
+              >
+                {t.manual.title}
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-[#F9F9F9]/70 mb-8 font-light"
+              >
+                {t.manual.subtitle}
+              </motion.p>
+
               {/* TimePicker Inline */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.4 }}
                 className="mb-8"
               >
                 <TimePicker
@@ -154,7 +185,7 @@ export default function ManualTimerPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.5 }}
               >
                 <Button
                   onClick={() => {
