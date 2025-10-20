@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Play } from "lucide-react";
 
@@ -9,7 +9,7 @@ interface iPhoneTimePickerProps {
   onTimeCancel: () => void;
 }
 
-export function iPhoneTimePicker({ onTimeSet, onTimeCancel }: iPhoneTimePickerProps) {
+const iPhoneTimePickerComponent = memo(function iPhoneTimePicker({ onTimeSet, onTimeCancel }: iPhoneTimePickerProps) {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -173,4 +173,6 @@ export function iPhoneTimePicker({ onTimeSet, onTimeCancel }: iPhoneTimePickerPr
       </div>
     </div>
   );
-}
+});
+
+export const iPhoneTimePicker = iPhoneTimePickerComponent;
