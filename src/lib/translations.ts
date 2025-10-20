@@ -125,7 +125,7 @@ const ptBR: Translations = {
   },
   
   manual: {
-    title: '⏱️ Tempo Manual',
+    title: 'Tempo Manual',
     subtitle: 'Escolha horas, minutos e segundos',
     selectedTime: 'Tempo Selecionado',
     setTime: 'Definir Tempo',
@@ -197,7 +197,7 @@ const enUS: Translations = {
   },
   
   manual: {
-    title: '⏱️ Manual Time',
+    title: 'Manual Time',
     subtitle: 'Choose hours, minutes and seconds',
     selectedTime: 'Selected Time',
     setTime: 'Set Time',
@@ -269,7 +269,7 @@ const esES: Translations = {
   },
   
   manual: {
-    title: '⏱️ Tiempo Manual',
+    title: 'Tiempo Manual',
     subtitle: 'Elige horas, minutos y segundos',
     hours: 'Horas',
     minutes: 'Min',
@@ -337,7 +337,7 @@ const frFR: Translations = {
   },
   
   manual: {
-    title: '⏱️ Temps Manuel',
+    title: 'Temps Manuel',
     subtitle: 'Choisissez heures, minutes et secondes',
     hours: 'Heures',
     minutes: 'Min',
@@ -405,7 +405,7 @@ const deDE: Translations = {
   },
   
   manual: {
-    title: '⏱️ Manuelle Zeit',
+    title: 'Manuelle Zeit',
     subtitle: 'Wählen Sie Stunden, Minuten und Sekunden',
     hours: 'Stunden',
     minutes: 'Min',
