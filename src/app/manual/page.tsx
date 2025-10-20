@@ -195,8 +195,8 @@ export default function ManualTimerPage() {
                 transition={{ delay: 0.5 }}
               >
                 <iPhoneTimePicker
-                  onConfirm={handleConfirm}
-                  onCancel={handleCancel}
+                  confirmAction={handleConfirm}
+                  cancelAction={handleCancel}
                 />
               </motion.div>
             </>

@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { X, Play } from "lucide-react";
 
 interface Props {
-  onConfirm: (hours: number, minutes: number, seconds: number) => void;
-  onCancel: () => void;
+  confirmAction: (hours: number, minutes: number, seconds: number) => void;
+  cancelAction: () => void;
 }
 
-export default function iPhoneTimePicker({ onConfirm, onCancel }: Props) {
+export default function iPhoneTimePicker({ confirmAction, cancelAction }: Props) {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -39,7 +39,7 @@ export default function iPhoneTimePicker({ onConfirm, onCancel }: Props) {
   };
 
   const handleConfirm = () => {
-    onConfirm(hours, minutes, seconds);
+    confirmAction(hours, minutes, seconds);
   };
 
   // Scroll inicial para valores atuais
@@ -156,7 +156,7 @@ export default function iPhoneTimePicker({ onConfirm, onCancel }: Props) {
       {/* Action Buttons */}
       <div className="flex gap-4 justify-center">
         <Button
-          onClick={onCancel}
+          onClick={cancelAction}
           variant="outline"
           className="border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent px-6 py-3 rounded-full"
         >
