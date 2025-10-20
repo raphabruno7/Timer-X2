@@ -15,10 +15,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { useTranslations } from "@/hooks/useLanguage";
 
-type ManualPageState = "configuring" | "ready" | "running" | "paused" | "completed";
+type ManualPageState = "ready" | "running" | "paused" | "completed";
 
 export default function ManualTimerPage() {
-  const [pageState, setPageState] = useState<ManualPageState>("configuring");
+  const [pageState, setPageState] = useState<ManualPageState>("ready");
   
   // Estados para controle inline do tempo
   const [selectedTime, setSelectedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
@@ -118,7 +118,7 @@ export default function ManualTimerPage() {
   };
 
   const handleSettings = () => {
-    setPageState("configuring");
+    setPageState("ready");
   };
 
   const formatTime = (h: number, m: number, s: number) => {
@@ -132,45 +132,14 @@ export default function ManualTimerPage() {
         <div className="absolute inset-0 bg-radial-gradient opacity-20" />
         
         <div className="relative z-10 text-center max-w-md w-full">
-          {/* Estado: Configurando */}
-          {pageState === "configuring" && (
+          {/* Estado: Ready - Rodas + Timer */}
+          {pageState === "ready" && (
             <>
-              {/* Ícone grande */}
-              <motion.div
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", damping: 15, stiffness: 200 }}
-                className="mb-8"
-              >
-                <div className="w-32 h-32 mx-auto bg-emerald-500/10 rounded-full flex items-center justify-center border-2 border-emerald-500/30">
-                  <Clock className="w-16 h-16 text-emerald-400" />
-                </div>
-              </motion.div>
-
-              {/* Título */}
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-3xl font-bold text-emerald-300 mb-4 uppercase tracking-wider"
-              >
-                {t.manual.title}
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-[#F9F9F9]/70 mb-8 font-light"
-              >
-                {t.manual.subtitle}
-              </motion.p>
-
               {/* TimePicker Inline */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.2 }}
                 className="mb-8"
               >
                 <TimePicker
@@ -181,20 +150,12 @@ export default function ManualTimerPage() {
                 />
               </motion.div>
 
-              {/* Botões de ação */}
+              {/* Botão Começar */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="flex gap-4 justify-center"
+                transition={{ delay: 0.3 }}
               >
-                <Button
-                  onClick={() => setPageState("ready")}
-                  variant="outline"
-                  className="border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent px-6 py-3"
-                >
-                  Cancelar
-                </Button>
                 <Button
                   onClick={() => {
                     const totalMinutes = selectedTime.hours * 60 + selectedTime.minutes + (selectedTime.seconds > 0 ? 1 : 0);
@@ -204,17 +165,17 @@ export default function ManualTimerPage() {
                     }
                     handleConfirm(selectedTime.hours, selectedTime.minutes, selectedTime.seconds);
                   }}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-3"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-4 text-lg rounded-full"
                 >
-                  <Play className="w-5 h-5 mr-2" />
-                  Confirmar
+                  <Play className="w-6 h-6 mr-2" />
+                  Começar Timer
                 </Button>
               </motion.div>
             </>
           )}
 
-          {/* Estados: Ready, Running, Paused, Completed */}
-          {(pageState === "ready" || pageState === "running" || pageState === "paused" || pageState === "completed") && (
+          {/* Estados: Running, Paused, Completed */}
+          {(pageState === "running" || pageState === "paused" || pageState === "completed") && (
             <>
               {/* Timer Display */}
               <TimerDisplay
