@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PageTransition } from "@/components/PageTransition";
 import { TimePicker } from "@/components/ui/TimePicker";
-import { iPhoneTimePicker } from "@/components/ui/iPhoneTimePicker";
+import iPhoneTimePicker from "@/components/ui/iPhoneTimePicker";
 import { TimerDisplay } from "@/components/ui/TimerDisplay";
 import { TimerControls } from "@/components/ui/TimerControls";
 import { useTimerStore } from "@/store/useTimerStore";
@@ -195,8 +195,8 @@ export default function ManualTimerPage() {
                 transition={{ delay: 0.5 }}
               >
                 <iPhoneTimePicker
-                  handleTimeSet={handleConfirm}
-                  handleTimeCancel={handleCancel}
+                  onConfirm={handleConfirm}
+                  onCancel={handleCancel}
                 />
               </motion.div>
             </>
