@@ -30,7 +30,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   ) => {
     if (!ref.current) return;
     
-    const itemHeight = 48; // altura de cada item (h-12 = 48px)
+    const itemHeight = 56; // altura de cada item (h-14 = 56px)
     const scrollTop = ref.current.scrollTop;
     const index = Math.round(scrollTop / itemHeight);
     const clampedIndex = Math.max(0, Math.min(index, maxValue));
@@ -52,7 +52,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   // Scroll inicial para valores atuais
   useEffect(() => {
     const timer = setTimeout(() => {
-      const itemHeight = 48; // altura do item
+      const itemHeight = 56; // altura do item (h-14 = 56px)
       
       if (hoursRef.current) {
         hoursRef.current.scrollTop = hours * itemHeight;
@@ -77,20 +77,20 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
   ) => (
     <div className="flex flex-col items-center">
       {/* Label */}
-      <div className="h-6 flex items-center justify-center mb-3">
-        <p className="text-xs text-[#F9F9F9]/60 font-light uppercase tracking-wider">
+      <div className="h-7 flex items-center justify-center mb-4">
+        <p className="text-xs text-[#F9F9F9]/70 font-medium uppercase tracking-widest">
           {label}
         </p>
       </div>
       
       {/* Time Column Container */}
-      <div className="relative w-20 h-[150px] overflow-hidden rounded-lg border border-emerald-700/30 bg-emerald-950/20">
+      <div className="relative w-24 h-[180px] overflow-hidden rounded-2xl border border-emerald-600/40 bg-gradient-to-b from-emerald-950/30 to-emerald-950/50 shadow-lg">
         {/* Seleção central highlight */}
-        <div className="absolute inset-x-0 top-[calc(50%-24px)] h-12 bg-emerald-500/20 border-y-2 border-emerald-500/50 pointer-events-none z-10" />
+        <div className="absolute inset-x-0 top-[calc(50%-28px)] h-14 bg-gradient-to-b from-emerald-500/30 to-emerald-400/20 border-y border-emerald-400/60 pointer-events-none z-10 rounded-sm" />
         
         {/* Gradientes laterais */}
-        <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#1A1A1A] to-transparent pointer-events-none z-20" />
-        <div className="absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-[#1A1A1A] to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-[#1A1A1A] via-[#1A1A1A]/80 to-transparent pointer-events-none z-20" />
+        <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-[#1A1A1A] via-[#1A1A1A]/80 to-transparent pointer-events-none z-20" />
         
         {/* Scroll container */}
         <div
@@ -105,7 +105,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
           }}
         >
           {/* Padding top */}
-          <div className="h-6" />
+          <div className="h-8" />
           
           {/* Items */}
           {values.map((value) => {
@@ -113,10 +113,10 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             return (
               <div
                 key={value}
-                className={`h-12 flex items-center justify-center text-2xl font-light transition-all snap-center leading-tight ${
+                className={`h-14 flex items-center justify-center text-2xl font-light transition-all duration-300 snap-center leading-none ${
                   isSelected
-                    ? "text-emerald-300 scale-110"
-                    : "text-[#F9F9F9]/40 scale-90"
+                    ? "text-emerald-300 scale-110 font-medium drop-shadow-lg"
+                    : "text-[#F9F9F9]/50 scale-95"
                 }`}
                 style={{
                   fontVariantNumeric: "tabular-nums",
@@ -128,33 +128,37 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
           })}
           
           {/* Padding bottom */}
-          <div className="h-6" />
+          <div className="h-8" />
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      {/* Time Picker Columns - Estrutura Corrigida */}
-      <div className="flex justify-center items-center gap-x-6 mb-8">
+    <div className="w-full max-w-lg mx-auto">
+      {/* Time Picker Columns - Layout Refinado */}
+      <div className="flex justify-center items-center gap-x-8 mb-10">
         {renderTimeColumn(hoursRef, hoursArray, hours, setHours, "HORAS")}
         
-        {/* Colon Separator */}
-        <div className="text-3xl font-bold text-emerald-300">:</div>
+        {/* Colon Separator - Refinado */}
+        <div className="flex items-center justify-center h-[180px]">
+          <div className="text-4xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
+        </div>
         
         {renderTimeColumn(minutesRef, minutesArray, minutes, setMinutes, "MIN")}
         
-        {/* Colon Separator */}
-        <div className="text-3xl font-bold text-emerald-300">:</div>
+        {/* Colon Separator - Refinado */}
+        <div className="flex items-center justify-center h-[180px]">
+          <div className="text-4xl font-light text-emerald-300/80 drop-shadow-sm">:</div>
+        </div>
         
         {renderTimeColumn(secondsRef, secondsArray, seconds, setSeconds, "SEG")}
       </div>
 
-      {/* Display atual */}
-      <div className="mb-8">
-        <div className="bg-emerald-950/40 rounded-xl p-4 border border-emerald-700/30">
-          <p className="text-center text-3xl font-bold text-emerald-300 tracking-wider" style={{ fontVariantNumeric: "tabular-nums" }}>
+      {/* Display atual - Refinado */}
+      <div className="mb-10">
+        <div className="bg-gradient-to-br from-emerald-950/50 to-emerald-900/30 rounded-2xl p-6 border border-emerald-600/40 shadow-xl backdrop-blur-sm">
+          <p className="text-center text-4xl font-light text-emerald-300 tracking-wider drop-shadow-sm" style={{ fontVariantNumeric: "tabular-nums" }}>
             {hours.toString().padStart(2, "0")}:
             {minutes.toString().padStart(2, "0")}:
             {seconds.toString().padStart(2, "0")}
@@ -162,21 +166,21 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-4 justify-center">
+      {/* Action Buttons - Refinados */}
+      <div className="flex gap-6 justify-center">
         <Button
           onClick={cancelAction}
           variant="outline"
-          className="border-emerald-700/30 text-emerald-300 hover:bg-emerald-900/20 hover:text-emerald-200 bg-transparent px-6 py-3 rounded-full"
+          className="border-emerald-600/40 text-emerald-300 hover:bg-emerald-900/30 hover:text-emerald-200 bg-transparent px-8 py-4 rounded-2xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
         >
-          <X className="w-4 h-4 mr-2" />
+          <X className="w-5 h-5 mr-3" />
           Cancelar
         </Button>
         <Button
           onClick={handleConfirm}
-          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-8 py-3 rounded-full"
+          className="bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-semibold px-10 py-4 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-xl shadow-lg"
         >
-          <Play className="w-4 h-4 mr-2" />
+          <Play className="w-5 h-5 mr-3" />
           Iniciar
         </Button>
       </div>
