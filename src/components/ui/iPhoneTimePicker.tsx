@@ -9,7 +9,7 @@ interface Props {
   cancelAction: () => void;
 }
 
-export default function iPhoneTimePicker({ confirmAction, cancelAction }: Props) {
+export default function TimePicker({ confirmAction, cancelAction }: Props) {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
