@@ -49,27 +49,25 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     confirmAction(hours, minutes, seconds);
   };
 
-  // Scroll inicial para valores atuais - Solução robusta
+  // Scroll inicial para valores atuais - "00" centralizado e único visível
   useEffect(() => {
     const timer = setTimeout(() => {
-      const itemHeight = 48; // altura do item (h-12 = 48px)
-      
-      // Forçar scroll para posição inicial (00:00:00)
+      // Com padding de 51px, o "00" fica centralizado quando scroll = 0
       if (hoursRef.current) {
-        hoursRef.current.scrollTop = 0; // Sempre começar em 0
+        hoursRef.current.scrollTop = 0; // "00" centralizado
       }
       if (minutesRef.current) {
-        minutesRef.current.scrollTop = 0; // Sempre começar em 0
+        minutesRef.current.scrollTop = 0; // "00" centralizado
       }
       if (secondsRef.current) {
-        secondsRef.current.scrollTop = 0; // Sempre começar em 0
+        secondsRef.current.scrollTop = 0; // "00" centralizado
       }
       
       // Garantir que os valores estejam em 0
       setHours(0);
       setMinutes(0);
       setSeconds(0);
-    }, 150);
+    }, 100);
     
     return () => clearTimeout(timer);
   }, []);
@@ -92,7 +90,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
       {/* Time Column Container */}
       <div className="relative w-20 h-[150px] overflow-hidden rounded-xl border border-emerald-600/40 bg-emerald-950/20 shadow-lg">
         {/* Seleção central highlight */}
-        <div className="absolute inset-x-0 top-[calc(50%-24px)] h-12 bg-emerald-500/20 border-y border-emerald-500/50 pointer-events-none z-10" />
+        <div className="absolute inset-x-0 top-[75px] h-12 bg-emerald-500/20 border-y border-emerald-500/50 pointer-events-none z-10" />
         
         {/* Gradientes laterais */}
         <div className="absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-[#1A1A1A] to-transparent pointer-events-none z-20" />
@@ -110,8 +108,8 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             scrollBehavior: "smooth",
           }}
         >
-          {/* Padding top */}
-          <div className="h-6" />
+          {/* Padding top - aumentado para esconder completamente números acima */}
+          <div className="h-[75px]" />
           
           {/* Items */}
           {values.map((value) => {
@@ -133,8 +131,8 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
             );
           })}
           
-          {/* Padding bottom */}
-          <div className="h-6" />
+          {/* Padding bottom - aumentado para esconder completamente números abaixo */}
+          <div className="h-[75px]" />
         </div>
       </div>
     </div>
