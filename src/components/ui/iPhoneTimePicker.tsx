@@ -36,13 +36,7 @@ export default function TimePicker({ confirmAction, cancelAction }: Props) {
     const clampedIndex = Math.max(0, Math.min(index, maxValue));
     
     // Só atualiza se o valor mudou
-    setter((prevValue) => {
-      if (prevValue !== clampedIndex) {
-        console.log(`[TimePicker] Scroll atualizado: ${clampedIndex}`);
-        return clampedIndex;
-      }
-      return prevValue;
-    });
+    setter(clampedIndex);
   };
 
   const handleConfirm = () => {
