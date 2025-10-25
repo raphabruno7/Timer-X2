@@ -415,6 +415,10 @@ const deDE: Translations = {
   manual: {
     title: 'Manuelle Zeit',
     subtitle: 'Wählen Sie Stunden, Minuten und Sekunden',
+    selectedTime: 'Ausgewählte Zeit',
+    setTime: 'Zeit Festlegen',
+    selectAtLeastOneMinute: 'Wählen Sie mindestens 1 Minute',
+    timerSetTo: 'Timer eingestellt auf',
     hours: 'Stunden',
     minutes: 'Min',
     seconds: 'Sek',
