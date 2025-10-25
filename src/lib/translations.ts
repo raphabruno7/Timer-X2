@@ -343,6 +343,10 @@ const frFR: Translations = {
   manual: {
     title: 'Temps Manuel',
     subtitle: 'Choisissez heures, minutes et secondes',
+    selectedTime: 'Temps Sélectionné',
+    setTime: 'Définir le Temps',
+    selectAtLeastOneMinute: 'Sélectionnez au moins 1 minute',
+    timerSetTo: 'Minuteur défini pour',
     hours: 'Heures',
     minutes: 'Min',
     seconds: 'Sec',
