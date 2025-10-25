@@ -454,7 +454,7 @@ const translations: Record<Language, Translations> = {
 export function detectDeviceLanguage(): Language {
   if (typeof window === 'undefined') return 'pt-BR'; // Fallback para SSR
   
-  const browserLanguage = navigator.language || navigator.userLanguage;
+  const browserLanguage = navigator.language;
   
   // Mapear idiomas do navegador para nossos idiomas suportados
   if (browserLanguage.startsWith('pt')) return 'pt-BR';
