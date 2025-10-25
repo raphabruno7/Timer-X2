@@ -53,13 +53,7 @@ export function TimePicker({ isOpen, onClose, onConfirm, inline = false }: TimeP
       const clampedIndex = Math.max(0, Math.min(index, maxValue));
       
       // Só atualiza se o valor mudou
-      setter((prevValue: number) => {
-        if (prevValue !== clampedIndex) {
-          console.log(`[TimePicker] Scroll atualizado: ${label} de ${prevValue} para ${clampedIndex}`);
-          return clampedIndex;
-        }
-        return prevValue;
-      });
+      setter(clampedIndex);
     }, 50); // 50ms de debounce
   };
 
