@@ -271,6 +271,10 @@ const esES: Translations = {
   manual: {
     title: 'Tiempo Manual',
     subtitle: 'Elige horas, minutos y segundos',
+    selectedTime: 'Tiempo Seleccionado',
+    setTime: 'Establecer Tiempo',
+    selectAtLeastOneMinute: 'Selecciona al menos 1 minuto',
+    timerSetTo: 'Timer establecido para',
     hours: 'Horas',
     minutes: 'Min',
     seconds: 'Seg',
